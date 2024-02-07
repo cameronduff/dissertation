@@ -18,18 +18,31 @@ def createEndSystems(numOfEndSystems):
     print("End systems created")
     return endSystems
 
+def createCsmaSwitch(numOfSwitches):
+    # creating switch
+    print("Creating switch")
+    csmaSwitch = ns.network.NodeContainer()
+    csmaSwitch.Create(numOfSwitches)
+    print("Switch created")
+    return csmaSwitch
+
+def linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitch):
+    for i in range(numOfEndSystems):
+        # links the switch to the end system
+        link = csma.Install(ns.network.NodeContainer(ns.network.NodeContainer(endSystems.Get(i)), csmaSwitch))
+        endSystemDevices.Add(link.Get(0))
+        switchDevices.Add(link.Get(1))
+    print("End systems linked to switch")
+
 def main(argv):
 
     cmd = ns.core.CommandLine()
     cmd.Parse(argv)
 
-    endSystems = createEndSystems(4)
+    numOfEndSystems = 4
 
-    # creating switch
-    print("Creating switch")
-    csmaSwitch = ns.network.NodeContainer()
-    csmaSwitch.Create(1)
-    print("Switch created")
+    endSystems = createEndSystems(numOfEndSystems)
+    csmaSwitch = createCsmaSwitch(1)
 
     # building topology
     print("Building topology")
@@ -42,13 +55,7 @@ def main(argv):
     endSystemDevices = ns.network.NetDeviceContainer()
     switchDevices = ns.network.NetDeviceContainer()
 
-    for i in range(4):
-        # links the switch to the end system
-        link = csma.Install(ns.network.NodeContainer(ns.network.NodeContainer(endSystems.Get(i)), csmaSwitch))
-        endSystemDevices.Add(link.Get(0))
-        switchDevices.Add(link.Get(1))
-    print("End systems linked to switch")
-
+    linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitch)
 
     # Create the bridge netdevice, which will do the packet switching
     switchNode = csmaSwitch.Get(0)
