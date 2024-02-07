@@ -65,7 +65,7 @@ def main(argv):
     numOfEndSystems = 15
 
     endSystems = createNodes(numOfEndSystems)
-    csmaSwitch = createCsmaSwitches(1)
+    csmaSwitches = createCsmaSwitches(1)
 
     # building topology
     print("Building topology")
@@ -77,10 +77,17 @@ def main(argv):
     # creating link from end system(s) to switch
     endSystemDevices = ns.network.NetDeviceContainer()
     switchDevices = ns.network.NetDeviceContainer()
-    linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitch)
+    linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitches)
 
     # Create the bridge netdevice, which will do the packet switching
-    switchNode = csmaSwitch.Get(0)
+    """
+    for node in range(csmaSwitches.GetN()):
+        switchNode = csmaSwitches.Get(node)
+        bridgeDevice = ns.bridge.BridgeNetDevice()
+        switchNode.AddDevice(bridgeDevice)    
+    """
+
+    switchNode = csmaSwitches.Get(0)
     bridgeDevice = ns.bridge.BridgeNetDevice()
     switchNode.AddDevice(bridgeDevice)
 
