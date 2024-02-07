@@ -1,14 +1,5 @@
 from ns import ns
 
-# Network topology
-#
-#        n0     n1
-#        |      |
-#       ----------
-#       | Switch |
-#       ----------
-#        |      |
-#        n2     n3
 
 def createEndSystems(numOfEndSystems):
     # creating end systems
@@ -39,7 +30,7 @@ def main(argv):
     cmd = ns.core.CommandLine()
     cmd.Parse(argv)
 
-    numOfEndSystems = 4
+    numOfEndSystems = 10
 
     endSystems = createEndSystems(numOfEndSystems)
     csmaSwitch = createCsmaSwitch(1)
@@ -94,7 +85,7 @@ def main(argv):
     # start the application
     app.Start(ns.core.Seconds(1.0))
     app.Stop(ns.core.Seconds(10.0))
-
+    
     # Create an optional packet sink to receive these packets
     inet_address = ns.network.InetSocketAddress(ns.network.Ipv4Address.GetAny(), port);
     sink = ns.applications.PacketSinkHelper("ns3::UdpSocketFactory", inet_address.ConvertTo())
