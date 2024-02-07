@@ -2,31 +2,31 @@ from ns import ns
 from matplotlib import pyplot as plt
 
 
-def createEndSystems(numOfEndSystems):
+def createNodes(numOfNodes):
     # creating end systems
     print("Creating end systems")
-    endSystems = ns.network.NodeContainer()
-    endSystems.Create(numOfEndSystems)
+    nodes = ns.network.NodeContainer()
+    nodes.Create(numOfNodes)
 
     oddNumber=0
-    if(numOfEndSystems % 2 == 1):
-        numOfEndSystems = numOfEndSystems - 1
+    if(numOfNodes % 2 == 1):
+        numOfNodes = numOfNodes - 1
         oddNumber = 1
 
     linePositions = ns.CreateObject("ListPositionAllocator")
     for line in range(2):
         if(oddNumber == 1 and line == 1):
-            columnRange = (numOfEndSystems/2) + 1
+            columnRange = (numOfNodes/2) + 1
         else:
-            columnRange = numOfEndSystems/2
+            columnRange = numOfNodes/2
 
         for column in range(int(columnRange)):
             linePositions.__deref__().Add(ns.Vector(100*column, 400*line, 0))
 
-    setMobility(linePositions, endSystems)
+    setMobility(linePositions, nodes)
 
     print("End systems created")
-    return endSystems
+    return nodes
 
 def createCsmaSwitches(numOfSwitches):
     # creating switch
@@ -64,7 +64,7 @@ def main(argv):
 
     numOfEndSystems = 15
 
-    endSystems = createEndSystems(numOfEndSystems)
+    endSystems = createNodes(numOfEndSystems)
     csmaSwitch = createCsmaSwitches(1)
 
     # building topology
