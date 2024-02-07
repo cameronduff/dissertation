@@ -35,6 +35,12 @@ def main(argv):
     endSystems = createEndSystems(numOfEndSystems)
     csmaSwitch = createCsmaSwitch(1)
 
+    #adding mobility model to nodes
+    mobility = ns.mobility.MobilityHelper()
+    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel")
+    mobility.Install(endSystems)
+    mobility.Install(csmaSwitch)
+
     # building topology
     print("Building topology")
     csma = ns.csma.CsmaHelper()
@@ -45,7 +51,6 @@ def main(argv):
     # creating link from end system(s) to switch
     endSystemDevices = ns.network.NetDeviceContainer()
     switchDevices = ns.network.NetDeviceContainer()
-
     linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitch)
 
     # Create the bridge netdevice, which will do the packet switching
