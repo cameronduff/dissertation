@@ -1,4 +1,5 @@
 from ns import ns
+from matplotlib import pyplot as plt
 
 
 def createEndSystems(numOfEndSystems):
@@ -6,16 +7,47 @@ def createEndSystems(numOfEndSystems):
     print("Creating end systems")
     endSystems = ns.network.NodeContainer()
     endSystems.Create(numOfEndSystems)
+
+    oddNumber=0
+    if(numOfEndSystems % 2 == 1):
+        numOfEndSystems = numOfEndSystems - 1
+        oddNumber = 1
+
+    linePositions = ns.CreateObject("ListPositionAllocator")
+    for line in range(2):
+        if(oddNumber == 1 and line == 1):
+            columnRange = (numOfEndSystems/2) + 1
+        else:
+            columnRange = numOfEndSystems/2
+
+        for column in range(int(columnRange)):
+            linePositions.__deref__().Add(ns.Vector(100*column, 400*line, 0))
+
+    setMobility(linePositions, endSystems)
+
     print("End systems created")
     return endSystems
 
-def createCsmaSwitch(numOfSwitches):
+def createCsmaSwitches(numOfSwitches):
     # creating switch
     print("Creating switch")
-    csmaSwitch = ns.network.NodeContainer()
-    csmaSwitch.Create(numOfSwitches)
+    csmaSwitches = ns.network.NodeContainer()
+    csmaSwitches.Create(numOfSwitches)
+
+    linePositions = ns.CreateObject("ListPositionAllocator")
+    for column in range(csmaSwitches.GetN()):
+        linePositions.__deref__().Add (ns.Vector(100*column, 200, 0))
+
+    setMobility(linePositions, csmaSwitches)
+
     print("Switch created")
-    return csmaSwitch
+    return csmaSwitches
+
+def setMobility(linePositions, nodes):
+    mobilityHelper = ns.MobilityHelper()
+    mobilityHelper.SetMobilityModel ("ns3::ConstantPositionMobilityModel")
+    mobilityHelper.SetPositionAllocator (linePositions)
+    mobilityHelper.Install (nodes)
 
 def linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitch):
     for i in range(numOfEndSystems):
@@ -30,16 +62,10 @@ def main(argv):
     cmd = ns.core.CommandLine()
     cmd.Parse(argv)
 
-    numOfEndSystems = 10
+    numOfEndSystems = 15
 
     endSystems = createEndSystems(numOfEndSystems)
-    csmaSwitch = createCsmaSwitch(1)
-
-    #adding mobility model to nodes
-    mobility = ns.mobility.MobilityHelper()
-    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel")
-    mobility.Install(endSystems)
-    mobility.Install(csmaSwitch)
+    csmaSwitch = createCsmaSwitches(1)
 
     # building topology
     print("Building topology")
