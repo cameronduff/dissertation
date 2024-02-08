@@ -62,10 +62,10 @@ def main(argv):
     cmd = ns.core.CommandLine()
     cmd.Parse(argv)
 
-    numOfEndSystems = 15
+    numOfEndSystems = 5
 
     endSystems = createNodes(numOfEndSystems)
-    csmaSwitches = createCsmaSwitches(1)
+    csmaSwitches = createCsmaSwitches(3)
 
     # building topology
     print("Building topology")
@@ -125,16 +125,15 @@ def main(argv):
     app.Stop(ns.core.Seconds(10.0))
     
     # Create an optional packet sink to receive these packets
-    inet_address = ns.network.InetSocketAddress(ns.network.Ipv4Address.GetAny(), port);
+    inet_address = ns.network.InetSocketAddress(ns.network.Ipv4Address.GetAny(), port)
     sink = ns.applications.PacketSinkHelper("ns3::UdpSocketFactory", inet_address.ConvertTo())
     app = sink.Install(ns.network.NodeContainer(endSystems.Get(1)))
     app.Start(ns.core.Seconds(0.0))
 
     # Create a similar flow from n3 to n0, starting at time 1.1 seconds
     inet_address = ns.network.InetSocketAddress(ns.network.Ipv4Address("10.1.1.1"), port)
-    onoff.SetAttribute("Remote",
-                        ns.network.AddressValue(inet_address.ConvertTo()))
-    app = onoff.Install(ns.network.NodeContainer(endSystems.Get(3)))
+    onoff.SetAttribute("Remote", ns.network.AddressValue(inet_address.ConvertTo()))
+    app = onoff.Install(ns.network.NodeContainer(endSystems.Get(4)))
     app.Start(ns.core.Seconds(1.1))
     app.Stop(ns.core.Seconds(10.0))
 
@@ -153,6 +152,12 @@ def main(argv):
     # configuring animation
     animFile = "afdx-network-animation.xml"
     anim = ns.netanim.AnimationInterface(animFile)
+
+    for endSystem in range(endSystems.GetN()):
+        anim.UpdateNodeDescription(endSystem, "End System " + str(endSystem))
+    
+    for csmaSwitch in range(csmaSwitches.GetN()):
+        anim.UpdateNodeDescription(numOfEndSystems + csmaSwitch, "Switch " + str(csmaSwitch))
 
     # run simulation
     print("Running simulation")
