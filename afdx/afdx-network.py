@@ -65,7 +65,7 @@ def main(argv):
     numOfEndSystems = 5
 
     endSystems = createNodes(numOfEndSystems)
-    csmaSwitches = createCsmaSwitches(3)
+    csmaSwitches = createCsmaSwitches(1)
 
     # building topology
     print("Building topology")
