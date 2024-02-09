@@ -63,6 +63,7 @@ def main(argv):
     cmd.Parse(argv)
 
     numOfEndSystems = 5
+    appStopTime = 5.0
 
     endSystems = createNodes(numOfEndSystems)
     csmaSwitches = createCsmaSwitches(1)
@@ -80,13 +81,6 @@ def main(argv):
     linkEndsystemsAndSwitch(numOfEndSystems, csma, endSystemDevices, switchDevices, endSystems, csmaSwitches)
 
     # Create the bridge netdevice, which will do the packet switching
-    """
-    for node in range(csmaSwitches.GetN()):
-        switchNode = csmaSwitches.Get(node)
-        bridgeDevice = ns.bridge.BridgeNetDevice()
-        switchNode.AddDevice(bridgeDevice)    
-    """
-
     switchNode = csmaSwitches.Get(0)
     bridgeDevice = ns.bridge.BridgeNetDevice()
     switchNode.AddDevice(bridgeDevice)
@@ -122,7 +116,7 @@ def main(argv):
     app = onoff.Install(ns.network.NodeContainer(endSystems.Get(0)))
     # start the application
     app.Start(ns.core.Seconds(1.0))
-    app.Stop(ns.core.Seconds(10.0))
+    app.Stop(ns.core.Seconds(appStopTime))
     
     # Create an optional packet sink to receive these packets
     inet_address = ns.network.InetSocketAddress(ns.network.Ipv4Address.GetAny(), port)
@@ -135,7 +129,7 @@ def main(argv):
     onoff.SetAttribute("Remote", ns.network.AddressValue(inet_address.ConvertTo()))
     app = onoff.Install(ns.network.NodeContainer(endSystems.Get(4)))
     app.Start(ns.core.Seconds(1.1))
-    app.Stop(ns.core.Seconds(10.0))
+    app.Stop(ns.core.Seconds(appStopTime))
 
     app = sink.Install(ns.network.NodeContainer(endSystems.Get(0)))
     app.Start(ns.core.Seconds(0.0))
@@ -155,9 +149,11 @@ def main(argv):
 
     for endSystem in range(endSystems.GetN()):
         anim.UpdateNodeDescription(endSystem, "End System " + str(endSystem))
+        anim.UpdateNodeSize(endSystem, 5, 5)
     
     for csmaSwitch in range(csmaSwitches.GetN()):
         anim.UpdateNodeDescription(numOfEndSystems + csmaSwitch, "Switch " + str(csmaSwitch))
+        anim.UpdateNodeSize(numOfEndSystems + csmaSwitch, 5, 5)
 
     # run simulation
     print("Running simulation")
