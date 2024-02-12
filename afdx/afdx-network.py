@@ -148,11 +148,11 @@ def main(argv):
     anim = ns.netanim.AnimationInterface(animFile)
 
     for endSystem in range(endSystems.GetN()):
-        anim.UpdateNodeDescription(endSystem, "End System " + str(endSystem))
+        anim.UpdateNodeDescription(endSystem, "ES " + str(endSystem))
         anim.UpdateNodeSize(endSystem, 5, 5)
     
     for csmaSwitch in range(csmaSwitches.GetN()):
-        anim.UpdateNodeDescription(numOfEndSystems + csmaSwitch, "Switch " + str(csmaSwitch))
+        anim.UpdateNodeDescription(numOfEndSystems + csmaSwitch, "SW " + str(csmaSwitch))
         anim.UpdateNodeSize(numOfEndSystems + csmaSwitch, 5, 5)
 
     # run simulation
