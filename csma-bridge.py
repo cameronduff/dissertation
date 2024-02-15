@@ -140,6 +140,9 @@ def main(argv):
     #
     csma.EnablePcapAll("csma-bridge", False)
 
+    animFile = "csma-bridge.xml"
+    anim = ns.netanim.AnimationInterface(animFile)
+
     #
     # Now, do the actual simulation.
     #
