@@ -54,8 +54,8 @@ ns.core.Simulator.Schedule(
     ns.core.Seconds(0.0), send_packet, source,
 )
 
-#animFile = "p2p-sender.xml"
-#anim = ns.netanim.AnimationInterface(animFile)
+animFile = "p2p-sender.xml"
+anim = ns.netanim.AnimationInterface(animFile)
 
 # Run the simulation
 ns.core.Simulator.Run()

@@ -59,6 +59,9 @@ clientApps = echoClient.Install(nodes.Get(0))
 clientApps.Start(ns.core.Seconds(2.0))
 clientApps.Stop(ns.core.Seconds(10.0))
 
+animFile = "first.xml"
+anim = ns.netanim.AnimationInterface(animFile)
+
 ns.core.Simulator.Run()
 ns.core.Simulator.Destroy()
 

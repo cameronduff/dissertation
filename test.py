@@ -1,92 +1,156 @@
 from ns import ns
 
-# Create nodes
+#create nodes
+print("Create nodes")
 nodes = ns.network.NodeContainer()
-nodes.Create(4)
+nodes.Create(5)
 
-# Create devices for nodes
+
+#create links
+n01 = ns.network.NodeContainer()
+n01.Add(nodes.Get(0))
+n01.Add(nodes.Get(1))
+
+n14 = ns.network.NodeContainer()
+n14.Add(nodes.Get(1))
+n14.Add(nodes.Get(4))
+
+n43 = ns.network.NodeContainer()
+n43.Add(nodes.Get(4))
+n43.Add(nodes.Get(3))
+
+n30 = ns.network.NodeContainer()
+n30.Add(nodes.Get(3))
+n30.Add(nodes.Get(0))
+
+n02 = ns.network.NodeContainer()
+n02.Add(nodes.Get(0))
+n02.Add(nodes.Get(2))
+
+n23 = ns.network.NodeContainer()
+n23.Add(nodes.Get(2))
+n23.Add(nodes.Get(3))
+
+
+#creates static route for olsr
+print("Enabling OLSR Routing")
+olsr = ns.olsr.OlsrHelper()
+staticRouting = ns.internet.Ipv4StaticRoutingHelper()
+
+list = ns.internet.Ipv4ListRoutingHelper()
+list.Add(staticRouting, 0)
+list.Add(olsr, 10)
+
+internet = ns.internet.InternetStackHelper()
+internet.SetRoutingHelper(list)
+internet.Install(nodes)
+
+
+#Create channels
+print("Create channels")
 pointToPoint = ns.point_to_point.PointToPointHelper()
-pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("5Mbps"))
+
+#link 1
+pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("10Mbps"))
 pointToPoint.SetChannelAttribute("Delay", ns.core.StringValue("2ms"))
+nd01=pointToPoint.Install(n01)
 
-device1 = pointToPoint.Install(nodes.Get(0), nodes.Get(1))
-device2 = pointToPoint.Install(nodes.Get(1), nodes.Get(2))
-device3 = pointToPoint.Install(nodes.Get(1), nodes.Get(3))
+#link 2
+pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("5Mbps"))
+pointToPoint.SetChannelAttribute("Delay", ns.core.StringValue("10ms"))
+nd14=pointToPoint.Install(n14)
 
-# Install internet stack on nodes
-stack = ns.internet.InternetStackHelper()
-stack.Install(nodes)
+#link 3
+pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("50Mbps"))
+pointToPoint.SetChannelAttribute("Delay", ns.core.StringValue("50ms"))
+nd43=pointToPoint.Install(n43)
 
-# Assign IP addresses to nodes
-addressHelper = ns.internet.Ipv4AddressHelper()
+#link 4
+pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("5Mbps"))
+pointToPoint.SetChannelAttribute("Delay", ns.core.StringValue("5ms"))
+nd30=pointToPoint.Install(n30)
 
-# Set IP address for node 0 (source)
-sourceIp = "10.1.1.1"
-sourceMask = "255.255.255.0"
-sourceIfAddr = ns.network.Ipv4AddressHelper.GetAddress(sourceIp, sourceMask)
-sourceIfAddr.SetBase(ns.network.Ipv4Address("10.1.1.0"), ns.network.Ipv4Mask(sourceMask))
-sourceIfAddr.Assign(device1)
+#link 5
+pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("1Mbps"))
+pointToPoint.SetChannelAttribute("Delay", ns.core.StringValue("1ms"))
+nd02=pointToPoint.Install(n02)
 
-# Set IP address for node 2 (destination)
-destinationIp = "10.1.2.1"
-destinationMask = "255.255.255.0"
-destinationIfAddr = ns.network.Ipv4AddressHelper.GetAddress(destinationIp, destinationMask)
-destinationIfAddr.SetBase(ns.network.Ipv4Address("10.1.2.0"), ns.network.Ipv4Mask(destinationMask))
-destinationIfAddr.Assign(device2)
+#link 6
+pointToPoint.SetDeviceAttribute("DataRate", ns.core.StringValue("2Mbps"))
+pointToPoint.SetChannelAttribute("Delay", ns.core.StringValue("2ms"))
+nd23=pointToPoint.Install(n23)
 
-# Set IP address for node 3 (destination)
-destinationIp2 = "10.1.3.1"
-destinationMask2 = "255.255.255.0"
-destinationIfAddr2 = ns.network.Ipv4AddressHelper.GetAddress(destinationIp2, destinationMask2)
-destinationIfAddr2.SetBase(ns.network.Ipv4Address("10.1.3.0"), ns.network.Ipv4Mask(destinationMask2))
-destinationIfAddr2.Assign(device3)
 
-# Set up routing
-staticRoutingHelper = ns.internet.Ipv4StaticRoutingHelper()
+#Assign IP Addresses
+print("Assign IP Addresses")
+ipv4 = ns.internet.Ipv4AddressHelper()
+ipv4.SetBase(ns.network.Ipv4Address("10.1.1.0"),
+                ns.network.Ipv4Mask("255.255.255.0"))
+i01 = ipv4.Assign(nd01)
 
-# Node 0 (source) routing table
-sourceStaticRouting = staticRoutingHelper.GetStaticRouting(nodes.Get(0).GetObject(ns.internet.Ipv4.GetTypeId()))
-sourceStaticRouting.AddNetworkRouteTo(ns.network.Ipv4Address("10.1.2.0"), ns.network.Ipv4Mask("255.255.255.0"), 1)
+ipv4 = ns.internet.Ipv4AddressHelper()
+ipv4.SetBase(ns.network.Ipv4Address("10.1.2.0"),
+                ns.network.Ipv4Mask("255.255.255.0"))
+i14 = ipv4.Assign(nd14)
 
-sourceStaticRouting2 = staticRoutingHelper.GetStaticRouting(nodes.Get(0).GetObject(ns.internet.Ipv4.GetTypeId()))
-sourceStaticRouting2.AddNetworkRouteTo(ns.network.Ipv4Address("10.1.3.0"), ns.network.Ipv4Mask("255.255.255.0"), 1)
+ipv4 = ns.internet.Ipv4AddressHelper()
+ipv4.SetBase(ns.network.Ipv4Address("10.1.3.0"),
+                ns.network.Ipv4Mask("255.255.255.0"))
+i43 = ipv4.Assign(nd43)
 
-# Node 2 (destination) routing table
-destinationStaticRouting = staticRoutingHelper.GetStaticRouting(nodes.Get(2).GetObject(ns.internet.Ipv4.GetTypeId()))
-destinationStaticRouting.AddNetworkRouteTo(ns.network.Ipv4Address("10.1.1.0"), ns.network.Ipv4Mask("255.255.255.0"), 1)
+ipv4 = ns.internet.Ipv4AddressHelper()
+ipv4.SetBase(ns.network.Ipv4Address("10.1.4.0"),
+                ns.network.Ipv4Mask("255.255.255.0"))
+i30 = ipv4.Assign(nd30)
 
-# Node 3 (destination) routing table
-destinationStaticRouting2 = staticRoutingHelper.GetStaticRouting(nodes.Get(3).GetObject(ns.internet.Ipv4.GetTypeId()))
-destinationStaticRouting2.AddNetworkRouteTo(ns.network.Ipv4Address("10.1.1.0"), ns.network.Ipv4Mask("255.255.255.0"), 1)
+ipv4 = ns.internet.Ipv4AddressHelper()
+ipv4.SetBase(ns.network.Ipv4Address("10.1.5.0"),
+                ns.network.Ipv4Mask("255.255.255.0"))
+i02 = ipv4.Assign(nd02)
 
-# Create packet sink on node 2
-packetSinkHelper = ns.applications.PacketSinkHelper("ns3::Ipv4")
-packetSinkApp = packetSinkHelper.Install(nodes.Get(2))
-packetSinkApp.Start(ns.core.Seconds(0.0))
-packetSinkApp.Stop(ns.core.Seconds(10.0))
+ipv4 = ns.internet.Ipv4AddressHelper()
+ipv4.SetBase(ns.network.Ipv4Address("10.1.6.0"),
+                ns.network.Ipv4Mask("255.255.255.0"))
+i23 = ipv4.Assign(nd23)
 
-# Create packet source on node 0
-packetSourceHelper = ns.applications.OnOffHelper("ns3::Ipv4Address", ns.network.AddressValue(ns.network.Ipv4Address("10.1.2.1")))
-packetSourceApp = packetSourceHelper.Install(nodes.Get(0))
-packetSourceApp.SetAttribute("OnTime", ns.core.StringValue("ns3::ConstantRandomVariable[Constant=1]"))
-packetSourceApp.SetAttribute("OffTime", ns.core.StringValue("ns3::ConstantRandomVariable[Constant=0]"))
-packetSourceApp.Start(ns.core.Seconds(1.0))
-packetSourceApp.Stop(ns.core.Seconds(9.0))
 
-# Create packet source on node 0
-packetSourceHelper2 = ns.applications.OnOffHelper("ns3::Ipv4Address", ns.network.AddressValue(ns.network.Ipv4Address("10.1.3.1")))
-packetSourceApp2 = packetSourceHelper2.Install(nodes.Get(0))
-packetSourceApp2.SetAttribute("OnTime", ns.core.StringValue("ns3::ConstantRandomVariable[Constant=1]"))
-packetSourceApp2.SetAttribute("OffTime", ns.core.StringValue("ns3::ConstantRandomVariable[Constant=0]"))
-packetSourceApp2.Start(ns.core.Seconds(1.0))
-packetSourceApp2.Stop(ns.core.Seconds(9.0))
+# Create the OnOff application to send UDP datagrams of size
+# 210 bytes at a rate of 448 Kb/s
+print("Create applications")
+port = 8000
 
-# Set up tracing
-ns.core.Config.SetDefault("ns3::PacketSink::MaxBytes", ns.core.UintegerValue(0))
-sinkTrace = ns.core.PacketSinkHelper("ns3::Ipv4")
-sinkNode = sinkTrace.Install(nodes.Get(2))
+onoff1 = ns.applications.OnOffHelper("ns3::UdpSocketFactory", 
+                                    ns.network.InetSocketAddress(i02.GetAddress(1), port).ConvertTo())
+onoff1.SetConstantRate(ns.network.DataRate("448kb/s"))
 
-# Run simulation
-ns.core.Simulator.Stop(ns.core.Seconds(10.0))
+onOffApp1 = onoff1.Install(nodes.Get(1))
+onOffApp1.Start(ns.core.Seconds(10.0))
+onOffApp1.Stop(ns.core.Seconds(20.0))
+
+#create packet sink to receive the packets
+print("Create Packet Sink")
+sink = ns.applications.PacketSinkHelper("ns3::UdpSocketFactory", 
+                                        ns.network.InetSocketAddress(ns.network.Ipv4Address.GetAny(), port).ConvertTo())
+sinks = ns.network.NodeContainer()
+sinks.Add(nodes.Get(2))
+sinks.Add(nodes.Get(1))
+
+sinkApps = sink.Install(sinks)
+sinkApps.Start(ns.core.Seconds(0.0))
+sinkApps.Stop(ns.core.Seconds(21.0))
+
+# configuring animation
+print("Configure Animation")
+animFile = "test.xml"
+anim = ns.netanim.AnimationInterface(animFile)
+
+#adding mobility model to nodes
+mobility = ns.mobility.MobilityHelper()
+mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel")
+mobility.Install(nodes)
+
+print("Running simulation")
+ns.core.Simulator.Stop(ns.core.Seconds(30.0))
 ns.core.Simulator.Run()
 ns.core.Simulator.Destroy()
+print("Simulator done")

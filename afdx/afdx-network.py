@@ -108,6 +108,7 @@ def main(argv):
     print("Creating application")
     port = 9   # Discard port(RFC 863)
 
+    """
     inet_sock_address = ns.network.InetSocketAddress(ns.network.Ipv4Address("10.1.1.2"), port)
     onoff = ns.applications.OnOffHelper("ns3::UdpSocketFactory", inet_sock_address.ConvertTo())
     onoff.SetConstantRate(ns.network.DataRate("500kb/s"))
@@ -135,7 +136,9 @@ def main(argv):
     app.Start(ns.core.Seconds(0.0))
 
     ns.internet.Ipv4GlobalRoutingHelper.PopulateRoutingTables()
+    """
 
+    
     # Configure tracing of all enqueue, dequeue, and NetDevice receive events.
     # Trace output will be sent to the file "afdx-network.tr"
     #print("Configuring tracing")
