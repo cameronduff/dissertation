@@ -145,6 +145,9 @@ if tracing.value:
     phy.EnablePcap ("third", apDevices.Get (0))
     csma.EnablePcap ("third", csmaDevices.Get (0), True)
 
+
+animFile = "third.xml"
+anim = ns.netanim.AnimationInterface(animFile)
+
 ns.core.Simulator.Run()
 ns.core.Simulator.Destroy()
-

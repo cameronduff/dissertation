@@ -134,6 +134,7 @@ def main(argv):
     app = sink.Install(ns.network.NodeContainer(endSystems.Get(0)))
     app.Start(ns.core.Seconds(0.0))
 
+    ns.internet.Ipv4GlobalRoutingHelper.PopulateRoutingTables()
 
     # Configure tracing of all enqueue, dequeue, and NetDevice receive events.
     # Trace output will be sent to the file "afdx-network.tr"
@@ -148,11 +149,11 @@ def main(argv):
     anim = ns.netanim.AnimationInterface(animFile)
 
     for endSystem in range(endSystems.GetN()):
-        anim.UpdateNodeDescription(endSystem, "ES " + str(endSystem))
+        anim.UpdateNodeDescription(endSystem, "ES" + str(endSystem))
         anim.UpdateNodeSize(endSystem, 5, 5)
     
     for csmaSwitch in range(csmaSwitches.GetN()):
-        anim.UpdateNodeDescription(numOfEndSystems + csmaSwitch, "SW " + str(csmaSwitch))
+        anim.UpdateNodeDescription(numOfEndSystems + csmaSwitch, "SW" + str(csmaSwitch))
         anim.UpdateNodeSize(numOfEndSystems + csmaSwitch, 5, 5)
 
     # run simulation
