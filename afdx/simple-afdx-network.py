@@ -53,29 +53,33 @@ addresses = ipv4AddressHelper.Assign(terminalDevices)
 for i in range(4):
     print(addresses.GetAddress(i).ConvertTo())
 
+sender = 0
+receiver = 1
 
 #create custom application
 #create a UdpEchoServer application on node 1 to receive UDP datagrams
 port = 9   # Discard port(RFC 863)
 udpEchoServerHelper = ns.UdpEchoServerHelper(port)
-apps = udpEchoServerHelper.Install(terminals.Get(2))
+apps = udpEchoServerHelper.Install(terminals.Get(receiver))
 apps.Start(ns.core.Seconds(1.0))
-apps.Stop(ns.core.Seconds(10.0))
+apps.Stop(ns.core.Seconds(5.0))
 
 #set parameters
 packetSize = 1024
 maxPacketCount = 500
 interPacketInterval = ns.core.Seconds(0.01)
 
-#creates a UdpEchoClient application to send UDP datagrams from n0 to n2
-udpEchoClientHelper = ns.UdpEchoClientHelper(addresses.GetAddress(2).ConvertTo(), port)
+#creates a UdpEchoClient application to send UDP datagrams from sender to receiver
+udpEchoClientHelper = ns.UdpEchoClientHelper(addresses.GetAddress(receiver).ConvertTo(), port)
 udpEchoClientHelper.SetAttribute("MaxPackets", ns.core.UintegerValue(maxPacketCount))
 udpEchoClientHelper.SetAttribute("Interval", ns.core.TimeValue(interPacketInterval))
 udpEchoClientHelper.SetAttribute("PacketSize", ns.core.UintegerValue(packetSize))
-apps = udpEchoClientHelper.Install(terminals.Get(0))
+apps = udpEchoClientHelper.Install(terminals.Get(sender))
 apps.Start(ns.core.Seconds(2.0))
-apps.Stop(ns.core.Seconds(10.0))
+apps.Stop(ns.core.Seconds(5.0))
 
+ipv4GlobalRoutingHelper = ns.Ipv4GlobalRoutingHelper()
+ipv4GlobalRoutingHelper.PopulateRoutingTables()
 
 #POC comment out if not in use
 """
@@ -95,8 +99,6 @@ apps.Start(ns.core.Seconds(2.1))
 apps.Stop(ns.core.Seconds(10.0))
 """
 
-
-
 #create animation file
 animFile = "simple-afdx-network.xml"
 anim = ns.netanim.AnimationInterface(animFile)
@@ -108,13 +110,15 @@ anim.SetConstantPosition(terminals.Get(3), 0,200,0)
 anim.SetConstantPosition(csmaSwitch.Get(0), 150,150,0)
 
 for terminal in range(terminals.GetN()):
-    anim.UpdateNodeDescription(terminal, "ES" + str(terminal))
+    anim.UpdateNodeDescription(terminal, "ES" + str(terminal) + " " + str(addresses.GetAddress(terminal)))
     anim.UpdateNodeSize(terminal, 3, 3)
 
 for switch in range(csmaSwitch.GetN()):
     anim.UpdateNodeDescription(terminals.GetN() + switch, "SW" + str(switch))
     anim.UpdateNodeSize(terminals.GetN() + switch, 3, 3)
 
+ascii = ns.network.AsciiTraceHelper()
+csmaHelper.EnableAsciiAll(ascii.CreateFileStream("simple-afdx-network.tr"))
 csmaHelper.EnablePcapAll("simple-afdx-network", False)
 
 #run simulation

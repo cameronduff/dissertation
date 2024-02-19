@@ -103,12 +103,12 @@ def main(argv):
     ipv4.Assign(endSystemDevices)
     print("IPs assigned")
 
-
+    
     # create an OnOff application to send UDP datagrams from node zero to node 1.
     print("Creating application")
     port = 9   # Discard port(RFC 863)
 
-    """
+    
     inet_sock_address = ns.network.InetSocketAddress(ns.network.Ipv4Address("10.1.1.2"), port)
     onoff = ns.applications.OnOffHelper("ns3::UdpSocketFactory", inet_sock_address.ConvertTo())
     onoff.SetConstantRate(ns.network.DataRate("500kb/s"))

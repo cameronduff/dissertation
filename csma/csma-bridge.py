@@ -128,8 +128,8 @@ def main(argv):
     # Trace output will be sent to the file "csma-bridge.tr"
     #
     #print "Configure Tracing."
-    #ascii = ns.network.AsciiTraceHelper();
-    #csma.EnableAsciiAll(ascii.CreateFileStream ("csma-bridge.tr"));
+    ascii = ns.network.AsciiTraceHelper();
+    csma.EnableAsciiAll(ascii.CreateFileStream ("csma-bridge.tr"));
 
     #
     # Also configure some tcpdump traces; each interface will be traced.
