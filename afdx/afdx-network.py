@@ -136,7 +136,7 @@ def main(argv):
     app.Start(ns.core.Seconds(0.0))
 
     ns.internet.Ipv4GlobalRoutingHelper.PopulateRoutingTables()
-    """
+    
 
     
     # Configure tracing of all enqueue, dequeue, and NetDevice receive events.
