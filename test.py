@@ -144,11 +144,6 @@ print("Configure Animation")
 animFile = "test.xml"
 anim = ns.netanim.AnimationInterface(animFile)
 
-#adding mobility model to nodes
-mobility = ns.mobility.MobilityHelper()
-mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel")
-mobility.Install(nodes)
-
 print("Running simulation")
 ns.core.Simulator.Stop(ns.core.Seconds(30.0))
 ns.core.Simulator.Run()

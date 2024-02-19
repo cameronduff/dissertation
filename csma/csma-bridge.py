@@ -146,10 +146,10 @@ def main(argv):
     #
     # Now, do the actual simulation.
     #
-    print ("Run Simulation.")
+    #print "Run Simulation."
     ns.core.Simulator.Run()
     ns.core.Simulator.Destroy()
-    print ("Done.")
+    #print "Done."
 
 
 
