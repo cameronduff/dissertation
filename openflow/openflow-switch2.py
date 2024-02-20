@@ -136,8 +136,8 @@ for switch in range(switches.GetN()):
     anim.UpdateNodeSize(terminals.GetN() + switch, 3, 3)
 
 ascii = ns.network.AsciiTraceHelper()
-#csmaHelper.EnableAsciiAll(ascii.CreateFileStream("openflow-switch.tr"))
-#csmaHelper.EnablePcapAll("openflow-switch", False)
+csmaHelper.EnableAsciiAll(ascii.CreateFileStream("openflow-switch.tr"))
+csmaHelper.EnablePcapAll("openflow-switch", False)
 
 ns.Simulator.Run()
 ns.Simulator.Destroy()
