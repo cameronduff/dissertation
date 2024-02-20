@@ -29,57 +29,85 @@ terminals.Create(4)
 csmaSwitch = ns.NodeContainer()
 csmaSwitch.Create(1)
 
-csma = ns.CsmaHelper()
-csma.SetChannelAttribute("DataRate", ns.DataRateValue(5000000))
-csma.SetChannelAttribute("Delay", ns.TimeValue(ns.MilliSeconds(2)))
+csmaHelper = ns.CsmaHelper()
+csmaHelper.SetChannelAttribute("DataRate", ns.DataRateValue(5000000))
+csmaHelper.SetChannelAttribute("Delay", ns.TimeValue(ns.MilliSeconds(2)))
 
 terminalDevices = ns.NetDeviceContainer()
 switchDevices = ns.NetDeviceContainer()
+
 for i in range(4):
     container = ns.NodeContainer()
     container.Add(terminals.Get(i))
     container.Add(csmaSwitch)
-    link = csma.Install(container)
-    terminalDevices.Add(link.Get(0))
-    switchDevices.Add(link.Get(1))
+    channel = csmaHelper.Install(container)
+    terminalDevices.Add(channel.Get(0))
+    switchDevices.Add(channel.Get(1))
 
 switchNode = csmaSwitch.Get(0)
-swtch = ns.OpenFlowSwitchHelper()
+switch = ns.OpenFlowSwitchHelper()
 controller = ns.ofi.DropController()
 # controller = ns.CreateObject("ns3::ofi::LearningController")
-swtch.Install(switchNode, switchDevices, controller)
+switch.Install(switchNode, switchDevices, controller)
 # controller->SetAttribute("ExpirationTime", TimeValue(timeout))
 
+internetStackHelper = ns.InternetStackHelper()
+internetStackHelper.Install(terminals)
 
-internet = ns.InternetStackHelper()
-internet.Install(terminals)
+ipv4AddressHelper = ns.Ipv4AddressHelper()
+ipv4AddressHelper.SetBase("10.1.1.0", "255.255.255.0")
+addresses = ipv4AddressHelper.Assign(terminalDevices)
 
-ipv4 = ns.Ipv4AddressHelper()
-ipv4.SetBase("10.1.1.0", "255.255.255.0")
-ipv4.Assign(terminalDevices)
+for i in range(4):
+    print(addresses.GetAddress(i).ConvertTo())
 
+#sink port
 port = 9
 
+#installs sender on node 0
 onoff = ns.OnOffHelper("ns3::UdpSocketFactory", ns.InetSocketAddress(ns.Ipv4Address("10.1.1.2"), port).ConvertTo())
 onoff.SetConstantRate(ns.DataRate("500kb/s"))
-
 app = onoff.Install(terminals.Get(0))
-
 app.Start(ns.Seconds(1.0))
 app.Stop(ns.Seconds(10.0))
 
-sink = ns.PacketSinkHelper("ns3::UdpSocketFactory",
-                           ns.InetSocketAddress(ns.Ipv4Address.GetAny(), port).ConvertTo())
+#installs receiver on node 1
+sink = ns.PacketSinkHelper("ns3::UdpSocketFactory", ns.InetSocketAddress(ns.Ipv4Address.GetAny(), port).ConvertTo())
 app = sink.Install(terminals.Get(1))
 app.Start(ns.Seconds(0.0))
 
 onoff.SetAttribute("Remote", ns.AddressValue(ns.InetSocketAddress(ns.Ipv4Address("10.1.1.1"), port).ConvertTo()))
+
+#installs sender on node 3
 app = onoff.Install(terminals.Get(3))
 app.Start(ns.Seconds(1.1))
 app.Stop(ns.Seconds(10.0))
 
+#installs receiver on node 0
 app = sink.Install(terminals.Get(0))
 app.Start(ns.Seconds(0.0))
+
+#creates animation
+animFile = "openflow-switch.xml"
+anim = ns.netanim.AnimationInterface(animFile)
+
+anim.SetConstantPosition(terminals.Get(0), 100,0,0)
+anim.SetConstantPosition(terminals.Get(1), 200,0,0)
+anim.SetConstantPosition(terminals.Get(2), 0,100,0)
+anim.SetConstantPosition(terminals.Get(3), 0,200,0)
+anim.SetConstantPosition(csmaSwitch.Get(0), 150,150,0)
+
+for terminal in range(terminals.GetN()):
+    anim.UpdateNodeDescription(terminal, "ES" + str(terminal) + " " + str(addresses.GetAddress(terminal)))
+    anim.UpdateNodeSize(terminal, 3, 3)
+
+for switch in range(csmaSwitch.GetN()):
+    anim.UpdateNodeDescription(terminals.GetN() + switch, "SW" + str(switch))
+    anim.UpdateNodeSize(terminals.GetN() + switch, 3, 3)
+
+ascii = ns.network.AsciiTraceHelper()
+csmaHelper.EnableAsciiAll(ascii.CreateFileStream("openflow-switch.tr"))
+csmaHelper.EnablePcapAll("openflow-switch", False)
 
 ns.Simulator.Run()
 ns.Simulator.Destroy()
