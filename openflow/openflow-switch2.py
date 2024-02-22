@@ -8,6 +8,8 @@ from ns import ns
 
 #ns.LogComponentEnable("OpenFlowInterface", ns.LOG_LEVEL_ALL)
 #ns.LogComponentEnable("OpenFlowSwitchNetDevice", ns.LOG_LEVEL_ALL)
+ns.LogComponentEnable("UdpEchoClientApplication", ns.core.LOG_LEVEL_INFO)
+ns.LogComponentEnable("UdpEchoServerApplication", ns.core.LOG_LEVEL_INFO)
 
 print("Creating nodes")
 terminals = ns.NodeContainer()
@@ -41,30 +43,24 @@ print('Link between terminal 0 {} and switch 0 {} created'.format(terminals.Get(
 print('')
 
 print("Connecting sw0 --- sw1")
-container2 = ns.NodeContainer()
-container2.Add(switches.Get(0))
-container2.Add(switches.Get(1))
-link2 = csmaHelper.Install(container2)
-switchDevices0.Add(link2.Get(0))
-switchDevices1.Add(link2.Get(1))
+container1 = ns.NodeContainer()
+container1.Add(switches.Get(0))
+container1.Add(switches.Get(1))
+link1 = csmaHelper.Install(container1)
+switchDevices0.Add(link1.Get(0))
+switchDevices1.Add(link1.Get(1))
 print('Link between switch 0 {} and switch 1 {} created'.format(switches.Get(0), switches.Get(1)))
 print('')
 
 print("Connecting sw1 --- n1")
-container1 = ns.NodeContainer()
-container1.Add(terminals.Get(1))
-container1.Add(switches.Get(1))
-link1 = csmaHelper.Install(container1)
-terminalDevices.Add(link1.Get(0))
-switchDevices1.Add(link1.Get(1))
+container2 = ns.NodeContainer()
+container2.Add(terminals.Get(1))
+container2.Add(switches.Get(1))
+link2 = csmaHelper.Install(container2)
+terminalDevices.Add(link2.Get(0))
+switchDevices1.Add(link2.Get(1))
 print('Link between switch 1 {} and terminal 1 {} created'.format(switches.Get(1), terminals.Get(1)))
 print('')
-
-print("Populate routing tables")
-ipv4GlobalRoutingHelper = ns.Ipv4GlobalRoutingHelper()
-ipv4GlobalRoutingHelper.PopulateRoutingTables()
-print("Routing tables populated")
-print("")
 
 #create switch netdevices
 switch0 = switches.Get(0)
@@ -89,6 +85,12 @@ ipv4AddressHelper = ns.Ipv4AddressHelper()
 ipv4AddressHelper.SetBase("10.1.1.0", "255.255.255.0")
 addresses = ipv4AddressHelper.Assign(terminalDevices)
 print("IP Installed")
+print("")
+
+print("Populate routing tables")
+ipv4GlobalRoutingHelper = ns.Ipv4GlobalRoutingHelper()
+ipv4GlobalRoutingHelper.PopulateRoutingTables()
+print("Routing tables populated")
 print("")
 
 for i in range(terminals.GetN()):
@@ -127,7 +129,7 @@ app.Start(ns.Seconds(0.0))
 
 #onoff.SetAttribute("Remote", ns.AddressValue(ns.InetSocketAddress(ns.Ipv4Address("10.1.1.1"), port).ConvertTo()))
 """
-
+"""
 print("Creating destination socket")
 destinationSocket = ns.Socket.CreateSocket(terminals.Get(1), ns.UdpSocketFactory.GetTypeId())
 destinationPort = 9
@@ -143,15 +145,35 @@ sourceSocket.BindToNetDevice(terminalDevices.Get(0))
 #sourceSocket.SetRecvCallback()
 print("Sockets created")
 print("")
+"""
 
 ascii = ns.network.AsciiTraceHelper()
 csmaHelper.EnableAsciiAll(ascii.CreateFileStream("openflow-switch.tr"))
 csmaHelper.EnablePcapAll("openflow-switch", False)
 
+"""
 print("Sending packet")
-#sending packet
 packet = ns.Packet(1024)
 sourceSocket.SendTo(packet, 0, destinationAddress.ConvertTo())
+"""
+
+"""
+echoServerHelper = ns.applications.UdpEchoServerHelper(9)
+
+serverApps = echoServerHelper.Install(terminals.Get(1))
+serverApps.Start(ns.core.Seconds(1.0))
+serverApps.Stop(ns.core.Seconds(10.0))
+
+address = addresses.GetAddress(1).ConvertTo()
+echoClientHelper = ns.applications.UdpEchoClientHelper(address, 9)
+echoClientHelper.SetAttribute("MaxPackets", ns.core.UintegerValue(1))
+echoClientHelper.SetAttribute("Interval", ns.core.TimeValue(ns.core.Seconds(1.0)))
+echoClientHelper.SetAttribute("PacketSize", ns.core.UintegerValue(1024))
+
+clientApps = echoClientHelper.Install(terminals.Get(0))
+clientApps.Start(ns.core.Seconds(2.0))
+clientApps.Stop(ns.core.Seconds(10.0))
+"""
 
 print("Creating animation")
 #creates animation
