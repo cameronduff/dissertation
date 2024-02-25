@@ -36,10 +36,10 @@ void SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
 void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
 void srcSocketRecv(Ptr<Socket> socket);
 void dstSocketRecv(Ptr<Socket> socket);
-void node_fail();
 
 bool verbose = false;
 bool use_drop = false;
+
 ns3::Time timeout = ns3::Seconds(30);
 
 bool SetVerbose(std::string value)
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
     NS_LOG_INFO("Create nodes.");
     NodeContainer csmaNodes;
-    csmaNodes.Create(3);
+    csmaNodes.Create(2);
 
     NodeContainer OFSwitch;
     OFSwitch.Create(2);
@@ -75,28 +75,36 @@ int main(int argc, char *argv[])
     csma.SetChannelAttribute("DataRate", DataRateValue(5000000));
     csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
 
-    NetDeviceContainer csmaNetDevices, link;
+    NetDeviceContainer csmaNetDevices0, csmaNetDevices1, link;
     NetDeviceContainer switchDevices0, switchDevices1;
 
     // connect node0 to OFSw0
     link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitch.Get(0)));
-    csmaNetDevices.Add(link.Get(0));
+    csmaNetDevices0.Add(link.Get(0));
     switchDevices0.Add(link.Get(1));
 
     // connect node1 to OFSw1
     link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitch.Get(1)));
-    csmaNetDevices.Add(link.Get(0));
+    csmaNetDevices0.Add(link.Get(0));
     switchDevices1.Add(link.Get(1));
 
     // connect node1 to node2
-    link = csma.Install(NodeContainer(csmaNodes.Get(1), csmaNodes.Get(2)));
-    csmaNetDevices.Add(link.Get(0));
-    csmaNetDevices.Add(link.Get(1));
+    //link = csma.Install(NodeContainer(csmaNodes.Get(1), csmaNodes.Get(2)));
+    //csmaNetDevices.Add(link.Get(0));
+    //csmaNetDevices.Add(link.Get(1));
+
+    // Add internet stack to the terminals
+    InternetStackHelper internet;
+    internet.Install(csmaNodes);
 
     // connect OFSw0 to OFSw1
     link = csma.Install(NodeContainer(OFSwitch.Get(0), OFSwitch.Get(1)));
     switchDevices0.Add(link.Get(0));
     switchDevices1.Add(link.Get(1));
+
+    Ipv4AddressHelper address;
+    address.SetBase ("10.1.1.0", "255.255.255.0");
+    address.Assign (csmaNetDevices0);
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
@@ -117,24 +125,6 @@ int main(int argc, char *argv[])
         controller1->SetAttribute("ExpirationTime", TimeValue(timeout));
     OFSwHelper.Install(OFNode1, switchDevices1, controller1);
 
-    // Add internet stack to the terminals
-    InternetStackHelper internet;
-    internet.Install(csmaNodes);
-
-    Ipv4AddressHelper address;
-    address.SetBase("10.1.1.0", "255.255.255.0");
-    address.Assign(csmaNetDevices);
-
-    // print IP address of nodes
-    for (int i = 0; i < 3; i++)
-    {
-        Ptr<Node> n = csmaNodes.Get(i);
-        Ptr<Ipv4> ipv4 = n->GetObject<Ipv4>();
-        Ipv4InterfaceAddress ipv4_int_addr = ipv4->GetAddress(1, 0);
-        Ipv4Address ip_addr = ipv4_int_addr.GetLocal();
-        NS_LOG_INFO("Node: " << i << " IP Address: " << ip_addr);
-    }
-
     // create socket to destination node
     Ptr<Socket> dstSocket = Socket::CreateSocket(csmaNodes.Get(0), UdpSocketFactory::GetTypeId());
     uint16_t dstPort = 9;
@@ -148,13 +138,26 @@ int main(int argc, char *argv[])
     srcSocket[0] = Socket::CreateSocket(csmaNodes.Get(1), UdpSocketFactory::GetTypeId());
     srcSocket[0]->Bind();
     srcSocket[0]->SetRecvCallback(MakeCallback(&srcSocketRecv));
-    srcSocket[0]->BindToNetDevice (csmaNetDevices.Get(1));
+    //srcSocket[0]->BindToNetDevice (csmaNetDevices1.Get(1));
 
     LogComponentEnableAll(LOG_PREFIX_TIME);
+
+    Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper>("openflow.routes",std::ios::out);
+    for (uint32_t i = 0 ; i <csmaNodes.GetN ();i++)
+    {
+        Ptr <Node> n = csmaNodes.Get (i);
+        Ptr <Ipv4> ipv4 = n->GetObject <Ipv4> ();
+        ipv4->GetRoutingProtocol ()->PrintRoutingTable (routingStream);
+    }
 
     std::string animFile = "openflow-cpp.xml";
     // Create the animation object and configure for specified output
     AnimationInterface anim(animFile);
+
+    anim.SetConstantPosition(csmaNodes.Get(0), 100,50,0);
+    anim.SetConstantPosition(OFSwitch.Get(0), 200,100,0);
+    anim.SetConstantPosition(csmaNodes.Get(1), 100,150,0);
+    anim.SetConstantPosition(OFSwitch.Get(1), 200,200,0);
 
     Simulator::Schedule(Seconds(1), &SendStuff, srcSocket[0], dstAddr, dstPort);
 
@@ -162,12 +165,6 @@ int main(int argc, char *argv[])
     Simulator::Destroy();
 
     return 0;
-}
-
-void node_fail()
-{
-    //sw2.SetDown (2);
-    ;
 }
 
 // send packet from source
