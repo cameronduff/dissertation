@@ -93,20 +93,35 @@ int main(int argc, char *argv[])
     //csmaNetDevices.Add(link.Get(0));
     //csmaNetDevices.Add(link.Get(1));
 
-    // Add internet stack to the terminals
-    InternetStackHelper internet;
-    internet.Install(csmaNodes);
-
     // connect OFSw0 to OFSw1
     link = csma.Install(NodeContainer(OFSwitch.Get(0), OFSwitch.Get(1)));
     switchDevices0.Add(link.Get(0));
     switchDevices1.Add(link.Get(1));
 
+    // Add internet stack to the terminals
+    InternetStackHelper internet;
+    internet.Install(csmaNodes);
+    internet.Install(OFSwitch);
+
     Ipv4AddressHelper address;
     address.SetBase ("10.1.1.0", "255.255.255.0");
     address.Assign (csmaNetDevices0);
+    address.Assign (switchDevices0);
+    address.Assign (switchDevices1);
 
-    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+    //Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+
+    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+
+    Ptr <Node> n0 = csmaNodes.Get(0);
+    Ptr <Ipv4> ipv4_n0 = n0->GetObject <Ipv4> ();
+    Ptr<Ipv4StaticRouting> staticRouting_n0 = ipv4RoutingHelper.GetStaticRouting(ipv4_n0);
+    staticRouting_n0->AddHostRouteTo(Ipv4Address("10.1.1.1"), Ipv4Address("10.1.1.5"), 0, 1);
+
+    Ptr <Node> n1 = csmaNodes.Get(0);
+    Ptr <Ipv4> ipv4_n1 = n1->GetObject <Ipv4> ();
+    Ptr<Ipv4StaticRouting> staticRouting_n1 = ipv4RoutingHelper.GetStaticRouting(ipv4_n1);
+    staticRouting_n1->AddHostRouteTo(Ipv4Address("10.1.1.1"), Ipv4Address("10.1.1.3"), 0, 1);
 
     // Create the switch netdevice, which will do the packet switching
     Ptr<Node> OFNode0 = OFSwitch.Get(0);
@@ -138,11 +153,15 @@ int main(int argc, char *argv[])
     srcSocket[0] = Socket::CreateSocket(csmaNodes.Get(1), UdpSocketFactory::GetTypeId());
     srcSocket[0]->Bind();
     srcSocket[0]->SetRecvCallback(MakeCallback(&srcSocketRecv));
-    //srcSocket[0]->BindToNetDevice (csmaNetDevices1.Get(1));
+    srcSocket[0]->BindToNetDevice (csmaNetDevices0.Get(1));
 
     LogComponentEnableAll(LOG_PREFIX_TIME);
 
-    Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper>("openflow.routes",std::ios::out);
+    csma.EnablePcapAll ("openflow-switch-cpp", false);
+    AsciiTraceHelper ascii;
+    csma.EnableAsciiAll (ascii.CreateFileStream ("openflow-switch-cpp.tr"));
+
+    Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper>("openflow-cpp.routes",std::ios::out);
     for (uint32_t i = 0 ; i <csmaNodes.GetN ();i++)
     {
         Ptr <Node> n = csmaNodes.Get (i);
@@ -159,8 +178,13 @@ int main(int argc, char *argv[])
     anim.SetConstantPosition(csmaNodes.Get(1), 100,150,0);
     anim.SetConstantPosition(OFSwitch.Get(1), 200,200,0);
 
-    Simulator::Schedule(Seconds(1), &SendStuff, srcSocket[0], dstAddr, dstPort);
+    anim.UpdateNodeDescription(OFSwitch.Get(0), "SW0");
+    anim.UpdateNodeDescription(OFSwitch.Get(1), "SW1");
+    anim.UpdateNodeDescription(csmaNodes.Get(0), "ES0");
+    anim.UpdateNodeDescription(csmaNodes.Get(1), "ES1");
 
+    Simulator::Schedule(Seconds(1), &SendStuff, srcSocket[0], dstAddr, dstPort);
+    Simulator::Stop (Seconds(10));
     Simulator::Run();
     Simulator::Destroy();
 

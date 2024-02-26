@@ -109,71 +109,10 @@ for i in range(switches.GetN()):
         print('      Node {}s NetDevice {} is {}'.format(i, j, device.GetAddress()))
     print('')
 
-"""
-#sink port
-port = 9
-
-print("Installing sender on node 0")
-#installs sender on node 0
-onoff = ns.OnOffHelper("ns3::UdpSocketFactory", ns.InetSocketAddress(ns.Ipv4Address("10.1.1.2"), port).ConvertTo())
-onoff.SetConstantRate(ns.DataRate("500kb/s"))
-app = onoff.Install(terminals.Get(0))
-app.Start(ns.Seconds(1.0))
-app.Stop(ns.Seconds(10.0))
-
-print("Installing sink on node 1")
-#installs receiver on node 1
-sink = ns.PacketSinkHelper("ns3::UdpSocketFactory", ns.InetSocketAddress(ns.Ipv4Address.GetAny(), port).ConvertTo())
-app = sink.Install(terminals.Get(1))
-app.Start(ns.Seconds(0.0))
-
-#onoff.SetAttribute("Remote", ns.AddressValue(ns.InetSocketAddress(ns.Ipv4Address("10.1.1.1"), port).ConvertTo()))
-"""
-"""
-print("Creating destination socket")
-destinationSocket = ns.Socket.CreateSocket(terminals.Get(1), ns.UdpSocketFactory.GetTypeId())
-destinationPort = 9
-destinationAddress = ns.network.Ipv4Address("10.1.1.2")
-destinationLocalAddress = ns.InetSocketAddress(destinationAddress, destinationPort)
-destinationSocket.Bind(destinationLocalAddress.ConvertTo())
-#destinationSocket.SetRecvCallback()
-
-print("Creating source socket")
-sourceSocket = ns.Socket.CreateSocket(terminals.Get(0), ns.UdpSocketFactory.GetTypeId())
-sourceSocket.Bind()
-sourceSocket.BindToNetDevice(terminalDevices.Get(0))
-#sourceSocket.SetRecvCallback()
-print("Sockets created")
-print("")
-"""
 
 ascii = ns.network.AsciiTraceHelper()
 csmaHelper.EnableAsciiAll(ascii.CreateFileStream("openflow-switch.tr"))
 csmaHelper.EnablePcapAll("openflow-switch", False)
-
-"""
-print("Sending packet")
-packet = ns.Packet(1024)
-sourceSocket.SendTo(packet, 0, destinationAddress.ConvertTo())
-"""
-
-"""
-echoServerHelper = ns.applications.UdpEchoServerHelper(9)
-
-serverApps = echoServerHelper.Install(terminals.Get(1))
-serverApps.Start(ns.core.Seconds(1.0))
-serverApps.Stop(ns.core.Seconds(10.0))
-
-address = addresses.GetAddress(1).ConvertTo()
-echoClientHelper = ns.applications.UdpEchoClientHelper(address, 9)
-echoClientHelper.SetAttribute("MaxPackets", ns.core.UintegerValue(1))
-echoClientHelper.SetAttribute("Interval", ns.core.TimeValue(ns.core.Seconds(1.0)))
-echoClientHelper.SetAttribute("PacketSize", ns.core.UintegerValue(1024))
-
-clientApps = echoClientHelper.Install(terminals.Get(0))
-clientApps.Start(ns.core.Seconds(2.0))
-clientApps.Stop(ns.core.Seconds(10.0))
-"""
 
 print("Creating animation")
 #creates animation
