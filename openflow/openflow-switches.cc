@@ -103,11 +103,6 @@ int main(int argc, char *argv[])
     address.Assign(csmaNetDevices);
     address.Assign(switchDevices);
 
-    // Create the switch netdevice, which will do the packet switching
-    Ptr<Node> OFNode0 = OFSwitch.Get(0);
-    Ptr<Node> OFNode1 = OFSwitch.Get(1);
-    OpenFlowSwitchHelper OFSwHelper;
-
     //Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     
     Ipv4Address ip_n0 = (csmaNodes.Get(0)->GetObject<Ipv4>())->GetAddress(1, 0).GetLocal();
@@ -122,17 +117,16 @@ int main(int argc, char *argv[])
     ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.5"), 0, 1);
     ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(0)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("0.0.0.0"), 0, 0);  
 
+    //create the switch netdevice, which will do the packet switching
+    OpenFlowSwitchHelper OFSwitchHelper;
+
     //install controller0 for OFSw0
-    Ptr<ns3::ofi::LearningController> controller0 = CreateObject<ns3::ofi::LearningController>();
-    if (!timeout.IsZero())
-        controller0->SetAttribute("ExpirationTime", TimeValue(timeout));
-    OFSwHelper.Install(OFNode0, switchDevices, controller0);
+    Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController>();
+    OFSwitchHelper.Install(OFSwitch.Get(0), switchDevices, controller0);
 
     //install controller1 for OFSw1
-    Ptr<ns3::ofi::LearningController> controller1 = CreateObject<ns3::ofi::LearningController>();
-    if (!timeout.IsZero())
-        controller1->SetAttribute("ExpirationTime", TimeValue(timeout));
-    OFSwHelper.Install(OFNode1, switchDevices, controller1);
+    Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController>();
+    OFSwitchHelper.Install(OFSwitch.Get(1), switchDevices, controller1);
 
     //create socket to destination node
     Ptr<Socket> dstSocket = Socket::CreateSocket(csmaNodes.Get(0), UdpSocketFactory::GetTypeId());
