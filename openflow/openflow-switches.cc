@@ -32,7 +32,7 @@ using namespace std;
 
 NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
-void SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
+void SendPackets(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
 void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
 void srcSocketRecv(Ptr<Socket> socket);
 void dstSocketRecv(Ptr<Socket> socket);
@@ -75,72 +75,68 @@ int main(int argc, char *argv[])
     csma.SetChannelAttribute("DataRate", DataRateValue(5000000));
     csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
 
-    NetDeviceContainer csmaNetDevices0, csmaNetDevices1, link;
-    NetDeviceContainer switchDevices0, switchDevices1;
+    NetDeviceContainer csmaNetDevices, link;
+    NetDeviceContainer switchDevices;
 
-    // connect node0 to OFSw0
+    //connect node0 to OFSw0
     link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitch.Get(0)));
-    csmaNetDevices0.Add(link.Get(0));
-    switchDevices0.Add(link.Get(1));
+    csmaNetDevices.Add(link.Get(0));
+    switchDevices.Add(link.Get(1));
 
-    // connect node1 to OFSw1
+    //connect node1 to OFSw1
     link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitch.Get(1)));
-    csmaNetDevices0.Add(link.Get(0));
-    switchDevices1.Add(link.Get(1));
+    csmaNetDevices.Add(link.Get(0));
+    switchDevices.Add(link.Get(1));
 
-    // connect node1 to node2
-    //link = csma.Install(NodeContainer(csmaNodes.Get(1), csmaNodes.Get(2)));
-    //csmaNetDevices.Add(link.Get(0));
-    //csmaNetDevices.Add(link.Get(1));
-
-    // connect OFSw0 to OFSw1
+    //connect OFSw0 to OFSw1
     link = csma.Install(NodeContainer(OFSwitch.Get(0), OFSwitch.Get(1)));
-    switchDevices0.Add(link.Get(0));
-    switchDevices1.Add(link.Get(1));
+    switchDevices.Add(link.Get(0));
+    switchDevices.Add(link.Get(1));
 
-    // Add internet stack to the terminals
+    //add internet stack to the nodes
     InternetStackHelper internet;
     internet.Install(csmaNodes);
     internet.Install(OFSwitch);
 
     Ipv4AddressHelper address;
-    address.SetBase ("10.1.1.0", "255.255.255.0");
-    address.Assign (csmaNetDevices0);
-    address.Assign (switchDevices0);
-    address.Assign (switchDevices1);
-
-    //Ipv4GlobalRoutingHelper::PopulateRoutingTables();
-
-    Ipv4StaticRoutingHelper ipv4RoutingHelper;
-
-    Ptr <Node> n0 = csmaNodes.Get(0);
-    Ptr <Ipv4> ipv4_n0 = n0->GetObject <Ipv4> ();
-    Ptr<Ipv4StaticRouting> staticRouting_n0 = ipv4RoutingHelper.GetStaticRouting(ipv4_n0);
-    staticRouting_n0->AddHostRouteTo(Ipv4Address("10.1.1.1"), Ipv4Address("10.1.1.5"), 0, 1);
-
-    Ptr <Node> n1 = csmaNodes.Get(0);
-    Ptr <Ipv4> ipv4_n1 = n1->GetObject <Ipv4> ();
-    Ptr<Ipv4StaticRouting> staticRouting_n1 = ipv4RoutingHelper.GetStaticRouting(ipv4_n1);
-    staticRouting_n1->AddHostRouteTo(Ipv4Address("10.1.1.1"), Ipv4Address("10.1.1.3"), 0, 1);
+    address.SetBase("10.1.1.0", "255.255.255.0");
+    address.Assign(csmaNetDevices);
+    address.Assign(switchDevices);
 
     // Create the switch netdevice, which will do the packet switching
     Ptr<Node> OFNode0 = OFSwitch.Get(0);
     Ptr<Node> OFNode1 = OFSwitch.Get(1);
     OpenFlowSwitchHelper OFSwHelper;
 
-    // Install controller0 for OFSw0
+    //Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+    
+    Ipv4Address ip_n0 = (csmaNodes.Get(0)->GetObject <Ipv4> ())->GetAddress( 1, 0 ).GetLocal();
+    Ipv4Address ip_sw0 = (OFSwitch.Get(0)->GetObject <Ipv4> ())->GetAddress( 1, 0 ).GetLocal();
+    Ipv4Address ip_sw1 = (OFSwitch.Get(1)->GetObject <Ipv4> ())->GetAddress( 1, 0 ).GetLocal();
+
+    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+
+    Ptr<Ipv4StaticRouting> staticRouting_n1 = ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject <Ipv4> ());
+    Ptr<Ipv4StaticRouting> staticRouting_sw1 = ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject <Ipv4> ());
+    Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(0)->GetObject <Ipv4> ());
+
+    staticRouting_n1->AddHostRouteTo(ip_n0, ip_sw1, 0, 1);
+    staticRouting_sw1->AddHostRouteTo(ip_n0, ip_sw0, 0, 1);
+    staticRouting_sw0->AddHostRouteTo(ip_n0, ip_n0, 0, 1);    
+
+    //install controller0 for OFSw0
     Ptr<ns3::ofi::LearningController> controller0 = CreateObject<ns3::ofi::LearningController>();
     if (!timeout.IsZero())
         controller0->SetAttribute("ExpirationTime", TimeValue(timeout));
-    OFSwHelper.Install(OFNode0, switchDevices0, controller0);
+    OFSwHelper.Install(OFNode0, switchDevices, controller0);
 
-    // Install controller1 for OFSw1
+    //install controller1 for OFSw1
     Ptr<ns3::ofi::LearningController> controller1 = CreateObject<ns3::ofi::LearningController>();
     if (!timeout.IsZero())
         controller1->SetAttribute("ExpirationTime", TimeValue(timeout));
-    OFSwHelper.Install(OFNode1, switchDevices1, controller1);
+    OFSwHelper.Install(OFNode1, switchDevices, controller1);
 
-    // create socket to destination node
+    //create socket to destination node
     Ptr<Socket> dstSocket = Socket::CreateSocket(csmaNodes.Get(0), UdpSocketFactory::GetTypeId());
     uint16_t dstPort = 9;
     Ipv4Address dstAddr("10.1.1.1");
@@ -148,12 +144,12 @@ int main(int argc, char *argv[])
     dstSocket->Bind(dstLocalAddr);
     dstSocket->SetRecvCallback(MakeCallback(&dstSocketRecv));
 
-    // create socket from source node
+    //create socket from source node
     Ptr<Socket> srcSocket[1];
     srcSocket[0] = Socket::CreateSocket(csmaNodes.Get(1), UdpSocketFactory::GetTypeId());
     srcSocket[0]->Bind();
     srcSocket[0]->SetRecvCallback(MakeCallback(&srcSocketRecv));
-    srcSocket[0]->BindToNetDevice (csmaNetDevices0.Get(1));
+    srcSocket[0]->BindToNetDevice (csmaNetDevices.Get(1));
 
     LogComponentEnableAll(LOG_PREFIX_TIME);
 
@@ -161,12 +157,19 @@ int main(int argc, char *argv[])
     AsciiTraceHelper ascii;
     csma.EnableAsciiAll (ascii.CreateFileStream ("openflow-switch-cpp.tr"));
 
-    Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper>("openflow-cpp.routes",std::ios::out);
+    Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper>("openflow.routes",std::ios::out);
     for (uint32_t i = 0 ; i <csmaNodes.GetN ();i++)
     {
         Ptr <Node> n = csmaNodes.Get (i);
         Ptr <Ipv4> ipv4 = n->GetObject <Ipv4> ();
-        ipv4->GetRoutingProtocol ()->PrintRoutingTable (routingStream);
+        ipv4->GetRoutingProtocol()->PrintRoutingTable(routingStream);
+    }
+
+    for (uint32_t i = 0 ; i <OFSwitch.GetN ();i++)
+    {
+        Ptr <Node> n = OFSwitch.Get (i);
+        Ptr <Ipv4> ipv4 = n->GetObject <Ipv4> ();
+        ipv4->GetRoutingProtocol()->PrintRoutingTable(routingStream);
     }
 
     std::string animFile = "openflow-cpp.xml";
@@ -183,7 +186,7 @@ int main(int argc, char *argv[])
     anim.UpdateNodeDescription(csmaNodes.Get(0), "ES0");
     anim.UpdateNodeDescription(csmaNodes.Get(1), "ES1");
 
-    Simulator::Schedule(Seconds(1), &SendStuff, srcSocket[0], dstAddr, dstPort);
+    Simulator::Schedule(Seconds(1), &SendPackets, srcSocket[0], dstAddr, dstPort);
     Simulator::Stop (Seconds(10));
     Simulator::Run();
     Simulator::Destroy();
@@ -192,7 +195,7 @@ int main(int argc, char *argv[])
 }
 
 // send packet from source
-void SendStuff(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port)
+void SendPackets(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port)
 {
     NS_LOG_INFO("In SendStuff");
     Ptr<Packet> p = Create<Packet>(reinterpret_cast<const uint8_t *>("hello"), 5); // Send hello msg to dst
