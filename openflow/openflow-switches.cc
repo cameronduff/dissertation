@@ -110,19 +110,17 @@ int main(int argc, char *argv[])
 
     //Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     
-    Ipv4Address ip_n0 = (csmaNodes.Get(0)->GetObject <Ipv4> ())->GetAddress( 1, 0 ).GetLocal();
-    Ipv4Address ip_sw0 = (OFSwitch.Get(0)->GetObject <Ipv4> ())->GetAddress( 1, 0 ).GetLocal();
-    Ipv4Address ip_sw1 = (OFSwitch.Get(1)->GetObject <Ipv4> ())->GetAddress( 1, 0 ).GetLocal();
+    Ipv4Address ip_n0 = (csmaNodes.Get(0)->GetObject<Ipv4>())->GetAddress(1, 0).GetLocal();
+    Ipv4Address ip_sw0 = (OFSwitch.Get(0)->GetObject<Ipv4>())->GetAddress(1, 0).GetLocal();
+    Ipv4Address ip_sw1 = (OFSwitch.Get(1)->GetObject<Ipv4>())->GetAddress(1, 0).GetLocal();
 
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
 
-    Ptr<Ipv4StaticRouting> staticRouting_n1 = ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject <Ipv4> ());
-    Ptr<Ipv4StaticRouting> staticRouting_sw1 = ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject <Ipv4> ());
-    Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(0)->GetObject <Ipv4> ());
-
-    staticRouting_n1->AddHostRouteTo(ip_n0, ip_sw1, 0, 1);
-    staticRouting_sw1->AddHostRouteTo(ip_n0, ip_sw0, 0, 1);
-    staticRouting_sw0->AddHostRouteTo(ip_n0, ip_n0, 0, 1);    
+    ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, ip_sw1, 0, 2);
+    ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.6"), 0, 2);
+    ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, ip_sw0, 0, 1);
+    ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.5"), 0, 1);
+    ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(0)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("0.0.0.0"), 0, 0);  
 
     //install controller0 for OFSw0
     Ptr<ns3::ofi::LearningController> controller0 = CreateObject<ns3::ofi::LearningController>();
@@ -153,29 +151,21 @@ int main(int argc, char *argv[])
 
     LogComponentEnableAll(LOG_PREFIX_TIME);
 
+    //print traces
     csma.EnablePcapAll ("openflow-switch-cpp", false);
     AsciiTraceHelper ascii;
     csma.EnableAsciiAll (ascii.CreateFileStream ("openflow-switch-cpp.tr"));
 
+    //print routing tables
     Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper>("openflow.routes",std::ios::out);
-    for (uint32_t i = 0 ; i <csmaNodes.GetN ();i++)
-    {
-        Ptr <Node> n = csmaNodes.Get (i);
-        Ptr <Ipv4> ipv4 = n->GetObject <Ipv4> ();
-        ipv4->GetRoutingProtocol()->PrintRoutingTable(routingStream);
-    }
-
-    for (uint32_t i = 0 ; i <OFSwitch.GetN ();i++)
-    {
-        Ptr <Node> n = OFSwitch.Get (i);
-        Ptr <Ipv4> ipv4 = n->GetObject <Ipv4> ();
-        ipv4->GetRoutingProtocol()->PrintRoutingTable(routingStream);
-    }
+    csmaNodes.Get(1)->GetObject<Ipv4>()->GetRoutingProtocol()->PrintRoutingTable(routingStream);
+    OFSwitch.Get(1)->GetObject<Ipv4>()->GetRoutingProtocol()->PrintRoutingTable(routingStream);
+    OFSwitch.Get(0)->GetObject<Ipv4>()->GetRoutingProtocol()->PrintRoutingTable(routingStream);
+    csmaNodes.Get(0)->GetObject<Ipv4>()->GetRoutingProtocol()->PrintRoutingTable(routingStream);
 
     std::string animFile = "openflow-cpp.xml";
-    // Create the animation object and configure for specified output
+    //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
-
     anim.SetConstantPosition(csmaNodes.Get(0), 100,50,0);
     anim.SetConstantPosition(OFSwitch.Get(0), 200,100,0);
     anim.SetConstantPosition(csmaNodes.Get(1), 100,150,0);
@@ -183,8 +173,8 @@ int main(int argc, char *argv[])
 
     anim.UpdateNodeDescription(OFSwitch.Get(0), "SW0");
     anim.UpdateNodeDescription(OFSwitch.Get(1), "SW1");
-    anim.UpdateNodeDescription(csmaNodes.Get(0), "ES0");
-    anim.UpdateNodeDescription(csmaNodes.Get(1), "ES1");
+    anim.UpdateNodeDescription(csmaNodes.Get(0), "N0");
+    anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
 
     Simulator::Schedule(Seconds(1), &SendPackets, srcSocket[0], dstAddr, dstPort);
     Simulator::Stop (Seconds(10));
