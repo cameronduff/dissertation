@@ -4,8 +4,8 @@
 // n1 connects to n2 via p2p channel
 //
 //
-// csma csma csma csma
-// n0 ------- OFSw0 -------- OFSw1 ---------- n1 ------ n2
+//     csma           csma            csma
+// n0 ------- OFSw0 -------- OFSw1 ---------- n1
 //            Contr0         Contr1
 //
 // - If order of adding nodes and netdevices is kept:
