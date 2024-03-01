@@ -6,7 +6,7 @@
 //
 // csma csma csma csma
 // n0 ------- OFSw0 -------- OFSw1 ---------- n1 ------ n2
-// Contr0 Contr1
+//            Contr0         Contr1
 //
 // - If order of adding nodes and netdevices is kept:
 // n0 = 00:00:00;00:00:01, n1 = 00:00:00:00:00:03, n3 = 00:00:00:00:00:07
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
 
     Simulator::Schedule(Seconds(1), &SendPackets, srcSocket[0], dstAddr, dstPort);
-    Simulator::Stop (Seconds(10));
+    Simulator::Stop (Seconds(20));
     Simulator::Run();
     Simulator::Destroy();
 
@@ -215,8 +215,6 @@ void dstSocketRecv(Ptr<Socket> socket)
     uint8_t buf[packet->GetSize()];                    // Create storage for pkt data
     packet->CopyData(buf, packet->GetSize());          // Dump pkt data in buf
     InetSocketAddress ipAddress = InetSocketAddress::ConvertFrom(from);
-    NS_LOG_INFO("Destination Received signal " << buf << " from " << ipAddress.GetIpv4());
-    NS_LOG_INFO("Triggering packet back to source node's interface 1");
 
     double alpha(1.0);
     string alpha_str;
