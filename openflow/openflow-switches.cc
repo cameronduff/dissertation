@@ -112,14 +112,15 @@ int main(int argc, char *argv[])
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
 
     ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, ip_sw1, 0, 2);
-    ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.6"), 0, 2);
+    //ipv4RoutingHelper.GetStaticRouting(csmaNodes.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.6"), 0, 2);
     ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, ip_sw0, 0, 1);
-    ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.5"), 0, 1);
-    ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(0)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("0.0.0.0"), 0, 0);  
+    //ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(1)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("10.1.1.5"), 0, 1);
+    //ipv4RoutingHelper.GetStaticRouting(OFSwitch.Get(0)->GetObject<Ipv4>())->AddHostRouteTo(ip_n0, Ipv4Address("0.0.0.0"), 0, 0);  
 
     //create the switch netdevice, which will do the packet switching
     OpenFlowSwitchHelper OFSwitchHelper;
 
+    /*
     //install controller0 for OFSw0
     Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController>();
     OFSwitchHelper.Install(OFSwitch.Get(0), switchDevices, controller0);
@@ -127,6 +128,16 @@ int main(int argc, char *argv[])
     //install controller1 for OFSw1
     Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController>();
     OFSwitchHelper.Install(OFSwitch.Get(1), switchDevices, controller1);
+    
+    
+    //install controller0 for OFSw0
+    Ptr<ns3::ofi::Controller> controller0 = CreateObject<ns3::ofi::Controller>();
+    OFSwitchHelper.Install(OFSwitch.Get(0), switchDevices);
+
+    //install controller1 for OFSw1
+    Ptr<ns3::ofi::Controller> controller1 = CreateObject<ns3::ofi::Controller>();
+    OFSwitchHelper.Install(OFSwitch.Get(1), switchDevices);
+    */
 
     //create socket to destination node
     Ptr<Socket> dstSocket = Socket::CreateSocket(csmaNodes.Get(0), UdpSocketFactory::GetTypeId());
@@ -141,9 +152,7 @@ int main(int argc, char *argv[])
     srcSocket[0] = Socket::CreateSocket(csmaNodes.Get(1), UdpSocketFactory::GetTypeId());
     srcSocket[0]->Bind();
     srcSocket[0]->SetRecvCallback(MakeCallback(&srcSocketRecv));
-    srcSocket[0]->BindToNetDevice (csmaNetDevices.Get(1));
-
-    LogComponentEnableAll(LOG_PREFIX_TIME);
+    srcSocket[0]->BindToNetDevice(csmaNetDevices.Get(1));
 
     //print traces
     csma.EnablePcapAll ("openflow-switch-cpp", false);
