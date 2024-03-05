@@ -9,6 +9,8 @@
 #include "ns3/internet-module.h"
 #include "ns3/netanim-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/flow-monitor.h"
+#include "ns3/flow-monitor-helper.h"
 #include "ns3/openflow-module.h"
 #include "ns3/log.h"
 #include "ns3/point-to-point-module.h"
@@ -139,6 +141,11 @@ int main(int argc, char *argv[]){
 
     LogComponentEnableAll (LOG_PREFIX_TIME);
 
+    // Flow monitor
+    Ptr<FlowMonitor> flowMonitor;
+    FlowMonitorHelper flowHelper;
+    flowMonitor = flowHelper.InstallAll();
+
     csma.EnablePcapAll ("openflow-switch", false);
     AsciiTraceHelper ascii;
     csma.EnableAsciiAll (ascii.CreateFileStream ("openflow.tr"));
@@ -168,9 +175,11 @@ int main(int argc, char *argv[]){
     csmaNodes.Get(1)->GetObject<Ipv4>()->GetRoutingProtocol()->PrintRoutingTable(routingStream);
     csmaNodes.Get(0)->GetObject<Ipv4>()->GetRoutingProtocol()->PrintRoutingTable(routingStream);
 
-    //Simulator::Stop (Seconds(20));
-    Simulator::Run ();
-    Simulator::Destroy ();
+    Simulator::Stop(Seconds(20));
+    Simulator::Run();
+    Simulator::Destroy();
+
+    flowMonitor->SerializeToXmlFile("metrics.xml", true, true);
 
     return 0;
 }
