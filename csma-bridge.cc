@@ -29,6 +29,7 @@
 // - Tracing of queues and packet receptions to file "csma-bridge.tr"
 
 #include "ns3/applications-module.h"
+#include "ns3/netanim-module.h"
 #include "ns3/bridge-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
@@ -159,6 +160,10 @@ main(int argc, char* argv[])
     // display timestamps correctly)
     //
     csma.EnablePcapAll("csma-bridge", false);
+
+    std::string animFile = "csma-bridge.xml";
+    //create the animation object and configure for specified output
+    AnimationInterface anim(animFile);
 
     //
     // Now, do the actual simulation.

@@ -14,13 +14,15 @@
 #include "ns3/log.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/csma-module.h"
+#include "ns3/ipv4.h"
 
 using namespace ns3;
 using namespace std;
 
 NS_LOG_COMPONENT_DEFINE ("OpenFlowUDP");
 
-// Function definitions to send a receive packets
+// Function definitions to send a receive packets#include "ns3/netanim-module.h"
+
 void SendPacket (Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
 void BindSock (Ptr<Socket> sock, Ptr<NetDevice> netdev);
 void srcSocketRecv (Ptr<Socket> socket);
@@ -109,13 +111,13 @@ int main(int argc, char *argv[]){
     OpenFlowSwitchHelper OFSwHelper;
 
     // Install controller0 for OFSw0
-    Ptr<ns3::ofi::LearningController> controller0 = CreateObject<ns3::ofi::LearningController> ();
-    if (!timeout.IsZero()) controller0->SetAttribute("ExpirationTime", TimeValue(timeout));
+    Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController> ();
+    //if (!timeout.IsZero()) controller0->SetAttribute("ExpirationTime", TimeValue(timeout));
     OFSwHelper.Install (OFNode0, OFSwitchDevices, controller0);
 
     // Install controller1 for OFSw1
-    Ptr<ns3::ofi::LearningController> controller1 = CreateObject<ns3::ofi::LearningController> ();
-    if (!timeout.IsZero ()) controller1->SetAttribute ("ExpirationTime", TimeValue (timeout));
+    Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController> ();
+    //if (!timeout.IsZero ()) controller1->SetAttribute ("ExpirationTime", TimeValue (timeout));
     OFSwHelper.Install (OFNode1, OFSwitchDevices, controller1);
 
     NS_LOG_INFO("Create application");
@@ -131,7 +133,7 @@ int main(int argc, char *argv[]){
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(csmaNodes.Get(1));
+    app = sink.Install(OFSwitches.Get(1));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
