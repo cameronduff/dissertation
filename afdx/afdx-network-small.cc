@@ -118,5 +118,35 @@ int main(int argc, char *argv[]){
     if (!timeout.IsZero ()) controller1->SetAttribute ("ExpirationTime", TimeValue (timeout));
     OFSwHelper.Install (OFNode1, OFSwitchDevices, controller1);
 
+
+    NS_LOG_INFO("Installing Flow Monitor");
+    Ptr<FlowMonitor> flowMonitor;
+    FlowMonitorHelper flowHelper;
+    flowMonitor = flowHelper.InstallAll();
+
+    NS_LOG_INFO("Enabling tracing");
+    csma.EnablePcapAll ("afdx-small", false);
+    AsciiTraceHelper ascii;
+    csma.EnableAsciiAll (ascii.CreateFileStream ("afdx-small.tr"));
+
+    NS_LOG_INFO("Enabling animation");
+    std::string animFile = "afdx-small.xml";
+    //create the animation object and configure for specified output
+    AnimationInterface anim(animFile);
+
+    anim.EnablePacketMetadata();
+    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
+    anim.EnableIpv4RouteTracking("afdx-animTracing", Seconds(0), Seconds(10), Seconds(1));
+
+    anim.SetConstantPosition(csmaNodes.Get(0), 50,50,0);
+    anim.SetConstantPosition(OFSwitches.Get(0), 150,100,0);
+    anim.SetConstantPosition(OFSwitches.Get(1), 150,150,0);
+    anim.SetConstantPosition(csmaNodes.Get(1), 250,200,0);
+
+    anim.UpdateNodeDescription(csmaNodes.Get(0), "N0");
+    anim.UpdateNodeDescription(OFSwitches.Get(0), "SW0");
+    anim.UpdateNodeDescription(OFSwitches.Get(1), "SW1");
+    anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
+
     return 0;
 }
