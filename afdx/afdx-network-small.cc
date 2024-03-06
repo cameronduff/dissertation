@@ -90,6 +90,15 @@ int main(int argc, char *argv[]){
     internet.Install(OFSwitches);
 
     NS_LOG_INFO("Assign IP Addresses");
+    Ipv4AddressHelper address;
+    address.SetBase("10.1.1.0", "255.255.255.0");
+    address.Assign(csmaNetDevicesLeft);
+
+    address.SetBase("10.1.2.0", "255.255.255.0");
+    address.Assign(csmaNetDevicesRight);
+
+    address.SetBase("10.1.3.0", "255.255.255.0");
+    address.Assign(OFSwitchDevices);
 
     return 0;
 }
