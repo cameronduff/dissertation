@@ -156,7 +156,7 @@ int main(int argc, char *argv[]){
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(OFSwitches.Get(1));
+    app = sink.Install(OFSwitches.Get(0));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
