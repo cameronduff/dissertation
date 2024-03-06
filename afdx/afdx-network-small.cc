@@ -42,9 +42,6 @@ SetVerbose (std::string value)
 
 int main(int argc, char *argv[]){
     CommandLine cmd;
-    //cmd.AddValue ("v", "Verbose (turns on logging).", MakeCallback (&SetVerbose));
-    //cmd.AddValue ("verbose", "Verbose (turns on logging).", MakeCallback (&SetVerbose));
-
     cmd.Parse (argc, argv);
 
     if (verbose)
@@ -103,7 +100,29 @@ int main(int argc, char *argv[]){
     address.Assign(OFSwitchDevices);
 
     NS_LOG_INFO("Populate routing tables");
-    Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+
+    NS_LOG_INFO("CSMA NetDevices:");
+    for(uint32_t i = 0; i<csmaNodes.GetN(); i++){
+      Ptr<Node> node = csmaNodes.Get(i);
+      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4> ();
+      NS_LOG_INFO("***** Node: " << ipv4->GetAddress(1,0) << " " << i << " has " << node->GetNDevices() << " NetDevices");
+      for(uint32_t j = 0; j<node->GetNDevices(); j++){
+        Ptr<NetDevice> device = node->GetDevice(j);
+        NS_LOG_INFO("********** " << device->GetAddress());
+      }
+    }
+
+    NS_LOG_INFO("OFSwitch NetDevices:");
+    for(uint32_t i = 0; i<OFSwitches.GetN(); i++){
+      Ptr<Node> node = OFSwitches.Get(i);
+      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4> ();
+      NS_LOG_INFO("***** Switch: " << ipv4->GetAddress(1,0) << " " << i << " has " << node->GetNDevices() << " NetDevices");
+      for(uint32_t j = 0; j<node->GetNDevices(); j++){
+        Ptr<NetDevice> device = node->GetDevice(j);
+        NS_LOG_INFO("********** " << device->GetAddress());
+      }
+    }
 
     NS_LOG_INFO("Add controllers to switches");
     Ptr<Node> OFNode0 = OFSwitches.Get(0);
@@ -112,28 +131,26 @@ int main(int argc, char *argv[]){
 
     // Install controller0 for OFSw0
     Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController> ();
-    //if (!timeout.IsZero()) controller0->SetAttribute("ExpirationTime", TimeValue(timeout));
-    OFSwHelper.Install (OFNode0, OFSwitchDevices, controller0);
+    OFSwHelper.Install(OFNode0, OFSwitchDevices, controller0);
 
     // Install controller1 for OFSw1
     Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController> ();
-    //if (!timeout.IsZero ()) controller1->SetAttribute ("ExpirationTime", TimeValue (timeout));
-    OFSwHelper.Install (OFNode1, OFSwitchDevices, controller1);
+    OFSwHelper.Install(OFNode1, OFSwitchDevices, controller1);
 
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port (RFC 863)
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
-    ApplicationContainer app = onoff.Install(csmaNodes.Get(0));
+    ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
     // Start the application
     app.Start(Seconds(1.0));
     app.Stop(Seconds(20.0));
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(OFSwitches.Get(1));
+    app = sink.Install(OFSwitches.Get(0));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
