@@ -67,5 +67,29 @@ int main(int argc, char *argv[]){
 
     NetDeviceContainer csmaNetDevicesLeft, csmaNetDevicesRight, link, OFSwitchDevices;
 
+    NS_LOG_INFO("Connect Devices");
+
+    //connect n0 to OFSw0
+    link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitches.Get(0)));
+    csmaNetDevicesLeft.Add(link.Get(0));
+    csmaNetDevicesLeft.Add(link.Get(1));
+
+    //connect n1 to OFSw1
+    link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitches.Get(1)));
+    csmaNetDevicesRight.Add(link.Get(0));
+    csmaNetDevicesRight.Add(link.Get(1));
+
+    //connect OFSw0 to OFSw1
+    link = csma.Install(NodeContainer(OFSwitches.Get(0), OFSwitches.Get(1)));
+    OFSwitchDevices.Add(link.Get(0));
+    OFSwitchDevices.Add(link.Get(1));
+
+    NS_LOG_INFO("Add IP to nodes");
+    InternetStackHelper internet;
+    internet.Install(csmaNodes);
+    internet.Install(OFSwitches);
+
+    NS_LOG_INFO("Assign IP Addresses");
+
     return 0;
 }
