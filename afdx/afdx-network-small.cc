@@ -146,17 +146,17 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port (RFC 863)
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
-    ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
+    ApplicationContainer app = onoff.Install(csmaNodes.Get(0));
     // Start the application
     app.Start(Seconds(1.0));
     app.Stop(Seconds(20.0));
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(OFSwitches.Get(0));
+    app = sink.Install(OFSwitches.Get(1));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
