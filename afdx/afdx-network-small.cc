@@ -56,18 +56,18 @@ int main(int argc, char *argv[]){
     NodeContainer csmaNodes;
     csmaNodes.Create(2);
 
-    NS_LOG_INFO("Create OpenFlow Switches");
+    NS_LOG_INFO("Create OpenFlow switches");
     NodeContainer OFSwitches;
     OFSwitches.Create(2);
 
-    NS_LOG_INFO("Build Topology");
+    NS_LOG_INFO("Build topology");
     CsmaHelper csma;
     csma.SetChannelAttribute("DataRate", DataRateValue(5000000));
     csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
 
     NetDeviceContainer csmaNetDevicesLeft, csmaNetDevicesRight, link, OFSwitchDevices;
 
-    NS_LOG_INFO("Connect Devices");
+    NS_LOG_INFO("Connect devices");
 
     //connect n0 to OFSw0
     link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitches.Get(0)));
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
     internet.Install(csmaNodes);
     internet.Install(OFSwitches);
 
-    NS_LOG_INFO("Assign IP Addresses");
+    NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");
     address.Assign(csmaNetDevicesLeft);
@@ -99,6 +99,24 @@ int main(int argc, char *argv[]){
 
     address.SetBase("10.1.3.0", "255.255.255.0");
     address.Assign(OFSwitchDevices);
+
+    NS_LOG_INFO("Populate routing tables");
+    Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+
+    NS_LOG_INFO("Add controllers to switches");
+    Ptr<Node> OFNode0 = OFSwitches.Get(0);
+    Ptr<Node> OFNode1 = OFSwitches.Get(1);
+    OpenFlowSwitchHelper OFSwHelper;
+
+    // Install controller0 for OFSw0
+    Ptr<ns3::ofi::LearningController> controller0 = CreateObject<ns3::ofi::LearningController> ();
+    if (!timeout.IsZero()) controller0->SetAttribute("ExpirationTime", TimeValue(timeout));
+    OFSwHelper.Install (OFNode0, OFSwitchDevices, controller0);
+
+    // Install controller1 for OFSw1
+    Ptr<ns3::ofi::LearningController> controller1 = CreateObject<ns3::ofi::LearningController> ();
+    if (!timeout.IsZero ()) controller1->SetAttribute ("ExpirationTime", TimeValue (timeout));
+    OFSwHelper.Install (OFNode1, OFSwitchDevices, controller1);
 
     return 0;
 }
