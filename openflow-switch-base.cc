@@ -101,6 +101,7 @@ int main(int argc, char *argv[]){
     address.SetBase ("10.1.2.0", "255.255.255.0");
     address.Assign (csmaNetDevices1);
 
+    //add static route from n0 to n1
     Ptr <Node> n0 = csmaNodes.Get(0);
     Ptr <Ipv4> ipv4 = n0->GetObject <Ipv4> ();
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
@@ -154,11 +155,15 @@ int main(int argc, char *argv[]){
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
 
+    anim.EnablePacketMetadata();
+    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
+    anim.EnableIpv4RouteTracking("Openflow-AnimTracing", Seconds(0), Seconds(10), Seconds(1));
+
     anim.SetConstantPosition(csmaNodes.Get(0), 50,50,0);
-    anim.SetConstantPosition(OFSwitch.Get(0), 100,50,0);
-    anim.SetConstantPosition(OFSwitch.Get(1), 150,50,0);
-    anim.SetConstantPosition(csmaNodes.Get(1), 200,50,0);
-    anim.SetConstantPosition(csmaNodes.Get(2), 250,50,0);
+    anim.SetConstantPosition(OFSwitch.Get(0), 150,100,0);
+    anim.SetConstantPosition(OFSwitch.Get(1), 150,150,0);
+    anim.SetConstantPosition(csmaNodes.Get(1), 250,200,0);
+    anim.SetConstantPosition(csmaNodes.Get(2), 250,250,0);
 
     anim.UpdateNodeDescription(csmaNodes.Get(0), "N0");
     anim.UpdateNodeDescription(OFSwitch.Get(0), "SW0");

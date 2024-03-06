@@ -141,8 +141,14 @@ main(int argc, char* argv[])
     // Set the bounding box for animation
     star.BoundingBox(1, 1, 100, 100);
 
+    pointToPoint.EnablePcapAll("star", false);
+
     // Create the animation object and configure for specified output
     AnimationInterface anim(animFile);
+
+    anim.EnablePacketMetadata();
+    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
+    anim.EnableIpv4RouteTracking("Star-AnimTracing", Seconds(0), Seconds(10), Seconds(1));
 
     NS_LOG_INFO("Run Simulation.");
     Simulator::Run();
