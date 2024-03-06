@@ -119,6 +119,24 @@ int main(int argc, char *argv[]){
     OFSwHelper.Install (OFNode1, OFSwitchDevices, controller1);
 
 
+
+
+    NS_LOG_INFO("Create application");
+    uint16_t port = 9; // Discard port (RFC 863)
+
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
+    onoff.SetConstantRate(DataRate("500kb/s"));
+
+    ApplicationContainer app = onoff.Install(csmaNodes.Get(0));
+    // Start the application
+    app.Start(Seconds(1.0));
+    app.Stop(Seconds(20.0));
+
+    // Create an optional packet sink to receive these packets
+    PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
+    app = sink.Install(csmaNodes.Get(1));
+    app.Start(Seconds(0.0));
+
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
@@ -136,7 +154,7 @@ int main(int argc, char *argv[]){
 
     anim.EnablePacketMetadata();
     anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
-    anim.EnableIpv4RouteTracking("afdx-animTracing", Seconds(0), Seconds(10), Seconds(1));
+    anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(10), Seconds(1));
 
     anim.SetConstantPosition(csmaNodes.Get(0), 50,50,0);
     anim.SetConstantPosition(OFSwitches.Get(0), 150,100,0);
@@ -147,6 +165,10 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(OFSwitches.Get(0), "SW0");
     anim.UpdateNodeDescription(OFSwitches.Get(1), "SW1");
     anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
+
+    Simulator::Stop (Seconds(20));
+    Simulator::Run();
+    Simulator::Destroy();
 
     return 0;
 }
