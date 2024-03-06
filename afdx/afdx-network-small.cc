@@ -118,9 +118,6 @@ int main(int argc, char *argv[]){
     if (!timeout.IsZero ()) controller1->SetAttribute ("ExpirationTime", TimeValue (timeout));
     OFSwHelper.Install (OFNode1, OFSwitchDevices, controller1);
 
-
-
-
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port (RFC 863)
 
