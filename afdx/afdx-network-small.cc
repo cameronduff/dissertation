@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
 
     NS_LOG_INFO("Creating nodes");
     NodeContainer csmaNodes;
-    csmaNodes.Create(2);
+    csmaNodes.Create(6);
 
     NS_LOG_INFO("Create OpenFlow switches");
     NodeContainer OFSwitches;
@@ -72,22 +72,36 @@ int main(int argc, char *argv[]){
     link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitches.Get(0)));
     csmaNetDevicesLeft.Add(link.Get(0));
     csmaNetDevicesLeft.Add(link.Get(1));
-    NS_LOG_INFO(link.Get(0)->GetAddress());
-    NS_LOG_INFO(link.Get(1)->GetAddress());
 
-    //connect n1 to OFSw1
-    link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitches.Get(1)));
+    //connect n1 to OFSw0
+    link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitches.Get(0)));
+    csmaNetDevicesLeft.Add(link.Get(0));
+    csmaNetDevicesLeft.Add(link.Get(1));
+
+    //connect n2 to OFSw0
+    link = csma.Install(NodeContainer(csmaNodes.Get(2), OFSwitches.Get(0)));
+    csmaNetDevicesLeft.Add(link.Get(0));
+    csmaNetDevicesLeft.Add(link.Get(1));
+
+    //connect n3 to OFSw1
+    link = csma.Install(NodeContainer(csmaNodes.Get(3), OFSwitches.Get(1)));
     csmaNetDevicesRight.Add(link.Get(0));
     csmaNetDevicesRight.Add(link.Get(1));
-    NS_LOG_INFO(link.Get(0)->GetAddress());
-    NS_LOG_INFO(link.Get(1)->GetAddress());
+
+    //connect n4 to OFSw1
+    link = csma.Install(NodeContainer(csmaNodes.Get(4), OFSwitches.Get(1)));
+    csmaNetDevicesRight.Add(link.Get(0));
+    csmaNetDevicesRight.Add(link.Get(1));
+
+    //connect n5 to OFSw1
+    link = csma.Install(NodeContainer(csmaNodes.Get(5), OFSwitches.Get(1)));
+    csmaNetDevicesRight.Add(link.Get(0));
+    csmaNetDevicesRight.Add(link.Get(1));
 
     //connect OFSw0 to OFSw1
     link = csma.Install(NodeContainer(OFSwitches.Get(1), OFSwitches.Get(0)));
     OFSwitchDevices.Add(link.Get(0));
     OFSwitchDevices.Add(link.Get(1));
-    NS_LOG_INFO(link.Get(0)->GetAddress());
-    NS_LOG_INFO(link.Get(1)->GetAddress());
 
     NS_LOG_INFO("Add IP to nodes");
     InternetStackHelper internet;
@@ -138,7 +152,7 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
 
-    OnOffHelper onoff("ns3::TcpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
     ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
@@ -148,7 +162,7 @@ int main(int argc, char *argv[]){
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(csmaNodes.Get(0));
+    app = sink.Install(csmaNodes.Get(3));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
@@ -171,14 +185,27 @@ int main(int argc, char *argv[]){
     anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(10), Seconds(1));
 
     anim.SetConstantPosition(csmaNodes.Get(0), 50,100,0);
-    anim.SetConstantPosition(OFSwitches.Get(0), 150,125,0);
-    anim.SetConstantPosition(OFSwitches.Get(1), 200,125,0);
-    anim.SetConstantPosition(csmaNodes.Get(1), 250,100,0);
+    anim.SetConstantPosition(csmaNodes.Get(1), 50,125,0);
+    anim.SetConstantPosition(csmaNodes.Get(2), 50,150,0);
+
+    anim.SetConstantPosition(OFSwitches.Get(0), 100,125,0);
+    anim.SetConstantPosition(OFSwitches.Get(1), 150,125,0);
+
+    anim.SetConstantPosition(csmaNodes.Get(3), 200,100,0);
+    anim.SetConstantPosition(csmaNodes.Get(4), 200,125,0);
+    anim.SetConstantPosition(csmaNodes.Get(5), 200,150,0);
+
 
     anim.UpdateNodeDescription(csmaNodes.Get(0), "N0");
+    anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
+    anim.UpdateNodeDescription(csmaNodes.Get(2), "N2");
+
     anim.UpdateNodeDescription(OFSwitches.Get(0), "SW0");
     anim.UpdateNodeDescription(OFSwitches.Get(1), "SW1");
-    anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
+
+    anim.UpdateNodeDescription(csmaNodes.Get(3), "N3");
+    anim.UpdateNodeDescription(csmaNodes.Get(4), "N4");
+    anim.UpdateNodeDescription(csmaNodes.Get(5), "N5");
 
     Simulator::Stop(Seconds(40));
     Simulator::Run();
