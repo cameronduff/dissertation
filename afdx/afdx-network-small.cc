@@ -64,28 +64,28 @@ int main(int argc, char *argv[]){
     csma.SetChannelAttribute("DataRate", DataRateValue(5000000));
     csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
 
-    NetDeviceContainer csmaNetDevicesLeft, csmaNetDevicesRight, link, OFSwitchDevices;
+    NetDeviceContainer netDevices, link;
 
     NS_LOG_INFO("Connect devices");
 
     //connect n0 to OFSw0
     link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitches.Get(0)));
-    csmaNetDevicesLeft.Add(link.Get(0));
-    csmaNetDevicesLeft.Add(link.Get(1));
+    netDevices.Add(link.Get(0));
+    netDevices.Add(link.Get(1));
     NS_LOG_INFO(link.Get(0)->GetAddress());
     NS_LOG_INFO(link.Get(1)->GetAddress());
 
     //connect n1 to OFSw1
     link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitches.Get(1)));
-    csmaNetDevicesRight.Add(link.Get(0));
-    csmaNetDevicesRight.Add(link.Get(1));
+    netDevices.Add(link.Get(0));
+    netDevices.Add(link.Get(1));
     NS_LOG_INFO(link.Get(0)->GetAddress());
     NS_LOG_INFO(link.Get(1)->GetAddress());
 
     //connect OFSw0 to OFSw1
     link = csma.Install(NodeContainer(OFSwitches.Get(0), OFSwitches.Get(1)));
-    OFSwitchDevices.Add(link.Get(0));
-    OFSwitchDevices.Add(link.Get(1));
+    netDevices.Add(link.Get(0));
+    netDevices.Add(link.Get(1));
     NS_LOG_INFO(link.Get(0)->GetAddress());
     NS_LOG_INFO(link.Get(1)->GetAddress());
 
@@ -97,13 +97,7 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.1.0", "255.255.255.0");
-    address.Assign(csmaNetDevicesLeft);
-
-    address.SetBase("10.1.2.0", "255.255.255.0");
-    address.Assign(csmaNetDevicesRight);
-
-    address.SetBase("10.1.3.0", "255.255.255.0");
-    address.Assign(OFSwitchDevices);
+    address.Assign(netDevices);
 
     //add static route from OFSw0 to OFSw1
     Ptr <Node> switch0 = OFSwitches.Get(0);
@@ -144,16 +138,16 @@ int main(int argc, char *argv[]){
 
     // Install controller0 for OFSw0
     Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController>();
-    OFSwHelper.Install(OFNode0, OFSwitchDevices, controller0);
+    OFSwHelper.Install(OFNode0, netDevices, controller0);
 
     // Install controller1 for OFSw1
     Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController>();
-    OFSwHelper.Install(OFNode1, OFSwitchDevices, controller1);
+    OFSwHelper.Install(OFNode1, netDevices, controller1);
 
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.3"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
     ApplicationContainer app = onoff.Install(csmaNodes.Get(0));
