@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
+    OnOffHelper onoff("ns3::TcpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
     ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
@@ -170,10 +170,10 @@ int main(int argc, char *argv[]){
     anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
     anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(10), Seconds(1));
 
-    anim.SetConstantPosition(csmaNodes.Get(0), 50,50,0);
-    anim.SetConstantPosition(OFSwitches.Get(0), 150,100,0);
-    anim.SetConstantPosition(OFSwitches.Get(1), 150,150,0);
-    anim.SetConstantPosition(csmaNodes.Get(1), 250,200,0);
+    anim.SetConstantPosition(csmaNodes.Get(0), 50,100,0);
+    anim.SetConstantPosition(OFSwitches.Get(0), 150,125,0);
+    anim.SetConstantPosition(OFSwitches.Get(1), 200,125,0);
+    anim.SetConstantPosition(csmaNodes.Get(1), 250,100,0);
 
     anim.UpdateNodeDescription(csmaNodes.Get(0), "N0");
     anim.UpdateNodeDescription(OFSwitches.Get(0), "SW0");
