@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO(link.Get(1)->GetAddress());
 
     //connect OFSw0 to OFSw1
-    link = csma.Install(NodeContainer(OFSwitches.Get(0), OFSwitches.Get(1)));
+    link = csma.Install(NodeContainer(OFSwitches.Get(1), OFSwitches.Get(0)));
     OFSwitchDevices.Add(link.Get(0));
     OFSwitchDevices.Add(link.Get(1));
     NS_LOG_INFO(link.Get(0)->GetAddress());
@@ -104,13 +104,6 @@ int main(int argc, char *argv[]){
 
     address.SetBase("10.1.3.0", "255.255.255.0");
     address.Assign(OFSwitchDevices);
-
-    //add static route from OFSw0 to OFSw1
-    Ptr <Node> switch0 = OFSwitches.Get(0);
-    Ptr <Ipv4> ipv4 = switch0->GetObject <Ipv4>();
-    Ipv4StaticRoutingHelper ipv4RoutingHelper;
-    Ptr<Ipv4StaticRouting> staticRouting = ipv4RoutingHelper.GetStaticRouting(ipv4);
-    staticRouting->AddHostRouteTo(Ipv4Address("10.1.2.1"), Ipv4Address("10.1.4.2"), 2, 2);
 
     NS_LOG_INFO("Populate routing tables");
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
@@ -142,28 +135,20 @@ int main(int argc, char *argv[]){
     Ptr<Node> OFNode1 = OFSwitches.Get(1);
     OpenFlowSwitchHelper OFSwHelper;
 
-    // Install controller0 for OFSw0
-    Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController>();
-    OFSwHelper.Install(OFNode0, OFSwitchDevices, controller0);
-
-    // Install controller1 for OFSw1
-    Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController>();
-    OFSwHelper.Install(OFNode1, OFSwitchDevices, controller1);
-
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
-    ApplicationContainer app = onoff.Install(csmaNodes.Get(0));
+    ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
     // Start the application
     app.Start(Seconds(1.0));
-    app.Stop(Seconds(60.0));
+    app.Stop(Seconds(20.0));
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(csmaNodes.Get(1));
+    app = sink.Install(csmaNodes.Get(0));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
@@ -195,7 +180,7 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(OFSwitches.Get(1), "SW1");
     anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
 
-    Simulator::Stop(Seconds(120));
+    Simulator::Stop(Seconds(40));
     Simulator::Run();
     Simulator::Destroy();
 
