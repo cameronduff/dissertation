@@ -19,22 +19,22 @@
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE ("OpenFlowUDP");
+NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
-// Function definitions to send a receive packets#include "ns3/netanim-module.h"
+// export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
-void SendPacket (Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
-void BindSock (Ptr<Socket> sock, Ptr<NetDevice> netdev);
-void srcSocketRecv (Ptr<Socket> socket);
-void dstSocketRecv (Ptr<Socket> socket);
+void SendPacket(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
+void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
+void srcSocketRecv(Ptr<Socket> socket);
+void dstSocketRecv(Ptr<Socket> socket);
 
 bool verbose = false;
 bool use_drop = false;
 
-ns3::Time timeout = ns3::Seconds (30);
+ns3::Time timeout = ns3::Seconds(30);
 
 bool
-SetVerbose (std::string value)
+SetVerbose(std::string value)
 {
   verbose = true;
   return true;
@@ -42,13 +42,13 @@ SetVerbose (std::string value)
 
 int main(int argc, char *argv[]){
     CommandLine cmd;
-    cmd.Parse (argc, argv);
+    cmd.Parse(argc, argv);
 
-    if (verbose)
+    if(verbose)
     {
-        LogComponentEnable ("OpenFlowUDP", LOG_LEVEL_INFO);
-        LogComponentEnable ("OpenFlowInterface", LOG_LEVEL_INFO);
-        LogComponentEnable ("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
+        LogComponentEnable("OpenFlowUDP", LOG_LEVEL_INFO);
+        LogComponentEnable("OpenFlowInterface", LOG_LEVEL_INFO);
+        LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
     }
 
     NS_LOG_INFO("Creating nodes");
@@ -105,13 +105,20 @@ int main(int argc, char *argv[]){
     address.SetBase("10.1.3.0", "255.255.255.0");
     address.Assign(OFSwitchDevices);
 
+    //add static route from OFSw0 to OFSw1
+    Ptr <Node> switch0 = OFSwitches.Get(0);
+    Ptr <Ipv4> ipv4 = switch0->GetObject <Ipv4>();
+    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+    Ptr<Ipv4StaticRouting> staticRouting = ipv4RoutingHelper.GetStaticRouting(ipv4);
+    staticRouting->AddHostRouteTo(Ipv4Address("10.1.2.1"), Ipv4Address("10.1.4.2"), 2, 2);
+
     NS_LOG_INFO("Populate routing tables");
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     NS_LOG_INFO("CSMA NetDevices:");
     for(uint32_t i = 0; i<csmaNodes.GetN(); i++){
       Ptr<Node> node = csmaNodes.Get(i);
-      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4> ();
+      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4>();
       NS_LOG_INFO("***** Node: " << ipv4->GetAddress(1,0) << " " << i << " has " << node->GetNDevices() << " NetDevices");
       for(uint32_t j = 0; j<node->GetNDevices(); j++){
         Ptr<NetDevice> device = node->GetDevice(j);
@@ -122,7 +129,7 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("OFSwitch NetDevices:");
     for(uint32_t i = 0; i<OFSwitches.GetN(); i++){
       Ptr<Node> node = OFSwitches.Get(i);
-      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4> ();
+      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4>();
       NS_LOG_INFO("***** Switch: " << ipv4->GetAddress(1,0) << " " << i << " has " << node->GetNDevices() << " NetDevices");
       for(uint32_t j = 0; j<node->GetNDevices(); j++){
         Ptr<NetDevice> device = node->GetDevice(j);
@@ -136,15 +143,15 @@ int main(int argc, char *argv[]){
     OpenFlowSwitchHelper OFSwHelper;
 
     // Install controller0 for OFSw0
-    Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController> ();
+    Ptr<ns3::ofi::DropController> controller0 = CreateObject<ns3::ofi::DropController>();
     OFSwHelper.Install(OFNode0, OFSwitchDevices, controller0);
 
     // Install controller1 for OFSw1
-    Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController> ();
+    Ptr<ns3::ofi::DropController> controller1 = CreateObject<ns3::ofi::DropController>();
     OFSwHelper.Install(OFNode1, OFSwitchDevices, controller1);
 
     NS_LOG_INFO("Create application");
-    uint16_t port = 9; // Discard port (RFC 863)
+    uint16_t port = 9; // Discard port(RFC 863)
 
     OnOffHelper onoff("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
     onoff.SetConstantRate(DataRate("500kb/s"));
@@ -152,11 +159,11 @@ int main(int argc, char *argv[]){
     ApplicationContainer app = onoff.Install(csmaNodes.Get(0));
     // Start the application
     app.Start(Seconds(1.0));
-    app.Stop(Seconds(20.0));
+    app.Stop(Seconds(60.0));
 
     // Create an optional packet sink to receive these packets
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(OFSwitches.Get(0));
+    app = sink.Install(csmaNodes.Get(1));
     app.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
@@ -165,9 +172,9 @@ int main(int argc, char *argv[]){
     flowMonitor = flowHelper.InstallAll();
 
     NS_LOG_INFO("Enabling tracing");
-    csma.EnablePcapAll ("afdx-small", false);
+    csma.EnablePcapAll("afdx-small", false);
     AsciiTraceHelper ascii;
-    csma.EnableAsciiAll (ascii.CreateFileStream ("afdx-small.tr"));
+    csma.EnableAsciiAll(ascii.CreateFileStream("afdx-small.tr"));
 
     NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-small.xml";
@@ -188,7 +195,7 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(OFSwitches.Get(1), "SW1");
     anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
 
-    Simulator::Stop (Seconds(20));
+    Simulator::Stop(Seconds(120));
     Simulator::Run();
     Simulator::Destroy();
 
