@@ -68,6 +68,7 @@ int main(int argc, char *argv[]){
 
     NS_LOG_INFO("Connect devices");
 
+    //Left
     //connect n0 to OFSw0
     link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitches.Get(0)));
     csmaNetDevicesLeft.Add(link.Get(0));
@@ -83,6 +84,7 @@ int main(int argc, char *argv[]){
     csmaNetDevicesLeft.Add(link.Get(0));
     csmaNetDevicesLeft.Add(link.Get(1));
 
+    //Right
     //connect n3 to OFSw1
     link = csma.Install(NodeContainer(csmaNodes.Get(3), OFSwitches.Get(1)));
     csmaNetDevicesRight.Add(link.Get(0));
@@ -98,6 +100,7 @@ int main(int argc, char *argv[]){
     csmaNetDevicesRight.Add(link.Get(0));
     csmaNetDevicesRight.Add(link.Get(1));
 
+    //Switches
     //connect OFSw0 to OFSw1
     link = csma.Install(NodeContainer(OFSwitches.Get(1), OFSwitches.Get(0)));
     OFSwitchDevices.Add(link.Get(0));
