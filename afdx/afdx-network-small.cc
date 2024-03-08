@@ -158,7 +158,7 @@ int main(int argc, char *argv[]){
     OnOffHelper onoff("ns3::UdpSocketFactory", Address());
     onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
     onoff.SetAttribute("PacketSize",UintegerValue(1517));
-    onoff.SetConstantRate(DataRate("500kb/s"));
+    onoff.SetConstantRate(DataRate("50kb/s"));
 
     ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
     // Start the application
