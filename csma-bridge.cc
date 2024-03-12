@@ -164,6 +164,7 @@ main(int argc, char* argv[])
     std::string animFile = "csma-bridge.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
+    anim.EnablePacketMetadata();
 
     //
     // Now, do the actual simulation.
