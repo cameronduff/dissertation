@@ -24,10 +24,15 @@ NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
-void SendPacket(Ptr<Socket> sock, Ipv4Address dstaddr, uint16_t port);
-void BindSock(Ptr<Socket> sock, Ptr<NetDevice> netdev);
-void srcSocketRecv(Ptr<Socket> socket);
-void dstSocketRecv(Ptr<Socket> socket);
+//          architecture
+//
+//           n0       n3
+//           |        |
+//           |        |
+//  n1 ---- sw0 ---- sw1 --- n4
+//           |        |
+//           |        |
+//           n2       n5
 
 bool verbose = false;
 bool use_drop = false;
