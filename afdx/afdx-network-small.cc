@@ -15,6 +15,7 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/csma-module.h"
 #include "ns3/ipv4.h"
+#include "ns3/bridge-module.h"
 
 using namespace ns3;
 using namespace std;
@@ -113,13 +114,12 @@ int main(int argc, char *argv[]){
 
     NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
-    address.SetBase("10.1.1.0", "255.255.255.0");
+    address.SetBase("10.1.0.0", "255.255.255.0");
+    address.NewNetwork();
     address.Assign(csmaNetDevicesLeft);
-
-    address.SetBase("10.1.2.0", "255.255.255.0");
+    address.NewNetwork();
     address.Assign(csmaNetDevicesRight);
-
-    address.SetBase("10.1.3.0", "255.255.255.0");
+    address.NewNetwork();
     address.Assign(OFSwitchDevices);
 
     NS_LOG_INFO("Populate routing tables");
