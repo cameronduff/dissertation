@@ -156,19 +156,22 @@ int main(int argc, char *argv[]){
     uint16_t port = 9; // Discard port(RFC 863)
 
     OnOffHelper onoff("ns3::UdpSocketFactory", Address());
-    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(Ipv4Address("10.1.2.1"), port)));
+    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
     onoff.SetAttribute("PacketSize",UintegerValue(1517));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
-    ApplicationContainer app = onoff.Install(csmaNodes.Get(1));
+    ApplicationContainer app = onoff.Install(csmaNodes.Get(3));
     // Start the application
     app.Start(Seconds(1.0));
     app.Stop(Seconds(20.0));
 
-    // Create an optional packet sink to receive these packets
+    // Create an optional packet sink to receive these packets on each node
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    app = sink.Install(csmaNodes.Get(3));
-    app.Start(Seconds(0.0));
+    for(uint32_t i = 0; i<csmaNodes.GetN(); i++){
+      app = sink.Install(csmaNodes.Get(i));
+      app.Start(Seconds(0.0));
+    }
+  
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
