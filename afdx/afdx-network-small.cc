@@ -47,6 +47,8 @@ SetVerbose(std::string value)
 }
 
 int main(int argc, char *argv[]){
+    int endTime = 120;
+
     CommandLine cmd;
     cmd.Parse(argc, argv);
 
@@ -112,24 +114,39 @@ int main(int argc, char *argv[]){
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
 
-    //Let's install a UdpEchoServer on all nodes of left
+    //Let's install a UdpEchoServer on all nodes
     UdpEchoServerHelper echoServer(9);
-    ApplicationContainer serverApps = echoServer.Install(right_nodes);
-    serverApps.Start(Seconds(0));
-    serverApps.Stop(Seconds(10));
+    ApplicationContainer serverApps1 = echoServer.Install(right_nodes);
+    serverApps1.Start(Seconds(0));
+    serverApps1.Stop(Seconds(endTime));
+
+    ApplicationContainer serverApps2 = echoServer.Install(left_nodes);
+    serverApps2.Start(Seconds(0));
+    serverApps2.Stop(Seconds(endTime));
 
     //Creating UdpEchoClients in all left nodes.
-    UdpEchoClientHelper echoClient(rightInterfaces.GetAddress(0), 9);
-    echoClient.SetAttribute("MaxPackets", UintegerValue(100));
-    echoClient.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
-    echoClient.SetAttribute("PacketSize", UintegerValue(1024));
+    UdpEchoClientHelper echoClient1(rightInterfaces.GetAddress(0), 9);
+    echoClient1.SetAttribute("MaxPackets", UintegerValue(100));
+    echoClient1.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
+    echoClient1.SetAttribute("PacketSize", UintegerValue(1518));
 
-    //Install UdpEchoClient on two nodes in left nodes
-    NodeContainer clientNodes(left_nodes.Get(0), left_nodes.Get(1));
+    //Install UdpEchoClient on all nodes
+    NodeContainer clientNodes1(left_nodes.Get(0), left_nodes.Get(1), left_nodes.Get(2));
+    ApplicationContainer clientApps1 = echoClient1.Install(clientNodes1);
+    clientApps1.Start(Seconds(1));
+    clientApps1.Stop(Seconds(endTime));
 
-    ApplicationContainer clientApps = echoClient.Install(clientNodes);
-    clientApps.Start(Seconds(1));
-    clientApps.Stop(Seconds(10));
+    //Creating UdpEchoClients in all left nodes.
+    UdpEchoClientHelper echoClient2(leftInterfaces.GetAddress(0), 9);
+    echoClient2.SetAttribute("MaxPackets", UintegerValue(100));
+    echoClient2.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
+    echoClient2.SetAttribute("PacketSize", UintegerValue(1518));
+
+    //Install UdpEchoClient on all nodes
+    NodeContainer clientNodes2(right_nodes.Get(0), right_nodes.Get(1), right_nodes.Get(2));
+    ApplicationContainer clientApps2 = echoClient2.Install(clientNodes2);
+    clientApps2.Start(Seconds(1));
+    clientApps2.Stop(Seconds(endTime));
 
     //For routers to be able to forward packets, they need to have routing rules.
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
@@ -177,8 +194,11 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(right_nodes.Get(0), "N3");
     anim.UpdateNodeDescription(right_nodes.Get(1), "N4");
     anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
-    Simulator::Stop(Seconds(40));
+    Simulator::Stop(Seconds(endTime));
     Simulator::Run();
+
+    flowMonitor->SerializeToXmlFile("afdx-metrics.xml", true, true);
+
     Simulator::Destroy();
 
     return 0;
