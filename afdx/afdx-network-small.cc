@@ -20,6 +20,8 @@
 using namespace ns3;
 using namespace std;
 
+NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
+
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
 //          architecture
@@ -112,15 +114,24 @@ int main(int argc, char *argv[]){
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
 
+    //add static routing between networks
+    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+
+    //get IP of node
+    Ptr<Ipv4> ipv4_n0 = left_nodes.Get(0)->GetObject<Ipv4>();
+    Ptr<Ipv4StaticRouting> staticRouting_n0 = ipv4RoutingHelper.GetStaticRouting(ipv4_n0);
+    staticRouting_n0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.1.4"), 1);
+
+    //get IP of node
+    Ptr<Ipv4> ipv4_sw0 = switch_nodes.Get(0)->GetObject<Ipv4>();
+    Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(ipv4_sw0);
+    staticRouting_sw0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.3.2"), 2);
+
     //Let's install a UdpEchoServer on all nodes
     UdpEchoServerHelper echoServer(9);
     ApplicationContainer serverApps1 = echoServer.Install(right_nodes);
     serverApps1.Start(Seconds(0));
     serverApps1.Stop(Seconds(endTime));
-
-    ApplicationContainer serverApps2 = echoServer.Install(left_nodes);
-    serverApps2.Start(Seconds(0));
-    serverApps2.Stop(Seconds(endTime));
 
     //Creating UdpEchoClients in all left nodes.
     UdpEchoClientHelper echoClient1(rightInterfaces.GetAddress(0), 9);
@@ -129,25 +140,13 @@ int main(int argc, char *argv[]){
     echoClient1.SetAttribute("PacketSize", UintegerValue(1518));
 
     //Install UdpEchoClient on all nodes
-    NodeContainer clientNodes1(left_nodes.Get(0), left_nodes.Get(1), left_nodes.Get(2));
+    NodeContainer clientNodes1(left_nodes.Get(0));
     ApplicationContainer clientApps1 = echoClient1.Install(clientNodes1);
     clientApps1.Start(Seconds(1));
     clientApps1.Stop(Seconds(endTime));
 
-    //Creating UdpEchoClients in all left nodes.
-    UdpEchoClientHelper echoClient2(leftInterfaces.GetAddress(0), 9);
-    echoClient2.SetAttribute("MaxPackets", UintegerValue(100));
-    echoClient2.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
-    echoClient2.SetAttribute("PacketSize", UintegerValue(1518));
-
-    //Install UdpEchoClient on all nodes
-    NodeContainer clientNodes2(right_nodes.Get(0), right_nodes.Get(1), right_nodes.Get(2));
-    ApplicationContainer clientApps2 = echoClient2.Install(clientNodes2);
-    clientApps2.Start(Seconds(1));
-    clientApps2.Stop(Seconds(endTime));
-
     //For routers to be able to forward packets, they need to have routing rules.
-    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+    // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
