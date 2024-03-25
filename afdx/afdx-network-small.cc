@@ -20,8 +20,6 @@
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
-
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
 //          architecture
