@@ -91,6 +91,7 @@ int main(int argc, char *argv[]){
     NetDeviceContainer switchDevices;
     switchDevices = pointToPoint.Install(switch_nodes);
 
+    NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
     stack.Install(left_nodes);
     stack.Install(right_nodes);
@@ -98,45 +99,18 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
-
     //Lan1
     address.NewNetwork();
     Ipv4InterfaceContainer leftInterfaces;
     leftInterfaces = address.Assign(leftDevices);
-
     //Lan2
     address.NewNetwork();
     Ipv4InterfaceContainer rightInterfaces;
     rightInterfaces = address.Assign(rightDevices);
-
     //switches
     address.NewNetwork();
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
-    
-
-    /*
-    NS_LOG_INFO("CSMA NetDevices:");
-    for(uint32_t i = 0; i<csmaNodes.GetN(); i++){
-      Ptr<Node> node = csmaNodes.Get(i);
-      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4>();
-      NS_LOG_INFO("***** Node: " << ipv4->GetAddress(1,0) << " " << i << " has " << node->GetNDevices() << " NetDevices");
-      for(uint32_t j = 0; j<node->GetNDevices(); j++){
-        Ptr<NetDevice> device = node->GetDevice(j);
-        NS_LOG_INFO("********** " << device->GetAddress());
-      }
-    }
-
-    NS_LOG_INFO("OFSwitch NetDevices:");
-    for(uint32_t i = 0; i<OFSwitches.GetN(); i++){
-      Ptr<Node> node = OFSwitches.Get(i);
-      Ptr <Ipv4> ipv4 = node->GetObject <Ipv4>();
-      NS_LOG_INFO("***** Switch: " << ipv4->GetAddress(1,0) << " " << i << " has " << node->GetNDevices() << " NetDevices");
-      for(uint32_t j = 0; j<node->GetNDevices(); j++){
-        Ptr<NetDevice> device = node->GetDevice(j);
-        NS_LOG_INFO("********** " << device->GetAddress());
-      }
-    }*/
 
     //Let's install a UdpEchoServer on all nodes of LAN2
     UdpEchoServerHelper echoServer(9);
