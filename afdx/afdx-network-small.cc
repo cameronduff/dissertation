@@ -112,19 +112,19 @@ int main(int argc, char *argv[]){
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
 
-    //Let's install a UdpEchoServer on all nodes of LAN2
+    //Let's install a UdpEchoServer on all nodes of left
     UdpEchoServerHelper echoServer(9);
     ApplicationContainer serverApps = echoServer.Install(right_nodes);
     serverApps.Start(Seconds(0));
     serverApps.Stop(Seconds(10));
 
-    //Let's create UdpEchoClients in all LAN1 nodes.
+    //Creating UdpEchoClients in all left nodes.
     UdpEchoClientHelper echoClient(rightInterfaces.GetAddress(0), 9);
     echoClient.SetAttribute("MaxPackets", UintegerValue(100));
     echoClient.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
     echoClient.SetAttribute("PacketSize", UintegerValue(1024));
 
-    //We'll install UdpEchoClient on two nodes in lan1 nodes
+    //Install UdpEchoClient on two nodes in left nodes
     NodeContainer clientNodes(left_nodes.Get(0), left_nodes.Get(1));
 
     ApplicationContainer clientApps = echoClient.Install(clientNodes);
