@@ -57,79 +57,65 @@ int main(int argc, char *argv[]){
         LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
     }
 
-    NS_LOG_INFO("Creating nodes");
-    NodeContainer csmaNodes;
-    csmaNodes.Create(6);
+    //Node containers
+    NodeContainer left_nodes;
+    NodeContainer right_nodes;
+    NodeContainer switch_nodes;
 
-    NS_LOG_INFO("Create OpenFlow switches");
-    NodeContainer OFSwitches;
-    OFSwitches.Create(2);
+    //creating nodes
+    left_nodes.Create(3);
+    right_nodes.Create(3);
+    switch_nodes.Create(2);
 
-    NS_LOG_INFO("Build topology");
-    CsmaHelper csma;
-    csma.SetChannelAttribute("DataRate", DataRateValue(5000000));
-    csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
+    left_nodes.Add(switch_nodes.Get(0));
+    right_nodes.Add(switch_nodes.Get(1));
 
-    NetDeviceContainer csmaNetDevicesLeft, csmaNetDevicesRight, link, OFSwitchDevices;
+    //defining medium for Lan1
+    CsmaHelper csma1;
+    csma1.SetChannelAttribute("DataRate", StringValue("100Mbps"));
+    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    NetDeviceContainer leftDevices;
+    leftDevices = csma1.Install(left_nodes);
 
-    NS_LOG_INFO("Connect devices");
+    //defining medium for Lan2
+    CsmaHelper csma2;
+    csma2.SetChannelAttribute("DataRate", StringValue("100Mbps"));
+    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    NetDeviceContainer rightDevices;
+    rightDevices = csma2.Install(right_nodes);
 
-    //Left
-    //connect n0 to OFSw0
-    link = csma.Install(NodeContainer(csmaNodes.Get(0), OFSwitches.Get(0)));
-    csmaNetDevicesLeft.Add(link.Get(0));
-    csmaNetDevicesLeft.Add(link.Get(1));
+    //p2p connection between switches
+    PointToPointHelper pointToPoint;
+    pointToPoint.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
+    pointToPoint.SetChannelAttribute("Delay", StringValue("2ms"));
+    NetDeviceContainer switchDevices;
+    switchDevices = pointToPoint.Install(switch_nodes);
 
-    //connect n1 to OFSw0
-    link = csma.Install(NodeContainer(csmaNodes.Get(1), OFSwitches.Get(0)));
-    csmaNetDevicesLeft.Add(link.Get(0));
-    csmaNetDevicesLeft.Add(link.Get(1));
-
-    //connect n2 to OFSw0
-    link = csma.Install(NodeContainer(csmaNodes.Get(2), OFSwitches.Get(0)));
-    csmaNetDevicesLeft.Add(link.Get(0));
-    csmaNetDevicesLeft.Add(link.Get(1));
-
-    //Right
-    //connect n3 to OFSw1
-    link = csma.Install(NodeContainer(csmaNodes.Get(3), OFSwitches.Get(1)));
-    csmaNetDevicesRight.Add(link.Get(0));
-    csmaNetDevicesRight.Add(link.Get(1));
-
-    //connect n4 to OFSw1
-    link = csma.Install(NodeContainer(csmaNodes.Get(4), OFSwitches.Get(1)));
-    csmaNetDevicesRight.Add(link.Get(0));
-    csmaNetDevicesRight.Add(link.Get(1));
-
-    //connect n5 to OFSw1
-    link = csma.Install(NodeContainer(csmaNodes.Get(5), OFSwitches.Get(1)));
-    csmaNetDevicesRight.Add(link.Get(0));
-    csmaNetDevicesRight.Add(link.Get(1));
-
-    //Switches
-    //connect OFSw0 to OFSw1
-    link = csma.Install(NodeContainer(OFSwitches.Get(1), OFSwitches.Get(0)));
-    OFSwitchDevices.Add(link.Get(0));
-    OFSwitchDevices.Add(link.Get(1));
-
-    NS_LOG_INFO("Add IP to nodes");
-    InternetStackHelper internet;
-    internet.Install(csmaNodes);
-    internet.Install(OFSwitches);
+    InternetStackHelper stack;
+    stack.Install(left_nodes);
+    stack.Install(right_nodes);
 
     NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
-    address.NewNetwork();
-    address.Assign(csmaNetDevicesLeft);
-    address.NewNetwork();
-    address.Assign(csmaNetDevicesRight);
-    address.NewNetwork();
-    address.Assign(OFSwitchDevices);
 
-    NS_LOG_INFO("Populate routing tables");
-    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+    //Lan1
+    address.NewNetwork();
+    Ipv4InterfaceContainer leftInterfaces;
+    leftInterfaces = address.Assign(leftDevices);
 
+    //Lan2
+    address.NewNetwork();
+    Ipv4InterfaceContainer rightInterfaces;
+    rightInterfaces = address.Assign(rightDevices);
+
+    //switches
+    address.NewNetwork();
+    Ipv4InterfaceContainer switchInterfaces;
+    switchInterfaces = address.Assign(switchDevices);
+    
+
+    /*
     NS_LOG_INFO("CSMA NetDevices:");
     for(uint32_t i = 0; i<csmaNodes.GetN(); i++){
       Ptr<Node> node = csmaNodes.Get(i);
@@ -150,43 +136,41 @@ int main(int argc, char *argv[]){
         Ptr<NetDevice> device = node->GetDevice(j);
         NS_LOG_INFO("********** " << device->GetAddress());
       }
-    }
+    }*/
 
-    NS_LOG_INFO("Add controllers to switches");
-    Ptr<Node> OFNode0 = OFSwitches.Get(0);
-    Ptr<Node> OFNode1 = OFSwitches.Get(1);
-    OpenFlowSwitchHelper OFSwHelper;
+    //Let's install a UdpEchoServer on all nodes of LAN2
+    UdpEchoServerHelper echoServer(9);
+    ApplicationContainer serverApps = echoServer.Install(right_nodes);
+    serverApps.Start(Seconds(0));
+    serverApps.Stop(Seconds(10));
 
-    NS_LOG_INFO("Create application");
-    uint16_t port = 9; // Discard port(RFC 863)
+    //Let's create UdpEchoClients in all LAN1 nodes.
+    UdpEchoClientHelper echoClient(rightInterfaces.GetAddress(0), 9);
+    echoClient.SetAttribute("MaxPackets", UintegerValue(100));
+    echoClient.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
+    echoClient.SetAttribute("PacketSize", UintegerValue(1024));
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address());
-    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(Ipv4Address("10.1.1.1"), port)));
-    onoff.SetAttribute("PacketSize",UintegerValue(1517));
-    onoff.SetConstantRate(DataRate("500kb/s"));
+    //We'll install UdpEchoClient on two nodes in lan1 nodes
+    NodeContainer clientNodes(left_nodes.Get(0), left_nodes.Get(1));
 
-    ApplicationContainer app = onoff.Install(csmaNodes.Get(3));
-    // Start the application
-    app.Start(Seconds(1.0));
-    app.Stop(Seconds(20.0));
+    ApplicationContainer clientApps = echoClient.Install(clientNodes);
+    clientApps.Start(Seconds(1));
+    clientApps.Stop(Seconds(10));
 
-    // Create an optional packet sink to receive these packets on each node
-    PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    for(uint32_t i = 0; i<csmaNodes.GetN(); i++){
-      app = sink.Install(csmaNodes.Get(i));
-      app.Start(Seconds(0.0));
-    }
-  
+    //For routers to be able to forward packets, they need to have routing rules.
+    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
     flowMonitor = flowHelper.InstallAll();
-
+    
     NS_LOG_INFO("Enabling tracing");
-    csma.EnablePcapAll("afdx-small", false);
+    csma1.EnablePcapAll("afdx-left-small", false);
+    csma2.EnablePcapAll("afdx-right-small", false);
     AsciiTraceHelper ascii;
-    csma.EnableAsciiAll(ascii.CreateFileStream("afdx-small.tr"));
+    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
+    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
     NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-small.xml";
@@ -197,29 +181,28 @@ int main(int argc, char *argv[]){
     anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
     anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(10), Seconds(1));
 
-    anim.SetConstantPosition(csmaNodes.Get(0), 50,100,0);
-    anim.SetConstantPosition(csmaNodes.Get(1), 50,125,0);
-    anim.SetConstantPosition(csmaNodes.Get(2), 50,150,0);
+    anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
+    anim.SetConstantPosition(left_nodes.Get(1), 40,125,0);
+    anim.SetConstantPosition(left_nodes.Get(2), 50,150,0);
 
-    anim.SetConstantPosition(OFSwitches.Get(0), 100,125,0);
-    anim.SetConstantPosition(OFSwitches.Get(1), 150,125,0);
+    anim.SetConstantPosition(switch_nodes.Get(0), 100,125,0);
+    anim.SetConstantPosition(switch_nodes.Get(1), 150,125,0);
 
-    anim.SetConstantPosition(csmaNodes.Get(3), 200,100,0);
-    anim.SetConstantPosition(csmaNodes.Get(4), 200,125,0);
-    anim.SetConstantPosition(csmaNodes.Get(5), 200,150,0);
+    anim.SetConstantPosition(right_nodes.Get(0), 200,100,0);
+    anim.SetConstantPosition(right_nodes.Get(1), 210,125,0);
+    anim.SetConstantPosition(right_nodes.Get(2), 200,150,0);
 
 
-    anim.UpdateNodeDescription(csmaNodes.Get(0), "N0");
-    anim.UpdateNodeDescription(csmaNodes.Get(1), "N1");
-    anim.UpdateNodeDescription(csmaNodes.Get(2), "N2");
+    anim.UpdateNodeDescription(left_nodes.Get(0), "N0");
+    anim.UpdateNodeDescription(left_nodes.Get(1), "N1");
+    anim.UpdateNodeDescription(left_nodes.Get(2), "N2");
 
-    anim.UpdateNodeDescription(OFSwitches.Get(0), "SW0");
-    anim.UpdateNodeDescription(OFSwitches.Get(1), "SW1");
+    anim.UpdateNodeDescription(switch_nodes.Get(0), "SW0");
+    anim.UpdateNodeDescription(switch_nodes.Get(1), "SW1");
 
-    anim.UpdateNodeDescription(csmaNodes.Get(3), "N3");
-    anim.UpdateNodeDescription(csmaNodes.Get(4), "N4");
-    anim.UpdateNodeDescription(csmaNodes.Get(5), "N5");
-
+    anim.UpdateNodeDescription(right_nodes.Get(0), "N3");
+    anim.UpdateNodeDescription(right_nodes.Get(1), "N4");
+    anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
     Simulator::Stop(Seconds(40));
     Simulator::Run();
     Simulator::Destroy();
