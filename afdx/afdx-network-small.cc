@@ -16,6 +16,9 @@
 #include "ns3/csma-module.h"
 #include "ns3/ipv4.h"
 #include "ns3/bridge-module.h"
+#include "ns3/olsr-helper.h"
+#include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/ipv4-list-routing-helper.h"
 
 using namespace ns3;
 using namespace std;
@@ -93,8 +96,17 @@ int main(int argc, char *argv[]){
     NetDeviceContainer switchDevices;
     switchDevices = pointToPoint.Install(switch_nodes);
 
+    //add routing protocols
+    OlsrHelper olsr;
+    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+    Ipv4ListRoutingHelper list;
+    list.Add(ipv4RoutingHelper, 0);
+    list.Add(olsr, 10);
+
     NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
+    stack.SetRoutingHelper(list);
+
     stack.Install(left_nodes);
     stack.Install(right_nodes);
 
@@ -114,18 +126,15 @@ int main(int argc, char *argv[]){
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
 
-    //add static routing between networks
-    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+    // //get IP of node
+    // Ptr<Ipv4> ipv4_n0 = left_nodes.Get(0)->GetObject<Ipv4>();
+    // Ptr<Ipv4StaticRouting> staticRouting_n0 = ipv4RoutingHelper.GetStaticRouting(ipv4_n0);
+    // staticRouting_n0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.1.4"), 1);
 
-    //get IP of node
-    Ptr<Ipv4> ipv4_n0 = left_nodes.Get(0)->GetObject<Ipv4>();
-    Ptr<Ipv4StaticRouting> staticRouting_n0 = ipv4RoutingHelper.GetStaticRouting(ipv4_n0);
-    staticRouting_n0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.1.4"), 1);
-
-    //get IP of node
-    Ptr<Ipv4> ipv4_sw0 = switch_nodes.Get(0)->GetObject<Ipv4>();
-    Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(ipv4_sw0);
-    staticRouting_sw0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.3.2"), 2);
+    // //get IP of node
+    // Ptr<Ipv4> ipv4_sw0 = switch_nodes.Get(0)->GetObject<Ipv4>();
+    // Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(ipv4_sw0);
+    // staticRouting_sw0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.3.2"), 2);
 
     //Let's install a UdpEchoServer on all nodes
     UdpEchoServerHelper echoServer(9);
@@ -144,9 +153,6 @@ int main(int argc, char *argv[]){
     ApplicationContainer clientApps1 = echoClient1.Install(clientNodes1);
     clientApps1.Start(Seconds(1));
     clientApps1.Stop(Seconds(endTime));
-
-    //For routers to be able to forward packets, they need to have routing rules.
-    // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
