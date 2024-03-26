@@ -136,23 +136,31 @@ int main(int argc, char *argv[]){
     // Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(ipv4_sw0);
     // staticRouting_sw0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.3.2"), 2);
 
-    //Let's install a UdpEchoServer on all nodes
-    UdpEchoServerHelper echoServer(9);
-    ApplicationContainer serverApps1 = echoServer.Install(right_nodes);
-    serverApps1.Start(Seconds(0));
-    serverApps1.Stop(Seconds(endTime));
+    NS_LOG_INFO("Create application");
+    uint16_t port = 9; // Discard port(RFC 863)
 
-    //Creating UdpEchoClients in all left nodes.
-    UdpEchoClientHelper echoClient1(rightInterfaces.GetAddress(0), 9);
-    echoClient1.SetAttribute("MaxPackets", UintegerValue(100));
-    echoClient1.SetAttribute("Interval", TimeValue(MilliSeconds(200)));
-    echoClient1.SetAttribute("PacketSize", UintegerValue(1518));
+    OnOffHelper onoff("ns3::UdpSocketFactory", Address());
+    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(rightInterfaces.GetAddress(0), port)));
+    onoff.SetAttribute("PacketSize",UintegerValue(1517));
+    onoff.SetConstantRate(DataRate("50kb/s"));
 
-    //Install UdpEchoClient on all nodes
-    NodeContainer clientNodes1(left_nodes.Get(0));
-    ApplicationContainer clientApps1 = echoClient1.Install(clientNodes1);
-    clientApps1.Start(Seconds(1));
-    clientApps1.Stop(Seconds(endTime));
+    ApplicationContainer app = onoff.Install(left_nodes.Get(0));
+    // Start the application
+    app.Start(Seconds(1.0));
+    app.Stop(Seconds(endTime));
+
+    // Create an optional packet sink to receive these packets on all nodes
+    PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
+
+    for(uint32_t i = 0; i<right_nodes.GetN(); i++){
+      app = sink.Install(right_nodes.Get(i));
+      app.Start(Seconds(0.0));
+    }
+
+    for(uint32_t i = 0; i<left_nodes.GetN(); i++){
+      app = sink.Install(left_nodes.Get(i));
+      app.Start(Seconds(0.0));
+    }
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
@@ -172,8 +180,8 @@ int main(int argc, char *argv[]){
     AnimationInterface anim(animFile);
 
     anim.EnablePacketMetadata();
-    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(10));
-    anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(10), Seconds(1));
+    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(endTime), Seconds(1));
 
     anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
     anim.SetConstantPosition(left_nodes.Get(1), 40,125,0);
