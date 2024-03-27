@@ -39,8 +39,9 @@ NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 bool verbose = false;
 bool use_drop = false;
+int endTime = 120;
 
-ns3::Time timeout = ns3::Seconds(30);
+// ns3::Time timeout = ns3::Seconds(30);
 
 bool
 SetVerbose(std::string value)
@@ -50,8 +51,6 @@ SetVerbose(std::string value)
 }
 
 int main(int argc, char *argv[]){
-    int endTime = 120;
-
     CommandLine cmd;
     cmd.Parse(argc, argv);
 
@@ -142,7 +141,7 @@ int main(int argc, char *argv[]){
     OnOffHelper onoff("ns3::UdpSocketFactory", Address());
     onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(rightInterfaces.GetAddress(0), port)));
     onoff.SetAttribute("PacketSize",UintegerValue(1517));
-    onoff.SetConstantRate(DataRate("50kb/s"));
+    onoff.SetConstantRate(DataRate("500kb/s"));
 
     ApplicationContainer app = onoff.Install(left_nodes.Get(0));
     // Start the application
@@ -151,16 +150,9 @@ int main(int argc, char *argv[]){
 
     // Create an optional packet sink to receive these packets on all nodes
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-
-    for(uint32_t i = 0; i<right_nodes.GetN(); i++){
-      app = sink.Install(right_nodes.Get(i));
-      app.Start(Seconds(0.0));
-    }
-
-    for(uint32_t i = 0; i<left_nodes.GetN(); i++){
-      app = sink.Install(left_nodes.Get(i));
-      app.Start(Seconds(0.0));
-    }
+    ApplicationContainer sinkApp;
+    sinkApp = sink.Install(right_nodes.Get(0));
+    sinkApp.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
@@ -205,12 +197,10 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(right_nodes.Get(0), "N3");
     anim.UpdateNodeDescription(right_nodes.Get(1), "N4");
     anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
+
     Simulator::Stop(Seconds(endTime));
     Simulator::Run();
 
     flowMonitor->SerializeToXmlFile("afdx-metrics.xml", true, true);
-
-    Simulator::Destroy();
-
     return 0;
 }
