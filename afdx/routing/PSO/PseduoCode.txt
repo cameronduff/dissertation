@@ -1,6 +1,6 @@
 ParticleSwarmOptimisation:
     Populate global routing table
-    Loop until at destination
+    Loop until at destination:
         If numOfPaths = 1:
             ChoosePath()
         Else:
@@ -17,7 +17,7 @@ ParticleSwarmOptimisation:
 
 ChoosePathBasedOnFitnessAndLocalBest():
     Calculate path fitness:
-        A = Delay
+        A = Delay (Latency)
         B = Packet loss
         C = Throughput
         D = Local Best (some coefficient between 0 and 1)
