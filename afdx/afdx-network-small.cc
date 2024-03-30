@@ -19,6 +19,7 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
+#include "routing/PSO/PSO.h"
 
 using namespace ns3;
 using namespace std;
