@@ -98,10 +98,11 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     OlsrHelper olsr;
+    PSO pso;
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
     Ipv4ListRoutingHelper list;
     list.Add(ipv4RoutingHelper, 0);
-    list.Add(olsr, 10);
+    list.Add(pso, 10);
 
     NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
