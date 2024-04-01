@@ -117,10 +117,14 @@ class PSORoutingProtocol : public Ipv4RoutingProtocol{
 
         }
     private:
-        Ptr<Ipv4> m_ipv4; //!< associated IPv4 instance
+        Ptr<Ipv4> m_ipv4;                    //!< associated IPv4 instance
+        HostRoutes m_hostRoutes;             //!< Routes to hosts
+        NetworkRoutes m_networkRoutes;       //!< Routes to networks
+        ASExternalRoutes m_ASexternalRoutes; //!< External routes imported
 
         Ptr<Ipv4Route> LookupGlobal(Ipv4Address dest, Ptr<NetDevice> oif)
         {
-            return nullptr;
+            Ptr<Ipv4Route> rtentry = nullptr;
+            return rtentry;
         }
 };
