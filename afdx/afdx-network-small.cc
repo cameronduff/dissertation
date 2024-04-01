@@ -19,7 +19,7 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
-#include "routing/PSO/PSO.h"
+#include "routing/PSO/PSOHelper.h"
 
 using namespace ns3;
 using namespace std;
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     OlsrHelper olsr;
-    PSO pso;
+    PSOHelper pso;
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
     Ipv4ListRoutingHelper list;
     list.Add(ipv4RoutingHelper, 0);

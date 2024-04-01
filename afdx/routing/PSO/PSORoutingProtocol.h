@@ -5,8 +5,9 @@
 
 using namespace ns3;
 
-struct RoutingTableEntry
-{
+class PSORoutingProtocol : public Ipv4RoutingProtocol {
+
+  struct RoutingTableEntry {
     Ipv4Address destinationAddress; //!< Address of the destination node.
     Ipv4Address sourceAddress;      //!< Address of the sender.
     Ipv4Address nextAddress;        //!< Address of the next hop.
@@ -31,43 +32,17 @@ struct RoutingTableEntry
           distance(0)
     {
     }
-};
+  };
 
-class PSORoutingProtocol : public Ipv4RoutingProtocol {
-public:
-  static TypeId GetTypeId (void) {
-    static TypeId tid = TypeId ("ns3::PSORoutingProtocol")
-      .SetParent<Ipv4RoutingProtocol> ()
-      .AddConstructor<PSORoutingProtocol> ()
-      ;
-    return tid;
-  }
+  virtual ~PSORoutingProtocol();
 
-  PSORoutingProtocol () {}
+  PSORoutingProtocol();
 
-  // Implement routing functions
-  bool RouteInput (Ptr<Packet> p, const Ipv4Header &header, Ptr<Ipv4Interface> inputInterface) override {
-    Ipv4Address destination = header.GetDestination ();
-    Ipv4Address nextHop;
-    Ipv4Interface nextInterface;
+  //inherits from base class
+  virtual bool RouteInput(Ptr<const Packet> p, const Ipv4Header& header, Ptr<const NetDevice> idev, const UnicastForwardCallback& ucb, 
+                            const MulticastForwardCallback& mcb, const LocalDeliverCallback& lcb, const ErrorCallback& ecb);
 
-    //consume packet if this is the destination
-    if (destination == inputInterface->GetAddress ()){
-      return true;
-    }
+  virtual Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p, const Ipv4Header& header, Ptr<NetDevice> oif, Socket::SocketErrno& sockerr);
 
-    Ipv4RoutingTable::GetNextHop (dest, nextHop, nextInterface);
-    nextInterface->Send (p, 0, nextHop);
-    return true;
-  }
-
-  void RouteOutput (Ptr<Packet> p, const Ipv4Header &header, uint32_t oif, Socket::SocketErrno &sockerr) override {
-    Ipv4Address dest = header.GetDestination ();
-    Ipv4Address origin = header.GetSource ();
-    
-  }
-
-  void RoutingTableComputation(){
-
-  }
+  void RoutingTableComputation();
 };
