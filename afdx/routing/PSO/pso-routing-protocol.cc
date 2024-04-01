@@ -9,8 +9,6 @@
 #include <stdint.h>
 
 class PSORoutingProtocol : public Ipv4RoutingProtocol{
-    private:
-        Ptr<Ipv4> m_ipv4; //!< associated IPv4 instance
     public:
         PSORoutingProtocol(){
             
@@ -117,5 +115,12 @@ class PSORoutingProtocol : public Ipv4RoutingProtocol{
         void PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit = Time::S) const
         {
 
+        }
+    private:
+        Ptr<Ipv4> m_ipv4; //!< associated IPv4 instance
+
+        Ptr<Ipv4Route> LookupGlobal(Ipv4Address dest, Ptr<NetDevice> oif)
+        {
+            return nullptr;
         }
 };
