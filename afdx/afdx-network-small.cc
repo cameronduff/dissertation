@@ -10,7 +10,6 @@
 #include "ns3/applications-module.h"
 #include "ns3/flow-monitor.h"
 #include "ns3/flow-monitor-helper.h"
-#include "ns3/openflow-module.h"
 #include "ns3/log.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/csma-module.h"
@@ -101,8 +100,8 @@ int main(int argc, char *argv[]){
     PSOHelper pso;
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
     Ipv4ListRoutingHelper list;
-    list.Add(ipv4RoutingHelper, 0);
     list.Add(pso, 10);
+    list.Add(ipv4RoutingHelper, 0);
 
     NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
