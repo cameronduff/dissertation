@@ -19,6 +19,7 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
 #include "routing/PSO/PSOHelper.h"
+#include "routing/PSO/pso-routing-protocol.cc"
 
 using namespace ns3;
 using namespace std;
@@ -97,11 +98,15 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     OlsrHelper olsr;
-    PSOHelper pso;
+    //PSOHelper pso;
+    PSORoutingProtocol pso;
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
     Ipv4ListRoutingHelper list;
-    list.Add(pso, 10);
+    list.Add(olsr, 10);
     list.Add(ipv4RoutingHelper, 0);
+
+
+
 
     NS_LOG_INFO("Install internet");
     InternetStackHelper stack;

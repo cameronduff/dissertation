@@ -4,17 +4,11 @@
 
 using namespace ns3;
 
-class PSOHelper : public Ipv4RoutingHelper {
+class PSOHelper : public Ipv4RoutingHelper
+{
 public:
-
-    virtual ~PSOHelper();
     PSOHelper();
-
-    virtual Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override;
-
+    ~PSOHelper();
+    Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override;
     PSOHelper* Copy() const override;
-
-    void Set(std::string name, const AttributeValue& value);
-private:
-    ObjectFactory m_agentFactory; //!< Object factory
 };
