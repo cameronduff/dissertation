@@ -9,53 +9,50 @@
 #include <stdint.h>
 
 class PSORoutingProtocol : public Ipv4RoutingProtocol{
-    Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
-                                       const Ipv4Header& header,
-                                       Ptr<NetDevice> oif,
-                                       Socket::SocketErrno& sockerr)
-    {
-        return nullptr;
-    }
 
-    bool RouteInput(Ptr<const Packet> p,
-                            const Ipv4Header& header,
-                            Ptr<const NetDevice> idev,
-                            const UnicastForwardCallback& ucb,
-                            const MulticastForwardCallback& mcb,
-                            const LocalDeliverCallback& lcb,
-                            const ErrorCallback& ecb)
-    {
-        return false;
-    }
+    public:
+        PSORoutingProtocol(){
+            
+        }
 
-    void NotifyInterfaceUp(uint32_t interface)
-    {
+        Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p, const Ipv4Header& header, Ptr<NetDevice> oif, Socket::SocketErrno& sockerr)
+        {
+            return nullptr;
+        }
 
-    }
+        bool RouteInput(Ptr<const Packet> p, const Ipv4Header& header, Ptr<const NetDevice> idev, const UnicastForwardCallback& ucb, const MulticastForwardCallback& mcb,
+                            const LocalDeliverCallback& lcb, const ErrorCallback& ecb)
+        {
+            return false;
+        }
 
-    void NotifyInterfaceDown(uint32_t interface)
-    {
+        void NotifyInterfaceUp(uint32_t interface)
+        {
 
-    }
+        }
 
-    void NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress address)
-    {
+        void NotifyInterfaceDown(uint32_t interface)
+        {
 
-    }
+        }
 
-    void NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress address)
-    {
+        void NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress address)
+        {
 
-    }
+        }
 
-    void SetIpv4(Ptr<Ipv4> ipv4)
-    {
+        void NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress address)
+        {
 
-    }
+        }
 
-    void PrintRoutingTable(Ptr<OutputStreamWrapper> stream,
-                                   Time::Unit unit = Time::S) const
-    {
+        void SetIpv4(Ptr<Ipv4> ipv4)
+        {
 
-    }
+        }
+
+        void PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit = Time::S) const
+        {
+
+        }
 };
