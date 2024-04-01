@@ -9,7 +9,8 @@
 #include <stdint.h>
 
 class PSORoutingProtocol : public Ipv4RoutingProtocol{
-
+    private:
+        Ptr<Ipv4> m_ipv4; //!< associated IPv4 instance
     public:
         PSORoutingProtocol(){
             
@@ -17,13 +18,75 @@ class PSORoutingProtocol : public Ipv4RoutingProtocol{
 
         Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p, const Ipv4Header& header, Ptr<NetDevice> oif, Socket::SocketErrno& sockerr)
         {
+            // First, see if this is a multicast packet we have a route for.  If we
+            // have a route, then send the packet down each of the specified interfaces.
+            //
+            if (header.GetDestination().IsMulticast())
+            {
+                return nullptr; // Let other routing protocols try to handle this
+            }
+            //
+            // See if this is a unicast packet we have a route for.
+            /*
+            Ptr<Ipv4Route> rtentry = LookupGlobal(header.GetDestination(), oif);
+            if (rtentry)
+            {
+                sockerr = Socket::ERROR_NOTERROR;
+            }
+            else
+            {
+                sockerr = Socket::ERROR_NOROUTETOHOST;
+            }
+            return rtentry;*/
             return nullptr;
         }
 
         bool RouteInput(Ptr<const Packet> p, const Ipv4Header& header, Ptr<const NetDevice> idev, const UnicastForwardCallback& ucb, const MulticastForwardCallback& mcb,
                             const LocalDeliverCallback& lcb, const ErrorCallback& ecb)
         {
-            return false;
+            uint32_t iif = m_ipv4->GetInterfaceForDevice(idev);
+
+            if(m_ipv4->IsDestinationAddress(header.GetDestination(), iif)){
+                if (!lcb.IsNull())
+                {
+                    lcb(p, header, iif);
+                    return true;
+                }
+                else
+                {
+                    // The local delivery callback is null.  This may be a multicast
+                    // or broadcast packet, so return false so that another
+                    // multicast routing protocol can handle it.
+                    return false;
+                }
+            }
+
+            // Check if input device supports IP forwarding
+            if (!m_ipv4->IsForwarding(iif))
+            {
+                ecb(p, header, Socket::ERROR_NOROUTETOHOST);
+                return true;
+            }
+
+            // Next, try to find a route
+            //TO DO implement PSO logic here for finding a route
+            /*
+            Ptr<Ipv4Route> rtentry = LookupGlobal(header.GetDestination());
+            if (rtentry)
+            {
+                NS_LOG_LOGIC("Found unicast destination- calling unicast callback");
+                ucb(rtentry, p, header);
+                return true;
+            }
+            else
+            {
+                NS_LOG_LOGIC("Did not find unicast destination- returning false");
+                return false; // Let other routing protocols try to handle this
+                            // route request.
+            }
+            */
+
+           return false;
         }
 
         void NotifyInterfaceUp(uint32_t interface)
