@@ -101,11 +101,10 @@ int main(int argc, char *argv[]){
 
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
-
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
+
     Ipv4ListRoutingHelper list;
-    list.Add(olsr, 10);
-    list.Add(ipv4RoutingHelper, 0);
+    list.Add(psoHelper, 10);
 
 
     NS_LOG_INFO("Install internet");
