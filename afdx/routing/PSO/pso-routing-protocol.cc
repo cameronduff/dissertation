@@ -1,14 +1,17 @@
 #include "ns3/ipv4-header.h"
 #include "ns3/ipv4-routing-protocol.h"
+#include "ns3/ipv4-interface-address.h"
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
+#include "ns3/ipv4-routing-table-entry.h"
 #include "ns3/random-variable-stream.h"
 
 #include <list>
 #include <stdint.h>
 
-class PSORoutingProtocol : public Ipv4RoutingProtocol{
+class PSORoutingProtocol : public Ipv4RoutingProtocol
+{
     public:
         PSORoutingProtocol(){
             
