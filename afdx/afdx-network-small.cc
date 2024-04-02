@@ -19,6 +19,7 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
 #include "routing/PSO/pso-routing-protocol.cc"
+#include "routing/PSO/pso-routing-helper.cc"
 
 using namespace ns3;
 using namespace std;
@@ -99,7 +100,7 @@ int main(int argc, char *argv[]){
     OlsrHelper olsr;
 
     PSORoutingProtocol pso;
-    //PSORoutingHelper psoHelper;
+    PSORoutingHelper psoHelper;
 
     Ipv4StaticRoutingHelper ipv4RoutingHelper;
     Ipv4ListRoutingHelper list;
