@@ -1,6 +1,7 @@
 #include "ns3/ipv4-header.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4-interface-address.h"
+#include "ns3/ipv4-interface.h"
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
@@ -9,6 +10,8 @@
 
 #include <list>
 #include <stdint.h>
+
+using namespace ns3;
 
 class PSORoutingProtocol : public Ipv4RoutingProtocol
 {
@@ -121,13 +124,13 @@ class PSORoutingProtocol : public Ipv4RoutingProtocol
         }
     private:
         /// container of Ipv4RoutingTableEntry (routes to hosts)
-        typedef std::list<Ipv4RoutingTableEntry*> HostRoutes;
+        typedef std::list<ns3::Ipv4RoutingTableEntry*> HostRoutes;
 
         /// container of Ipv4RoutingTableEntry (routes to networks)
-        typedef std::list<Ipv4RoutingTableEntry*> NetworkRoutes;
+        typedef std::list<ns3::Ipv4RoutingTableEntry*> NetworkRoutes;
 
         /// container of Ipv4RoutingTableEntry (routes to external AS)
-        typedef std::list<Ipv4RoutingTableEntry*> ASExternalRoutes;
+        typedef std::list<ns3::Ipv4RoutingTableEntry*> ASExternalRoutes;
 
         Ptr<Ipv4> m_ipv4;                    //!< associated IPv4 instance
         HostRoutes m_hostRoutes;             //!< Routes to hosts
