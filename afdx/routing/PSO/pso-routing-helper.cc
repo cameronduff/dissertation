@@ -7,7 +7,7 @@
 
 using namespace ns3;
 
-class PSOHelper : public Ipv4RoutingHelper
+class PSORoutingHelper : public Ipv4RoutingHelper
 {
 
 };
