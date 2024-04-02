@@ -40,7 +40,7 @@ NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 120;
+int endTime = 30;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -101,11 +101,12 @@ int main(int argc, char *argv[]){
 
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
-    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+    Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
+    Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;
-    list.Add(psoHelper, 10);
-
+    list.Add(psoHelper, 100);
+    list.Add(ipv4GlobalRoutingHelper, 100);
 
     NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
@@ -129,16 +130,9 @@ int main(int argc, char *argv[]){
     address.NewNetwork();
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
-
-    // //get IP of node
-    // Ptr<Ipv4> ipv4_n0 = left_nodes.Get(0)->GetObject<Ipv4>();
-    // Ptr<Ipv4StaticRouting> staticRouting_n0 = ipv4RoutingHelper.GetStaticRouting(ipv4_n0);
-    // staticRouting_n0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.1.4"), 1);
-
-    // //get IP of node
-    // Ptr<Ipv4> ipv4_sw0 = switch_nodes.Get(0)->GetObject<Ipv4>();
-    // Ptr<Ipv4StaticRouting> staticRouting_sw0 = ipv4RoutingHelper.GetStaticRouting(ipv4_sw0);
-    // staticRouting_sw0->AddNetworkRouteTo(Ipv4Address("10.1.2.0"), Ipv4Mask("255.255.255.0"), Ipv4Address("10.1.3.2"), 2);
+    
+    NS_LOG_INFO("Populating initial routing tables");
+    psoHelper.PopulateInitialRoutingTables();
 
     NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
