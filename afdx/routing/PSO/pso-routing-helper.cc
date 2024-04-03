@@ -31,8 +31,12 @@ class PSORoutingHelper : public Ipv4RoutingHelper
         Ptr<Ipv4RoutingProtocol>
         Create(Ptr<Node> node) const
         {
-            //adding PSO routing to node
+            Ptr<GlobalRouter> globalRouter = CreateObject<GlobalRouter>();
+            node->AggregateObject(globalRouter);
+
             Ptr<PSORoutingProtocol> psoRouting = CreateObject<PSORoutingProtocol>();
+            globalRouter->SetRoutingProtocol(psoRouting);
+
             return psoRouting;
         }
 
