@@ -21,10 +21,9 @@
 #include "routing/PSO/pso-routing-protocol.cc"
 #include "routing/PSO/pso-routing-helper.cc"
 
-using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
+// NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
@@ -37,6 +36,7 @@ NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 //           |        |
 //           |        |
 //           n2       n5
+using namespace ns3;
 
 bool verbose = false;
 bool use_drop = false;
@@ -54,13 +54,6 @@ SetVerbose(std::string value)
 int main(int argc, char *argv[]){
     CommandLine cmd;
     cmd.Parse(argc, argv);
-
-    if(verbose)
-    {
-        LogComponentEnable("OpenFlowUDP", LOG_LEVEL_INFO);
-        LogComponentEnable("OpenFlowInterface", LOG_LEVEL_INFO);
-        LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
-    }
 
     //Node containers
     NodeContainer left_nodes;
