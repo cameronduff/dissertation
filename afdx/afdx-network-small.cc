@@ -23,7 +23,7 @@
 
 using namespace std;
 
-// NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
+NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
