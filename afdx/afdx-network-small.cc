@@ -40,7 +40,7 @@ NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 30;
+int endTime = 10;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
