@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 namespace ns3{
-    NS_LOG_COMPONENT_DEFINE ("PSORoutingProtocol");
+    // NS_LOG_COMPONENT_DEFINE ("PSORoutingProtocol");
 
 
     class PSORoutingProtocol : public Ipv4GlobalRouting
@@ -28,9 +28,10 @@ namespace ns3{
                 
             }
 
-            static void PopulateRoutingTables(){
+            static void PopulateRoutingTables() 
+            {
 
-                NS_LOG_INFO("In PSORoutingProtocol -> PopulateRoutingTables");
+                // NS_LOG_INFO("In PSORoutingProtocol -> PopulateRoutingTables");
 
                 // Walk the list of nodes looking for the GlobalRouter Interface.  Nodes with
                 // global router interfaces are, not too surprisingly, our routers.
@@ -69,5 +70,25 @@ namespace ns3{
                     }
                 }
             }
+        
+            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
+                                        const Ipv4Header& header,
+                                        Ptr<NetDevice> oif,
+                                        Socket::SocketErrno& sockerr) override
+            {
+                return nullptr;
+            }
+
+            bool RouteInput(Ptr<const Packet> p,
+                                        const Ipv4Header& header,
+                                        Ptr<const NetDevice> idev,
+                                        const UnicastForwardCallback& ucb,
+                                        const MulticastForwardCallback& mcb,
+                                        const LocalDeliverCallback& lcb,
+                                        const ErrorCallback& ecb) override
+            {
+                return false;
+            }
+
         };
 }   //namespace ns3
