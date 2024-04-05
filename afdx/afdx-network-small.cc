@@ -102,7 +102,7 @@ int main(int argc, char *argv[]){
 
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
-    Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
+    // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
     // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;

@@ -14,8 +14,16 @@ using namespace ns3;
 
 class PSORoutingHelper : public Ipv4GlobalRoutingHelper
 {
+    private:
+
     public:
         PSORoutingHelper()
         {
+
+        }
+
+        void PopulateRoutingTables()
+        {
+            PSORoutingProtocol::PopulateRoutingTables();
         }
 };

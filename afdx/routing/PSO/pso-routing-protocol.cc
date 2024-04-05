@@ -21,7 +21,34 @@ namespace ns3{
     class PSORoutingProtocol : public Ipv4GlobalRouting
     {
         private:
+            static void BuildGlobalRoutingDatabase()
+            {
+                bool nodeConnections[NodeList::GetNNodes()][NodeList::GetNNodes()];
+                // Walk the list of nodes looking for the GlobalRouter Interface.  Nodes with
+                // global router interfaces are, not too surprisingly, our routers.
+                for (auto i = NodeList::Begin(); i != NodeList::End(); i++)
+                {
+                    Ptr<Node> node = *i;
 
+                    for (int j=0; j<node->GetNDevices(); j++)
+                    {
+                        Ptr<NetDevice> netDevice = node->GetDevice(j);                        
+                        Ptr<Channel> channel = netDevice->GetChannel();
+
+                        for(int l=0; l<channel->GetNDevices(); l++)
+                        {
+                            Ptr<NetDevice> channelDevice = channel->GetDevice(l);
+                            uint32_t id = channelDevice->GetNode()->GetId();
+                            nodeConnections[node->GetId()][id] = true;
+                        }
+                    }                    
+                }
+            }
+
+            static void InitializeRoutes()
+            {
+                
+            }
         
         public:
             PSORoutingProtocol(){
@@ -30,45 +57,8 @@ namespace ns3{
 
             static void PopulateRoutingTables() 
             {
-
-                // NS_LOG_INFO("In PSORoutingProtocol -> PopulateRoutingTables");
-
-                // Walk the list of nodes looking for the GlobalRouter Interface.  Nodes with
-                // global router interfaces are, not too surprisingly, our routers.
-                for (auto i = NodeList::Begin(); i != NodeList::End(); i++)
-                {
-                    Ptr<Node> node = *i;
-
-                    Ptr<GlobalRouter> rtr = node->GetObject<GlobalRouter>();
-                    //
-                    // Ignore nodes that aren't participating in routing.
-                    //
-                    if (!rtr)
-                    {
-                        continue;
-                    }
-
-                    // You must call DiscoverLSAs () before trying to use any routing info or to
-                    // update LSAs.  DiscoverLSAs () drives the process of discovering routes in
-                    // the GlobalRouter.  Afterward, you may use GetNumLSAs (), which is a very
-                    // computationally inexpensive call.  If you call GetNumLSAs () before calling
-                    // DiscoverLSAs () will get zero as the number since no routes have been
-                    // found.
-                    uint32_t numLSAs = rtr->DiscoverLSAs();
-
-                    for (uint32_t j = 0; j < numLSAs; ++j)
-                    {
-                        auto lsa = new GlobalRoutingLSA();
-                        
-                        // This is the call to actually fetch a Link State Advertisement from the
-                        // router.
-                        
-                        rtr->GetLSA(j, *lsa);
-                        
-                        // Write the newly discovered link state advertisement to the database.
-                        // m_lsdb->Insert(lsa->GetLinkStateId(), lsa);
-                    }
-                }
+                PSORoutingProtocol::BuildGlobalRoutingDatabase();
+                // PSORoutingProtocol::InitializeRoutes();
             }
         
             Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
