@@ -14,6 +14,7 @@
 #include <list>
 #include <string>
 #include <stdint.h>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -57,49 +58,49 @@ namespace ns3{
             {
                 NS_LOG_INFO("Building Global Routing Database");
                 //database of all connections
-                int adjacencyArray[NodeList::GetNNodes()][NodeList::GetNNodes()];
+                int adjacencyMatrix[NodeList::GetNNodes()][NodeList::GetNNodes()];
 
                 NS_LOG_INFO("Creating initial adjacency matrix values");
                 for(int x=0; x<int(NodeList::GetNNodes()); x++){
                     for(int y=0; y<int(NodeList::GetNNodes()); y++){
-                        adjacencyArray[x][y] = 0;
+                        adjacencyMatrix[x][y] = 0;
                     }
                 }
 
                 NS_LOG_INFO("Populating adjacency matrix values");
                 for (uint32_t i=0; i<NodeList::GetNNodes(); i++)
                 {
-                    NS_LOG_INFO("Node: " << i+1 << "/" << NodeList::GetNNodes());
+                    // NS_LOG_INFO("Node: " << i+1 << "/" << NodeList::GetNNodes());
                     Ptr<Node> node = NodeList::GetNode(i);
 
                     for (uint32_t j=0; j<node->GetNDevices() -1; j++)
                     {
                         Ptr<NetDevice> netDevice = node->GetDevice(j);   
 
-                        NS_LOG_INFO("Node: " << i+1 << ": NetDevice: " << j+1 << "/" << node->GetNDevices());
-                        NS_LOG_INFO("               MAC: " << netDevice->GetAddress());
+                        // NS_LOG_INFO("Node: " << i+1 << ": NetDevice: " << j+1 << "/" << node->GetNDevices());
+                        // NS_LOG_INFO("               MAC: " << netDevice->GetAddress());
 
                         Ptr<Channel> channel = netDevice->GetChannel();
 
                         for(uint32_t l=0; l<channel->GetNDevices(); l++)
                         {
-                            NS_LOG_INFO("Node: " << i+1 << ": NetDevice: " << j+1 << "/" << node->GetNDevices() << " Channel: " << channel->GetId());
+                            // NS_LOG_INFO("Node: " << i+1 << ": NetDevice: " << j+1 << "/" << node->GetNDevices() << " Channel: " << channel->GetId());
                             Ptr<NetDevice> channelDevice = channel->GetDevice(l);
-                            NS_LOG_INFO("Device:" << l+1 << "/" << channel->GetNDevices() << "               MAC: " << channelDevice->GetAddress());
+                            // NS_LOG_INFO("Device:" << l+1 << "/" << channel->GetNDevices() << "               MAC: " << channelDevice->GetAddress());
                             uint32_t id = channelDevice->GetNode()->GetId();
-                            adjacencyArray[node->GetId()][id] = 1;
-                            NS_LOG_INFO("");
+                            adjacencyMatrix[node->GetId()][id] = 1;
+                            // NS_LOG_INFO("");
                         }
-                        NS_LOG_INFO("");
+                        // NS_LOG_INFO("");
                     }   
-                    NS_LOG_INFO("");                 
+                    // NS_LOG_INFO("");                 
                 }
 
                  NS_LOG_INFO("Output matrix");
                  for(int x=0; x<int(NodeList::GetNNodes()); x++){
                     string row("");
                     for(int y=0; y<int(NodeList::GetNNodes()); y++){
-                        auto s = std::to_string(adjacencyArray[x][y]);
+                        auto s = std::to_string(adjacencyMatrix[x][y]);
                         row = row + s;
                     }
                     NS_LOG_INFO("Node Id: " << x << " " << row);
@@ -111,38 +112,84 @@ namespace ns3{
                 NS_LOG_INFO("Finding shortest routes");
                 for(int src=0; src<int(NodeList::GetNNodes()); src++)
                 {
-                    int distance[NodeList::GetNNodes()];            
-                    bool shortestPath[NodeList::GetNNodes()];
-                                
-                    for (int i = 0; i < int(NodeList::GetNNodes()); i++)
-                    {
-                        distance[i] = INT_MAX;
-                        shortestPath[i] = false;
-                    }                    
-                
-                    distance[src] = 0;
-                
-                    for (int count = 0; count < int(NodeList::GetNNodes()) - 1; count++) {                    
-                        int u = minDistance(distance, shortestPath);
-                        int parents[NodeList::GetNNodes()];
-                        shortestPath[u] = true;
-                
-                        for (int v = 0; v < int(NodeList::GetNNodes()); v++){
-                            if (!shortestPath[v] && adjacencyArray[u][v]
-                                && distance[u] != INT_MAX
-                                && distance[u] + adjacencyArray[u][v] < distance[v])
-                                {
-                                    parents[v] = u;
-                                    distance[v] = distance[u] + adjacencyArray[u][v];
-                                }                            
-                        }
+                    int nVertices = int(NodeList::GetNNodes());
 
-                        NS_LOG_INFO("Shortest path from node " << src << " to " << count << " is: ");
-                        for(int i=0; i<int(NodeList::GetNNodes()); i++)
-                        {
-                            NS_LOG_INFO(parents[i]);
+                    // shortestDistances[i] will hold the
+                    // shortest distance from src to i
+                    vector<int> shortestDistances(nVertices);
+                
+                    // added[i] will true if vertex i is
+                    // included / in shortest path tree
+                    // or shortest distance from src to
+                    // i is finalized
+                    vector<bool> added(nVertices);
+                
+                    // Initialize all distances as
+                    // INFINITE and added[] as false
+                    for (int vertexIndex = 0; vertexIndex < nVertices;
+                        vertexIndex++) {
+                        shortestDistances[vertexIndex] = INT_MAX;
+                        added[vertexIndex] = false;
+                    }
+                
+                    // Distance of source vertex from
+                    // itself is always 0
+                    shortestDistances[src] = 0;
+                
+                    // Parent array to store shortest
+                    // path tree
+                    vector<int> parents(nVertices);
+                
+                    // The starting vertex does not
+                    // have a parent
+                    parents[src] = -1;
+                
+                    // Find shortest path for all
+                    // vertices
+                    for (int i = 1; i < nVertices; i++) {
+                
+                        // Pick the minimum distance vertex
+                        // from the set of vertices not yet
+                        // processed. nearestVertex is
+                        // always equal to startNode in
+                        // first iteration.
+                        int nearestVertex = -1;
+                        int shortestDistance = INT_MAX;
+                        for (int vertexIndex = 0; vertexIndex < nVertices;
+                            vertexIndex++) {
+                            if (!added[vertexIndex]
+                                && shortestDistances[vertexIndex]
+                                    < shortestDistance) {
+                                nearestVertex = vertexIndex;
+                                shortestDistance
+                                    = shortestDistances[vertexIndex];
+                            }
+                        }
+                
+                        // Mark the picked vertex as
+                        // processed
+                        added[nearestVertex] = true;
+                
+                        // Update dist value of the
+                        // adjacent vertices of the
+                        // picked vertex.
+                        for (int vertexIndex = 0; vertexIndex < nVertices;
+                            vertexIndex++) {
+                            int edgeDistance
+                                = adjacencyMatrix[nearestVertex]
+                                                [vertexIndex];
+                
+                            if (edgeDistance > 0
+                                && ((shortestDistance + edgeDistance)
+                                    < shortestDistances[vertexIndex])) {
+                                parents[vertexIndex] = nearestVertex;
+                                shortestDistances[vertexIndex]
+                                    = shortestDistance + edgeDistance;
+                            }
                         }
                     }
+
+                    printSolution(src, shortestDistances, parents);
                 }
             }
 
@@ -162,6 +209,32 @@ namespace ns3{
                 }
 
                 return min_index;
+            }
+
+            static void printSolution(int startVertex, vector<int> distances, vector<int> parents)
+            {
+                int nVertices = distances.size();
+                NS_LOG_INFO("Vertex\t Distance\tPath");
+            
+                for (int vertexIndex = 0; vertexIndex < nVertices;
+                    vertexIndex++) {
+                    if (vertexIndex != startVertex) {
+                        NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t\t");
+                        printPath(vertexIndex, parents);
+                    }
+                }
+            }
+
+            static void printPath(int currentVertex, vector<int> parents)
+            {
+            
+                // Base case : Source node has
+                // been processed
+                if (currentVertex == -1) {
+                    return;
+                }
+                printPath(parents[currentVertex], parents);
+                NS_LOG_INFO(currentVertex << " ");
             }
     };
 }   //namespace ns3
