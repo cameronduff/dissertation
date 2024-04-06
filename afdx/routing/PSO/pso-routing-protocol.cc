@@ -191,6 +191,7 @@ namespace ns3{
                             pathString = pathString + s + " ";
                         }
 
+                        //TODO make this into Ipv4Route and add to routing tables
                         NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
                     }
                 }
