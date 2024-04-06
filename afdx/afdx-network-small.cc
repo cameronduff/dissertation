@@ -24,7 +24,7 @@
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
+// NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
 
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
@@ -57,10 +57,10 @@ int main(int argc, char *argv[]){
 
     if(verbose)
     {
-        LogComponentEnable("OpenFlowUDP", LOG_LEVEL_INFO);
-        LogComponentEnable("OpenFlowInterface", LOG_LEVEL_INFO);
-        LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
-        LogComponentEnable("PSORoutingProtocol", LOG_LEVEL_INFO);
+        // LogComponentEnable("OpenFlowUDP", LOG_LEVEL_INFO);
+        // LogComponentEnable("OpenFlowInterface", LOG_LEVEL_INFO);
+        // LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
+        // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_INFO);
     }
 
     //Node containers
@@ -109,14 +109,14 @@ int main(int argc, char *argv[]){
     list.Add(psoHelper, 100);
     // list.Add(ipv4GlobalRoutingHelper, 0);
 
-    NS_LOG_INFO("Install internet");
+    // NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
     stack.SetRoutingHelper(list);
 
     stack.Install(left_nodes);
     stack.Install(right_nodes);
 
-    NS_LOG_INFO("Assign IP addresses");
+    // NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
     //Lan1
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
 
     psoHelper.PopulateRoutingTables();
 
-    NS_LOG_INFO("Create application");
+    // NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
 
     OnOffHelper onoff("ns3::UdpSocketFactory", Address());
@@ -153,19 +153,19 @@ int main(int argc, char *argv[]){
     sinkApp = sink.Install(right_nodes.Get(0));
     sinkApp.Start(Seconds(0.0));
 
-    NS_LOG_INFO("Installing Flow Monitor");
+    // NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
     flowMonitor = flowHelper.InstallAll();
     
-    NS_LOG_INFO("Enabling tracing");
+    // NS_LOG_INFO("Enabling tracing");
     csma1.EnablePcapAll("afdx-left-small", false);
     csma2.EnablePcapAll("afdx-right-small", false);
     AsciiTraceHelper ascii;
     csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
     csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
-    NS_LOG_INFO("Enabling animation");
+    // NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-small.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
