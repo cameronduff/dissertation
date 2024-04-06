@@ -192,19 +192,30 @@ namespace ns3{
                             pathString = pathString + s + " ";
                         }
 
-                        //TODO make this into Ipv4Route and add to routing tables
                         NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
 
                         for(int j=0; j<path.size(); j++)
                         {
-                            Ptr<Node> startNode = NodeList::GetNode(startVertex);
-                            Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
-                            Ptr<Node> gatewayNode = NodeList::GetNode(path[j]);
+                            Ipv4InterfaceAddress startNode = NodeList::GetNode(startVertex)->GetObject<Ipv4>()->GetAddress(1,0);
+                            Ipv4InterfaceAddress destinationNode = NodeList::GetNode(vertexIndex)->GetObject<Ipv4>()->GetAddress(1,0);
+                            Ipv4InterfaceAddress gatewayNode = NodeList::GetNode(path[j])->GetObject<Ipv4>()->GetAddress(1,0);
+
+                            // NS_LOG_INFO("Source: " << startNode.GetLocal());
+                            // NS_LOG_INFO("Destination: " << destinationNode.GetLocal());
+                            // NS_LOG_INFO("Gateway: " << gatewayNode.GetLocal());
 
                             Ipv4Route route;
-                            route.SetSource(startNode->GetObject<Ipv4>());
-                            route.SetDestination(destinationNode->GetObject<Ipv4>());
-                            route.SetGateway(gatewayNode->GetObject<Ipv4>());
+
+                            if(startNode.GetLocal() == gatewayNode.GetLocal()) {
+                                route.SetGateway(Ipv4Address("0.0.0.0"));
+                            } else{
+                                route.SetSource(startNode.GetLocal());
+                                route.SetGateway(gatewayNode.GetLocal());
+                                route.SetDestination(destinationNode.GetLocal());
+                            }
+
+                            //TODO see GlobalRouteManagerImpl::DeleteGlobalRoutes() and add routing table to nodes
+
                         }
                     }
                 }
