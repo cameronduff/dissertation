@@ -152,7 +152,7 @@ namespace ns3{
                         }
                     }
 
-                    printSolution(src, shortestDistances, parents);
+                    returnShortestPath(src, shortestDistances, parents);
                 }
             }
 
@@ -174,7 +174,7 @@ namespace ns3{
                 return min_index;
             }
 
-            static void printSolution(int startVertex, vector<int> distances, vector<int> parents)
+            static void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents)
             {
                 int nVertices = distances.size();
                 NS_LOG_INFO("Vertex\t Distance\tPath");
@@ -182,28 +182,26 @@ namespace ns3{
                 for (int vertexIndex = 0; vertexIndex < nVertices;
                     vertexIndex++) {
                     if (vertexIndex != startVertex) {
-                        NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t\t");
                         vector<int> path;
-                        printPath(vertexIndex, parents, path);
+                        returnPath(vertexIndex, parents, path);
                         
-                        string pathString("Path:     ");
+                        string pathString("");
                         for(int i=0; i<int(path.size()); i++){
                             auto s = std::to_string(path[i]);
                             pathString = pathString + s + " ";
                         }
 
-                        NS_LOG_INFO(pathString);
+                        NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
                     }
                 }
             }
 
-            static void printPath(int currentVertex, vector<int> parents, vector<int> &path)
+            static void returnPath(int currentVertex, vector<int> parents, vector<int> &path)
             {
                 if (currentVertex == -1) {
                     return;
                 }
-                printPath(parents[currentVertex], parents, path);
-                // NS_LOG_INFO(currentVertex << " ");
+                returnPath(parents[currentVertex], parents, path);
                 path.push_back(currentVertex);
             }
     };
