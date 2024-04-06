@@ -183,18 +183,28 @@ namespace ns3{
                     vertexIndex++) {
                     if (vertexIndex != startVertex) {
                         NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t\t");
-                        printPath(vertexIndex, parents);
+                        vector<int> path;
+                        printPath(vertexIndex, parents, path);
+                        
+                        string pathString("Path:     ");
+                        for(int i=0; i<int(path.size()); i++){
+                            auto s = std::to_string(path[i]);
+                            pathString = pathString + s + " ";
+                        }
+
+                        NS_LOG_INFO(pathString);
                     }
                 }
             }
 
-            static void printPath(int currentVertex, vector<int> parents)
+            static void printPath(int currentVertex, vector<int> parents, vector<int> &path)
             {
                 if (currentVertex == -1) {
                     return;
                 }
-                printPath(parents[currentVertex], parents);
-                NS_LOG_INFO(currentVertex << " ");
+                printPath(parents[currentVertex], parents, path);
+                // NS_LOG_INFO(currentVertex << " ");
+                path.push_back(currentVertex);
             }
     };
 }   //namespace ns3
