@@ -19,6 +19,7 @@
 using namespace std;
 
 namespace ns3{
+    // export NS_LOG=PSORoutingProtocol
     NS_LOG_COMPONENT_DEFINE ("PSORoutingProtocol");
 
 
@@ -35,24 +36,24 @@ namespace ns3{
                 PSORoutingProtocol::InitializeRoutes();
             }
         
-            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
-                                        const Ipv4Header& header,
-                                        Ptr<NetDevice> oif,
-                                        Socket::SocketErrno& sockerr) override
-            {
-                return nullptr;
-            }
+            // Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
+            //                             const Ipv4Header& header,
+            //                             Ptr<NetDevice> oif,
+            //                             Socket::SocketErrno& sockerr) override
+            // {
+            //     return nullptr;
+            // }
 
-            bool RouteInput(Ptr<const Packet> p,
-                                        const Ipv4Header& header,
-                                        Ptr<const NetDevice> idev,
-                                        const UnicastForwardCallback& ucb,
-                                        const MulticastForwardCallback& mcb,
-                                        const LocalDeliverCallback& lcb,
-                                        const ErrorCallback& ecb) override
-            {
-                return false;
-            }
+            // bool RouteInput(Ptr<const Packet> p,
+            //                             const Ipv4Header& header,
+            //                             Ptr<const NetDevice> idev,
+            //                             const UnicastForwardCallback& ucb,
+            //                             const MulticastForwardCallback& mcb,
+            //                             const LocalDeliverCallback& lcb,
+            //                             const ErrorCallback& ecb) override
+            // {
+            //     return false;
+            // }
         private:
             static void BuildGlobalRoutingDatabase()
             {
@@ -113,78 +114,40 @@ namespace ns3{
                 for(int src=0; src<int(NodeList::GetNNodes()); src++)
                 {
                     int nVertices = int(NodeList::GetNNodes());
-
-                    // shortestDistances[i] will hold the
-                    // shortest distance from src to i
                     vector<int> shortestDistances(nVertices);
-                
-                    // added[i] will true if vertex i is
-                    // included / in shortest path tree
-                    // or shortest distance from src to
-                    // i is finalized
                     vector<bool> added(nVertices);
-                
-                    // Initialize all distances as
-                    // INFINITE and added[] as false
-                    for (int vertexIndex = 0; vertexIndex < nVertices;
-                        vertexIndex++) {
+
+                    for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+                    {
                         shortestDistances[vertexIndex] = INT_MAX;
                         added[vertexIndex] = false;
                     }
-                
-                    // Distance of source vertex from
-                    // itself is always 0
+                    
                     shortestDistances[src] = 0;
-                
-                    // Parent array to store shortest
-                    // path tree
                     vector<int> parents(nVertices);
-                
-                    // The starting vertex does not
-                    // have a parent
                     parents[src] = -1;
                 
-                    // Find shortest path for all
-                    // vertices
-                    for (int i = 1; i < nVertices; i++) {
-                
-                        // Pick the minimum distance vertex
-                        // from the set of vertices not yet
-                        // processed. nearestVertex is
-                        // always equal to startNode in
-                        // first iteration.
+                    for (int i = 1; i < nVertices; i++) 
+                    {
                         int nearestVertex = -1;
                         int shortestDistance = INT_MAX;
+
                         for (int vertexIndex = 0; vertexIndex < nVertices;
                             vertexIndex++) {
-                            if (!added[vertexIndex]
-                                && shortestDistances[vertexIndex]
-                                    < shortestDistance) {
+                            if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance) {
                                 nearestVertex = vertexIndex;
-                                shortestDistance
-                                    = shortestDistances[vertexIndex];
+                                shortestDistance = shortestDistances[vertexIndex];
                             }
                         }
-                
-                        // Mark the picked vertex as
-                        // processed
+
                         added[nearestVertex] = true;
+
+                        for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
+                            int edgeDistance = adjacencyMatrix[nearestVertex][vertexIndex];
                 
-                        // Update dist value of the
-                        // adjacent vertices of the
-                        // picked vertex.
-                        for (int vertexIndex = 0; vertexIndex < nVertices;
-                            vertexIndex++) {
-                            int edgeDistance
-                                = adjacencyMatrix[nearestVertex]
-                                                [vertexIndex];
-                
-                            if (edgeDistance > 0
-                                && ((shortestDistance + edgeDistance)
-                                    < shortestDistances[vertexIndex])) {
+                            if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex])) {
                                 parents[vertexIndex] = nearestVertex;
-                                shortestDistances[vertexIndex]
-                                    = shortestDistance + edgeDistance;
+                                shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
                             }
                         }
                     }
@@ -227,9 +190,6 @@ namespace ns3{
 
             static void printPath(int currentVertex, vector<int> parents)
             {
-            
-                // Base case : Source node has
-                // been processed
                 if (currentVertex == -1) {
                     return;
                 }
