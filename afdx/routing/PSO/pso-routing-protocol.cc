@@ -20,6 +20,35 @@ namespace ns3{
 
     class PSORoutingProtocol : public Ipv4GlobalRouting
     {
+        public:
+            PSORoutingProtocol(){
+                
+            }
+
+            static void PopulateRoutingTables() 
+            {
+                PSORoutingProtocol::BuildGlobalRoutingDatabase();
+                PSORoutingProtocol::InitializeRoutes();
+            }
+        
+            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
+                                        const Ipv4Header& header,
+                                        Ptr<NetDevice> oif,
+                                        Socket::SocketErrno& sockerr) override
+            {
+                return nullptr;
+            }
+
+            bool RouteInput(Ptr<const Packet> p,
+                                        const Ipv4Header& header,
+                                        Ptr<const NetDevice> idev,
+                                        const UnicastForwardCallback& ucb,
+                                        const MulticastForwardCallback& mcb,
+                                        const LocalDeliverCallback& lcb,
+                                        const ErrorCallback& ecb) override
+            {
+                return false;
+            }
         private:
             static void BuildGlobalRoutingDatabase()
             {
@@ -50,39 +79,34 @@ namespace ns3{
                     }                    
                 }
 
-                //start finding smallest route
+                //start finding smallest route assuming equal link weighting
                 for(int src=0; src<int(NodeList::GetNNodes()); src++)
                 {
-                    int dist[NodeList::GetNNodes()];            
-                    bool sptSet[NodeList::GetNNodes()];
+                    int distance[NodeList::GetNNodes()];            
+                    bool shortestPath[NodeList::GetNNodes()];
                                 
                     for (int i = 0; i < int(NodeList::GetNNodes()); i++)
                     {
-                        dist[i] = INT_MAX;
-                        sptSet[i] = false;
+                        distance[i] = INT_MAX;
+                        shortestPath[i] = false;
                     }                    
                 
-                    dist[src] = 0;
+                    distance[src] = 0;
                 
                     for (int count = 0; count < int(NodeList::GetNNodes()) - 1; count++) {                    
-                        int u = minDistance(dist, sptSet);
-                        sptSet[u] = true;
+                        int u = minDistance(distance, shortestPath);
+                        shortestPath[u] = true;
                 
                         for (int v = 0; v < int(NodeList::GetNNodes()); v++){
-                            if (!sptSet[v] && adjacencyArray[u][v]
-                                && dist[u] != INT_MAX
-                                && dist[u] + adjacencyArray[u][v] < dist[v])
+                            if (!shortestPath[v] && adjacencyArray[u][v]
+                                && distance[u] != INT_MAX
+                                && distance[u] + adjacencyArray[u][v] < distance[v])
                                 {
-                                    dist[v] = dist[u] + adjacencyArray[u][v];
+                                    distance[v] = distance[u] + adjacencyArray[u][v];
                                 }                            
                         }
                     }
                 }
-            }
-
-            static void FindRoutes()
-            {
-                
             }
 
             static void InitializeRoutes()
@@ -90,48 +114,17 @@ namespace ns3{
                 
             }
 
-            static int minDistance(int dist[], bool sptSet[])
+            static int minDistance(int distance[], bool shortestPath[])
             {
                 int min = INT_MAX, min_index;
             
                 for (int v = 0; v < int(NodeList::GetNNodes()); v++){
-                    if (sptSet[v] == false && dist[v] <= min){
-                        min = dist[v], min_index = v;
+                    if (shortestPath[v] == false && distance[v] <= min){
+                        min = distance[v], min_index = v;
                     }
                 }
 
                 return min_index;
             }
-        
-        public:
-            PSORoutingProtocol(){
-                
-            }
-
-            static void PopulateRoutingTables() 
-            {
-                PSORoutingProtocol::BuildGlobalRoutingDatabase();
-                // PSORoutingProtocol::InitializeRoutes();
-            }
-        
-            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
-                                        const Ipv4Header& header,
-                                        Ptr<NetDevice> oif,
-                                        Socket::SocketErrno& sockerr) override
-            {
-                return nullptr;
-            }
-
-            bool RouteInput(Ptr<const Packet> p,
-                                        const Ipv4Header& header,
-                                        Ptr<const NetDevice> idev,
-                                        const UnicastForwardCallback& ucb,
-                                        const MulticastForwardCallback& mcb,
-                                        const LocalDeliverCallback& lcb,
-                                        const ErrorCallback& ecb) override
-            {
-                return false;
-            }
-
-        };
+    };
 }   //namespace ns3
