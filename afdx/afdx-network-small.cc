@@ -103,11 +103,11 @@ int main(int argc, char *argv[]){
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
-    // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
+    Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;
     list.Add(psoHelper, 100);
-    // list.Add(ipv4GlobalRoutingHelper, 0);
+    // list.Add(ipv4GlobalRoutingHelper, 100);
 
     // NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
@@ -133,6 +133,7 @@ int main(int argc, char *argv[]){
     switchInterfaces = address.Assign(switchDevices);
 
     psoHelper.PopulateRoutingTables();
+    // ipv4GlobalRoutingHelper.PopulateRoutingTables();
 
     // NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)

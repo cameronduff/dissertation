@@ -4,6 +4,7 @@
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4.h"
+#include "ns3/ipv4-route.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
 #include "ns3/log.h"
@@ -193,6 +194,18 @@ namespace ns3{
 
                         //TODO make this into Ipv4Route and add to routing tables
                         NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
+
+                        for(int j=0; j<path.size(); j++)
+                        {
+                            Ptr<Node> startNode = NodeList::GetNode(startVertex);
+                            Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
+                            Ptr<Node> gatewayNode = NodeList::GetNode(path[j]);
+
+                            Ipv4Route route;
+                            route.SetSource(startNode->GetObject<Ipv4>());
+                            route.SetDestination(destinationNode->GetObject<Ipv4>());
+                            route.SetGateway(gatewayNode->GetObject<Ipv4>());
+                        }
                     }
                 }
             }
