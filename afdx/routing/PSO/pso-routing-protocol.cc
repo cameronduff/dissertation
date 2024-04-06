@@ -23,31 +23,84 @@ namespace ns3{
         private:
             static void BuildGlobalRoutingDatabase()
             {
-                bool nodeConnections[NodeList::GetNNodes()][NodeList::GetNNodes()];
-                // Walk the list of nodes looking for the GlobalRouter Interface.  Nodes with
-                // global router interfaces are, not too surprisingly, our routers.
+                //database of all connections
+                int adjacencyArray[NodeList::GetNNodes()][NodeList::GetNNodes()];
+
+                for(int x=0; x<int(NodeList::GetNNodes()); x++){
+                    for(int y=0; y<int(NodeList::GetNNodes()); y++){
+                        adjacencyArray[x][y] = 0;
+                    }
+                }
+
                 for (auto i = NodeList::Begin(); i != NodeList::End(); i++)
                 {
                     Ptr<Node> node = *i;
 
-                    for (int j=0; j<node->GetNDevices(); j++)
+                    for (uint32_t j=0; j<node->GetNDevices(); j++)
                     {
                         Ptr<NetDevice> netDevice = node->GetDevice(j);                        
                         Ptr<Channel> channel = netDevice->GetChannel();
 
-                        for(int l=0; l<channel->GetNDevices(); l++)
+                        for(uint32_t l=0; l<channel->GetNDevices(); l++)
                         {
                             Ptr<NetDevice> channelDevice = channel->GetDevice(l);
                             uint32_t id = channelDevice->GetNode()->GetId();
-                            nodeConnections[node->GetId()][id] = true;
+                            adjacencyArray[node->GetId()][id] = 1;
                         }
                     }                    
                 }
+
+                //start finding smallest route
+                for(int src=0; src<int(NodeList::GetNNodes()); src++)
+                {
+                    int dist[NodeList::GetNNodes()];            
+                    bool sptSet[NodeList::GetNNodes()];
+                                
+                    for (int i = 0; i < int(NodeList::GetNNodes()); i++)
+                    {
+                        dist[i] = INT_MAX;
+                        sptSet[i] = false;
+                    }                    
+                
+                    dist[src] = 0;
+                
+                    for (int count = 0; count < int(NodeList::GetNNodes()) - 1; count++) {                    
+                        int u = minDistance(dist, sptSet);
+                        sptSet[u] = true;
+                
+                        for (int v = 0; v < int(NodeList::GetNNodes()); v++){
+                            if (!sptSet[v] && adjacencyArray[u][v]
+                                && dist[u] != INT_MAX
+                                && dist[u] + adjacencyArray[u][v] < dist[v])
+                                {
+                                    dist[v] = dist[u] + adjacencyArray[u][v];
+                                }                            
+                        }
+                    }
+                }
+            }
+
+            static void FindRoutes()
+            {
+                
             }
 
             static void InitializeRoutes()
             {
                 
+            }
+
+            static int minDistance(int dist[], bool sptSet[])
+            {
+                int min = INT_MAX, min_index;
+            
+                for (int v = 0; v < int(NodeList::GetNNodes()); v++){
+                    if (sptSet[v] == false && dist[v] <= min){
+                        min = dist[v], min_index = v;
+                    }
+                }
+
+                return min_index;
             }
         
         public:
