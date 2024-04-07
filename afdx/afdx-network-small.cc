@@ -98,7 +98,7 @@ int main(int argc, char *argv[]){
     switchDevices = pointToPoint.Install(switch_nodes);
 
     //add routing protocols
-    OlsrHelper olsr;
+    // OlsrHelper olsr;
 
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
@@ -106,6 +106,7 @@ int main(int argc, char *argv[]){
     Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;
+    // list.Add(olsr, 0);
     list.Add(psoHelper, 100);
     // list.Add(ipv4GlobalRoutingHelper, 100);
 

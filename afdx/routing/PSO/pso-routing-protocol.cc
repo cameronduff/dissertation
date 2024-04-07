@@ -194,25 +194,27 @@ namespace ns3{
 
                         NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
 
-                        for(int j=0; j<path.size(); j++)
+                        for(int j=0; j<path.size() -1; j++)
                         {
-                            Ipv4InterfaceAddress startNode = NodeList::GetNode(startVertex)->GetObject<Ipv4>()->GetAddress(1,0);
-                            Ipv4InterfaceAddress destinationNode = NodeList::GetNode(vertexIndex)->GetObject<Ipv4>()->GetAddress(1,0);
-                            Ipv4InterfaceAddress gatewayNode = NodeList::GetNode(path[j])->GetObject<Ipv4>()->GetAddress(1,0);
-
-                            // NS_LOG_INFO("Source: " << startNode.GetLocal());
-                            // NS_LOG_INFO("Destination: " << destinationNode.GetLocal());
-                            // NS_LOG_INFO("Gateway: " << gatewayNode.GetLocal());
-
+                            Ptr<Node> startNode = NodeList::GetNode(startVertex);
+                            Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
+                            Ptr<Node> gatewayNode = NodeList::GetNode(path[j+1]);
+                            
                             Ipv4Route route;
 
-                            if(startNode.GetLocal() == gatewayNode.GetLocal()) {
+                            if(destinationNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() == gatewayNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()) {
+                                NS_LOG_INFO("Destination and Gateway are the same");
                                 route.SetGateway(Ipv4Address("0.0.0.0"));
                             } else{
-                                route.SetSource(startNode.GetLocal());
-                                route.SetGateway(gatewayNode.GetLocal());
-                                route.SetDestination(destinationNode.GetLocal());
+                                route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
                             }
+
+                            route.SetSource(startNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
+                            route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
+
+                            Ptr<GlobalRouter> router = NodeList::GetNode(path[j])->GetObject<GlobalRouter>();
+                            Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();
+                            gr->AddHostRouteTo(route.GetDestination(), route.GetGateway(), 1);
 
                             //TODO see GlobalRouteManagerImpl::DeleteGlobalRoutes() and add routing table to nodes
 
