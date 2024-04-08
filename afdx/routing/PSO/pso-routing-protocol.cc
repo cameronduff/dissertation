@@ -236,16 +236,6 @@ namespace ns3{
                 path.push_back(currentVertex);
             }
 
-            static int32_t FindOutgoingInterfaceId(Ipv4Address src, Ipv4Address dst)
-            {
-                for(int x=0; x<int(NodeList::GetNNodes()); x++){
-                    Ptr<Node> node = NodeList::GetNode(x);
-                    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
-
-                    
-                }
-            }
-
             static bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route)
             {
                 NS_LOG_INFO("Checking if route exists");
