@@ -11,6 +11,7 @@
 #include "ns3/ipv4-routing-table-entry.h"
 #include "ns3/node-list.h"
 #include "ns3/global-router-interface.h"
+#include "ns3/global-route-manager-impl.h"
 
 #include <list>
 #include <string>
@@ -203,21 +204,24 @@ namespace ns3{
                             Ipv4Route route;
 
                             if(destinationNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() == gatewayNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()) {
-                                NS_LOG_INFO("Destination and Gateway are the same");
+                                // NS_LOG_INFO("Destination and Gateway are the same");
                                 route.SetGateway(Ipv4Address("0.0.0.0"));
                             } else{
                                 route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
                             }
+
+                            //NS_LOG_INFO(destinationNode->GetObject<Ipv4>()->GetAddress(1,0));
 
                             route.SetSource(startNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
                             route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
 
                             Ptr<GlobalRouter> router = NodeList::GetNode(path[j])->GetObject<GlobalRouter>();
                             Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();
-                            gr->AddHostRouteTo(route.GetDestination(), route.GetGateway(), 1);
+                            uint32_t interface = 1;
 
-                            //TODO see GlobalRouteManagerImpl::DeleteGlobalRoutes() and add routing table to nodes
-
+                            if(!checkIfRouteExists(gr, route)){
+                                gr->AddHostRouteTo(route.GetDestination(), route.GetGateway(), interface);
+                            }
                         }
                     }
                 }
@@ -230,6 +234,30 @@ namespace ns3{
                 }
                 returnPath(parents[currentVertex], parents, path);
                 path.push_back(currentVertex);
+            }
+
+            static int32_t FindOutgoingInterfaceId(Ipv4Address src, Ipv4Address dst)
+            {
+                for(int x=0; x<int(NodeList::GetNNodes()); x++){
+                    Ptr<Node> node = NodeList::GetNode(x);
+                    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
+
+                    
+                }
+            }
+
+            static bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route)
+            {
+                NS_LOG_INFO("Checking if route exists");
+                for(uint32_t i=0; i<gr->GetNRoutes(); i++){
+                    Ipv4RoutingTableEntry routingTableEntry = gr->GetRoute(i);
+                    if(routingTableEntry.GetDest() == route.GetDestination() && 
+                        routingTableEntry.GetGateway() == route.GetGateway()){
+                        return true;
+                    }
+                }
+
+                return false;
             }
     };
 }   //namespace ns3
