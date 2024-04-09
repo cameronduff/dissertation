@@ -24,8 +24,6 @@
 using namespace ns3;
 using namespace std;
 
-// NS_LOG_COMPONENT_DEFINE("OpenFlowUDP");
-
 // export NS_LOG=OpenFlowUDP:UdpSocketImpl
 
 //          architecture
@@ -57,12 +55,13 @@ int main(int argc, char *argv[]){
 
     if(verbose)
     {
-        // LogComponentEnable("OpenFlowUDP", LOG_LEVEL_INFO);
+        LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
         // LogComponentEnable("OpenFlowInterface", LOG_LEVEL_INFO);
         // LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
         // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_INFO);
     }
 
+    NS_LOG_INFO("Create nodes.");
     //Node containers
     NodeContainer left_nodes;
     NodeContainer right_nodes;
@@ -110,14 +109,14 @@ int main(int argc, char *argv[]){
     list.Add(psoHelper, 100);
     // list.Add(ipv4GlobalRoutingHelper, 100);
 
-    // NS_LOG_INFO("Install internet");
+    NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
     stack.SetRoutingHelper(list);
 
     stack.Install(left_nodes);
     stack.Install(right_nodes);
 
-    // NS_LOG_INFO("Assign IP addresses");
+    NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
     //Lan1
@@ -136,7 +135,7 @@ int main(int argc, char *argv[]){
     psoHelper.PopulateRoutingTables();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
 
-    // NS_LOG_INFO("Create application");
+    NS_LOG_INFO("Create application");
     uint16_t port = 9; // Discard port(RFC 863)
 
     OnOffHelper onoff("ns3::UdpSocketFactory", Address());
@@ -145,7 +144,7 @@ int main(int argc, char *argv[]){
     onoff.SetConstantRate(DataRate("500kb/s"));
 
     ApplicationContainer app = onoff.Install(left_nodes.Get(0));
-    // Start the application
+    NS_LOG_INFO("Start application");
     
     app.Start(Seconds(1.0));
     app.Stop(Seconds(endTime));
@@ -156,19 +155,19 @@ int main(int argc, char *argv[]){
     sinkApp = sink.Install(right_nodes.Get(0));
     sinkApp.Start(Seconds(0.0));
 
-    // NS_LOG_INFO("Installing Flow Monitor");
+    NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
     flowMonitor = flowHelper.InstallAll();
     
-    // NS_LOG_INFO("Enabling tracing");
+    NS_LOG_INFO("Enabling tracing");
     csma1.EnablePcapAll("afdx-left-small", false);
     csma2.EnablePcapAll("afdx-right-small", false);
     AsciiTraceHelper ascii;
     csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
     csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
-    // NS_LOG_INFO("Enabling animation");
+    NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-small.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
@@ -188,7 +187,6 @@ int main(int argc, char *argv[]){
     anim.SetConstantPosition(right_nodes.Get(1), 210,125,0);
     anim.SetConstantPosition(right_nodes.Get(2), 200,150,0);
 
-
     anim.UpdateNodeDescription(left_nodes.Get(0), "N0");
     anim.UpdateNodeDescription(left_nodes.Get(1), "N1");
     anim.UpdateNodeDescription(left_nodes.Get(2), "N2");
@@ -201,6 +199,7 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
 
     Simulator::Stop(Seconds(endTime));
+    NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
     flowMonitor->SerializeToXmlFile("afdx-metrics.xml", true, true);

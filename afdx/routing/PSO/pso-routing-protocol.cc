@@ -73,30 +73,20 @@ namespace ns3{
                 NS_LOG_INFO("Populating adjacency matrix values");
                 for (uint32_t i=0; i<NodeList::GetNNodes(); i++)
                 {
-                    // NS_LOG_INFO("Node: " << i+1 << "/" << NodeList::GetNNodes());
                     Ptr<Node> node = NodeList::GetNode(i);
 
                     for (uint32_t j=0; j<node->GetNDevices() -1; j++)
                     {
                         Ptr<NetDevice> netDevice = node->GetDevice(j);   
-
-                        // NS_LOG_INFO("Node: " << i+1 << ": NetDevice: " << j+1 << "/" << node->GetNDevices());
-                        // NS_LOG_INFO("               MAC: " << netDevice->GetAddress());
-
                         Ptr<Channel> channel = netDevice->GetChannel();
 
                         for(uint32_t l=0; l<channel->GetNDevices(); l++)
                         {
-                            // NS_LOG_INFO("Node: " << i+1 << ": NetDevice: " << j+1 << "/" << node->GetNDevices() << " Channel: " << channel->GetId());
                             Ptr<NetDevice> channelDevice = channel->GetDevice(l);
-                            // NS_LOG_INFO("Device:" << l+1 << "/" << channel->GetNDevices() << "               MAC: " << channelDevice->GetAddress());
                             uint32_t id = channelDevice->GetNode()->GetId();
                             adjacencyMatrix[node->GetId()][id] = 1;
-                            // NS_LOG_INFO("");
                         }
-                        // NS_LOG_INFO("");
                     }   
-                    // NS_LOG_INFO("");                 
                 }
 
                  NS_LOG_INFO("Output matrix");
@@ -156,6 +146,7 @@ namespace ns3{
 
                     returnShortestPath(src, shortestDistances, parents);
                 }
+                NS_LOG_INFO("Routing tables populated");
             }
 
             static void InitializeRoutes()
@@ -181,8 +172,7 @@ namespace ns3{
                 int nVertices = distances.size();
                 NS_LOG_INFO("Vertex\t Distance\tPath");
             
-                for (int vertexIndex = 0; vertexIndex < nVertices;
-                    vertexIndex++) {
+                for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
                     if (vertexIndex != startVertex) {
                         vector<int> path;
                         returnPath(vertexIndex, parents, path);
@@ -200,28 +190,62 @@ namespace ns3{
                             Ptr<Node> startNode = NodeList::GetNode(startVertex);
                             Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
                             Ptr<Node> gatewayNode = NodeList::GetNode(path[j+1]);
-                            
-                            Ipv4Route route;
+                            Ptr<Node> currentNode =NodeList::GetNode(path[j]);
 
-                            if(destinationNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() == gatewayNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()) {
-                                // NS_LOG_INFO("Destination and Gateway are the same");
-                                route.SetGateway(Ipv4Address("0.0.0.0"));
-                            } else{
-                                route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
+                            NS_LOG_INFO("Node " << path[j]);
+
+                            // uint32_t ip=1;
+
+                            for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
+                                NS_LOG_INFO("Dest IP " << ip+1 << "/" << destinationNode->GetNDevices() << ": " << destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal());
+
+                                Ipv4Route route;
+                                Ipv4Mask mask = Ipv4Mask("255.255.255.0");
+
+                                Ipv4Address srcNetwork = startNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal().CombineMask(mask);
+                                Ipv4Address destNetwork = destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask);
+                                
+                                uint32_t interface = ip;
+
+                                //checks if destination is on the same network as the source
+                                //if true, no need for a gateway
+                                if(srcNetwork == destNetwork) {
+                                    route.SetGateway(Ipv4Address("0.0.0.0"));
+                                } else{
+                                    bool same = false;
+                                    for(uint32_t i=1; i<currentNode->GetNDevices(); i++){
+                                        for(uint32_t j=1; j<gatewayNode->GetNDevices(); j++){
+                                            Ipv4Address currentNetwork = currentNode->GetObject<Ipv4>()->GetAddress(i, 0).GetLocal().CombineMask(mask);
+                                            Ipv4Address nextNetwork = gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal().CombineMask(mask);
+
+                                            if(currentNetwork == nextNetwork){
+                                                NS_LOG_INFO("Current Network: " << currentNetwork << " Next Network: " << nextNetwork);
+                                                route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal());
+                                                interface = i;
+                                                NS_LOG_INFO("INTERFACE: " << interface);
+                                                same = true;
+                                            }
+                                        }
+                                    }
+                                        
+                                    if(same = false){
+                                        NS_LOG_INFO("Same = false");
+                                        route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
+                                    }
+                                }
+
+                                route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask));
+                                Ptr<Ipv4GlobalRouting> gr = NodeList::GetNode(path[j])->GetObject<GlobalRouter>()->GetRoutingProtocol();
+
+                                // turned off for debugging
+                                // if(!checkIfRouteExists(gr, route))
+                                // {   
+                                    NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
+                                    gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), ip);
+                                // }
                             }
 
-                            //NS_LOG_INFO(destinationNode->GetObject<Ipv4>()->GetAddress(1,0));
-
-                            route.SetSource(startNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
-                            route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(1,0).GetLocal());
-
-                            Ptr<GlobalRouter> router = NodeList::GetNode(path[j])->GetObject<GlobalRouter>();
-                            Ptr<Ipv4GlobalRouting> gr = router->GetRoutingProtocol();
-                            uint32_t interface = 1;
-
-                            if(!checkIfRouteExists(gr, route)){
-                                gr->AddHostRouteTo(route.GetDestination(), route.GetGateway(), interface);
-                            }
+                            NS_LOG_INFO(" ");
                         }
                     }
                 }
@@ -238,7 +262,7 @@ namespace ns3{
 
             static bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route)
             {
-                NS_LOG_INFO("Checking if route exists");
+                // NS_LOG_INFO("Checking if route exists");
                 for(uint32_t i=0; i<gr->GetNRoutes(); i++){
                     Ipv4RoutingTableEntry routingTableEntry = gr->GetRoute(i);
                     if(routingTableEntry.GetDest() == route.GetDestination() && 
