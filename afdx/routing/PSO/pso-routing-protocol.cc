@@ -228,7 +228,7 @@ namespace ns3{
                                         }
                                     }
                                         
-                                    if(same = false){
+                                    if(!same){
                                         NS_LOG_INFO("Same = false");
                                         route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
                                     }
@@ -237,12 +237,12 @@ namespace ns3{
                                 route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask));
                                 Ptr<Ipv4GlobalRouting> gr = NodeList::GetNode(path[j])->GetObject<GlobalRouter>()->GetRoutingProtocol();
 
-                                // turned off for debugging
-                                // if(!checkIfRouteExists(gr, route))
-                                // {   
+                                // turn off for debugging
+                                if(!checkIfRouteExists(gr, route))
+                                {   
                                     NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
                                     gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), ip);
-                                // }
+                                }
                             }
 
                             NS_LOG_INFO(" ");
