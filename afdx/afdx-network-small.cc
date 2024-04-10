@@ -98,7 +98,6 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     // OlsrHelper olsr;
-
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
