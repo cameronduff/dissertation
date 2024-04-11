@@ -35,27 +35,29 @@ namespace ns3{
             static void PopulateRoutingTables() 
             {
                 PSORoutingProtocol::BuildGlobalRoutingDatabase();
-                PSORoutingProtocol::InitializeRoutes();
+                // PSORoutingProtocol::InitializeRoutes();
             }
         
-            // Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
-            //                             const Ipv4Header& header,
-            //                             Ptr<NetDevice> oif,
-            //                             Socket::SocketErrno& sockerr) override
-            // {
-            //     return nullptr;
-            // }
+            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
+                                        const Ipv4Header& header,
+                                        Ptr<NetDevice> oif,
+                                        Socket::SocketErrno& sockerr) override
+            {
+                NS_LOG_INFO("In RouteOutput");
+                return nullptr;
+            }
 
-            // bool RouteInput(Ptr<const Packet> p,
-            //                             const Ipv4Header& header,
-            //                             Ptr<const NetDevice> idev,
-            //                             const UnicastForwardCallback& ucb,
-            //                             const MulticastForwardCallback& mcb,
-            //                             const LocalDeliverCallback& lcb,
-            //                             const ErrorCallback& ecb) override
-            // {
-            //     return false;
-            // }
+            bool RouteInput(Ptr<const Packet> p,
+                                        const Ipv4Header& header,
+                                        Ptr<const NetDevice> idev,
+                                        const UnicastForwardCallback& ucb,
+                                        const MulticastForwardCallback& mcb,
+                                        const LocalDeliverCallback& lcb,
+                                        const ErrorCallback& ecb) override
+            {
+                NS_LOG_INFO("In RouteInput");
+                return false;
+            }
         private:
             static void BuildGlobalRoutingDatabase()
             {
@@ -187,16 +189,15 @@ namespace ns3{
 
                         for(int j=0; j<path.size() -1; j++)
                         {
-                            Ptr<Node> startNode = NodeList::GetNode(startVertex);
                             Ptr<Node> currentNode = NodeList::GetNode(path[j]);
                             Ptr<Node> gatewayNode = NodeList::GetNode(path[j+1]);
                             Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
 
-                            if(startNode == nullptr || currentNode == nullptr || gatewayNode == nullptr || destinationNode == nullptr){
-                                NS_LOG_INFO("NULL POINTER!!!!!!!");
-                            }
-
                             NS_LOG_INFO("Node " << path[j]);
+
+                            uint32_t ip=1;
+
+                            NS_LOG_INFO("Num of devices: " << currentNode->GetNDevices());
 
                             for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
                                 Ipv4Route route;
@@ -206,7 +207,7 @@ namespace ns3{
                                 uint32_t interface = ip;
 
                                 //checks if destination is on the same network as the source
-                                //if true, no need for a gateway
+                                //if true, no need for a gateway (0.0.0.0)
                                 if(currentNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal().CombineMask(mask) == destNetwork) {
                                     route.SetGateway(Ipv4Address("0.0.0.0"));
                                 } else{
@@ -239,7 +240,7 @@ namespace ns3{
                                 // if(!checkIfRouteExists(gr, route))
                                 // {   
                                     NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
-                                    gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), ip);
+                                    gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
                                 // }
                             }
 
@@ -260,7 +261,6 @@ namespace ns3{
 
             static bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route)
             {
-                // NS_LOG_INFO("Checking if route exists");
                 for(uint32_t i=0; i<gr->GetNRoutes(); i++){
                     Ipv4RoutingTableEntry routingTableEntry = gr->GetRoute(i);
                     if(routingTableEntry.GetDest() == route.GetDestination() && 
