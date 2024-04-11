@@ -194,9 +194,6 @@ namespace ns3{
                             Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
 
                             NS_LOG_INFO("Node " << path[j]);
-
-                            uint32_t ip=1;
-
                             NS_LOG_INFO("Num of devices: " << currentNode->GetNDevices());
 
                             for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
