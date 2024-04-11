@@ -18,8 +18,8 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
-#include "routing/PSO/pso-routing-protocol.cc"
-#include "routing/PSO/pso-routing-helper.cc"
+#include "../../../routing/PSO/pso-routing-protocol.cc"
+#include "../../../routing/PSO/pso-routing-helper.cc"
 
 using namespace ns3;
 using namespace std;
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]){
 
     anim.EnablePacketMetadata();
     anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
-    anim.EnableIpv4RouteTracking("afdx-routing", Seconds(0), Seconds(endTime), Seconds(1));
+    anim.EnableIpv4RouteTracking("afdx-routing-small", Seconds(0), Seconds(endTime), Seconds(1));
 
     anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
     anim.SetConstantPosition(left_nodes.Get(1), 40,125,0);
@@ -201,6 +201,6 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
-    flowMonitor->SerializeToXmlFile("afdx-metrics.xml", true, true);
+    flowMonitor->SerializeToXmlFile("afdx-metrics-small.xml", true, true);
     return 0;
 }
