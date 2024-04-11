@@ -237,11 +237,11 @@ namespace ns3{
                                 Ptr<Ipv4GlobalRouting> gr = NodeList::GetNode(path[j])->GetObject<GlobalRouter>()->GetRoutingProtocol();
 
                                 // turn off for debugging
-                                // if(!checkIfRouteExists(gr, route))
-                                // {   
+                                if(!checkIfRouteExists(gr, route))
+                                {   
                                     NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
                                     gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
-                                // }
+                                }
                             }
 
                             NS_LOG_INFO(" ");
