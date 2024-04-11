@@ -328,6 +328,6 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
-    flowMonitor->SerializeToXmlFile("afdx-metrics.xml", true, true);
+    flowMonitor->SerializeToXmlFile("afdx-metrics-large.xml", true, true);
     return 0;
 }
