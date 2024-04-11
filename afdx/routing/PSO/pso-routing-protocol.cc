@@ -37,27 +37,6 @@ namespace ns3{
                 PSORoutingProtocol::BuildGlobalRoutingDatabase();
                 // PSORoutingProtocol::InitializeRoutes();
             }
-        
-            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
-                                        const Ipv4Header& header,
-                                        Ptr<NetDevice> oif,
-                                        Socket::SocketErrno& sockerr) override
-            {
-                NS_LOG_INFO("In RouteOutput");
-                return nullptr;
-            }
-
-            bool RouteInput(Ptr<const Packet> p,
-                                        const Ipv4Header& header,
-                                        Ptr<const NetDevice> idev,
-                                        const UnicastForwardCallback& ucb,
-                                        const MulticastForwardCallback& mcb,
-                                        const LocalDeliverCallback& lcb,
-                                        const ErrorCallback& ecb) override
-            {
-                NS_LOG_INFO("In RouteInput");
-                return false;
-            }
         private:
             static void BuildGlobalRoutingDatabase()
             {
