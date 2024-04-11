@@ -279,28 +279,28 @@ int main(int argc, char *argv[]){
     flowMonitor = flowHelper.InstallAll();
     
     NS_LOG_INFO("Enabling tracing");
-    csma1.EnablePcapAll("afdx-network1-mediun", false);
-    csma2.EnablePcapAll("afdx-network2-mediun", false);
-    csma3.EnablePcapAll("afdx-network3-mediun", false);
-    csma4.EnablePcapAll("afdx-network4-mediun", false);
-    csma5.EnablePcapAll("afdx-network5-mediun", false);
-    csma6.EnablePcapAll("afdx-network6-mediun", false);
+    csma1.EnablePcapAll("afdx-network1-medium", false);
+    csma2.EnablePcapAll("afdx-network2-medium", false);
+    csma3.EnablePcapAll("afdx-network3-medium", false);
+    csma4.EnablePcapAll("afdx-network4-medium", false);
+    csma5.EnablePcapAll("afdx-network5-medium", false);
+    csma6.EnablePcapAll("afdx-network6-medium", false);
     AsciiTraceHelper ascii;
-    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-network1-mediun.tr"));
-    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-network2-mediun.tr"));
-    csma3.EnableAsciiAll(ascii.CreateFileStream("afdx-network3-mediun.tr"));
-    csma4.EnableAsciiAll(ascii.CreateFileStream("afdx-network4-mediun.tr"));
-    csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-mediun.tr"));
-    csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-mediun.tr"));
+    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-network1-medium.tr"));
+    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-network2-medium.tr"));
+    csma3.EnableAsciiAll(ascii.CreateFileStream("afdx-network3-medium.tr"));
+    csma4.EnableAsciiAll(ascii.CreateFileStream("afdx-network4-medium.tr"));
+    csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-medium.tr"));
+    csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-medium.tr"));
 
     NS_LOG_INFO("Enabling animation");
-    std::string animFile = "afdx-mediun.xml";
+    std::string animFile = "afdx-medium.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
 
     anim.EnablePacketMetadata();
     anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
-    anim.EnableIpv4RouteTracking("afdx-routing-mediun", Seconds(0), Seconds(endTime), Seconds(1));
+    anim.EnableIpv4RouteTracking("afdx-routing-medium", Seconds(0), Seconds(endTime), Seconds(1));
 
     // anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
     // anim.SetConstantPosition(left_nodes.Get(1), 40,125,0);
@@ -328,6 +328,6 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
-    flowMonitor->SerializeToXmlFile("afdx-metrics-mediun.xml", true, true);
+    flowMonitor->SerializeToXmlFile("afdx-metrics-medium.xml", true, true);
     return 0;
 }
