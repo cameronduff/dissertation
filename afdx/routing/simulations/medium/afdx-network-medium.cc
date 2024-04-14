@@ -43,19 +43,6 @@ SetVerbose(std::string value)
   return true;
 }
 
-double randomDouble(double min, double max) //range : [min, max]
-{
-   const long max_rand = 1000000L;
- 
-    srandom(time(NULL));
- 
-      // Using random function to
-      // get random double value
-    double random_double = min + (max - min) * (random() % max_rand) / max_rand;
- 
-    return random_double;
-}
-
 int randomInt(int min, int max) //range : [min, max]
 {
   std::random_device rd; // obtain a random number from hardware
@@ -77,14 +64,14 @@ void installSinksOnNodes(){
   }  
 }
 
-void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime){
+void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime, int packetSize){
   uint16_t port = 9; // Discard port(RFC 863)
 
   Ipv4Address receiverIp = receiver->GetObject<Ipv4>()->GetAddress(1,0).GetLocal();
 
   OnOffHelper onoff("ns3::UdpSocketFactory", Address());
   onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(receiverIp, port)));
-  onoff.SetAttribute("PacketSize",UintegerValue(1517));
+  onoff.SetAttribute("PacketSize",UintegerValue(packetSize));
   onoff.SetConstantRate(DataRate("500kb/s"));
 
   ApplicationContainer app = onoff.Install(sender);
@@ -327,7 +314,8 @@ int main(int argc, char *argv[]){
     for(int i=0; i<numOfApplications; i++){
       int randomIndex1;
       int randomIndex2;
-      double startTime = randomDouble(1, endTime);
+      int packetSize = randomInt(64, 1517);
+      double startTime = (randomInt(1, endTime * 10))/10.0;
       bool same = true;
 
       NS_LOG_INFO("Start time: " << startTime);
@@ -341,7 +329,7 @@ int main(int argc, char *argv[]){
         }
       }
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2);
+      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize);
 
       NodeContainer container1 = endSystems[randomIndex1];
       NodeContainer container2 = endSystems[randomIndex2];
@@ -349,7 +337,7 @@ int main(int argc, char *argv[]){
       Ptr<Node> sender = container1.Get(0);
       Ptr<Node> receiver = container2.Get(0);
 
-      createUdpApplication(sender, receiver, startTime);
+      createUdpApplication(sender, receiver, startTime, packetSize);
     }
 
     NS_LOG_INFO("Installing Flow Monitor");
