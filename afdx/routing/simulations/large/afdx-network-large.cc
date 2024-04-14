@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
     uint16_t port = 9; // Discard port(RFC 863)
 
     OnOffHelper onoff("ns3::UdpSocketFactory", Address());
-    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(network3Interfaces.GetAddress(0), port)));
+    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(network4Interfaces.GetAddress(0), port)));
     onoff.SetAttribute("PacketSize",UintegerValue(1517));
     onoff.SetConstantRate(DataRate("500kb/s"));
 
@@ -286,7 +286,7 @@ int main(int argc, char *argv[]){
     // Create an optional packet sink to receive these packets on all nodes
     PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
     ApplicationContainer sinkApp;
-    sinkApp = sink.Install(network3.Get(0));
+    sinkApp = sink.Install(network4.Get(0));
     sinkApp.Start(Seconds(0.0));
 
     NS_LOG_INFO("Installing Flow Monitor");
