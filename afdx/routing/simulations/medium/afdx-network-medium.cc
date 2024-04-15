@@ -64,7 +64,7 @@ void installSinksOnNodes(){
   }  
 }
 
-void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime, int packetSize){
+void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime, double appEndTime, int packetSize){
   uint16_t port = 9; // Discard port(RFC 863)
 
   Ipv4Address receiverIp = receiver->GetObject<Ipv4>()->GetAddress(1,0).GetLocal();
@@ -77,9 +77,7 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
   ApplicationContainer app = onoff.Install(sender);
   
   app.Start(Seconds(startTime));
-  app.Stop(Seconds(endTime));
-
-  // NS_LOG_INFO("Application created starting at " << startTime << " from " << sender->GetObject<Ipv4>()->GetAddress(1,0).GetLocal() << " to " << receiverIp);
+  app.Stop(Seconds(appEndTime));
 }
 
 int main(int argc, char *argv[]){
@@ -112,6 +110,8 @@ int main(int argc, char *argv[]){
     network5.Create(1);
     network6.Create(1);
     switch_nodes.Create(7);
+
+    NS_LOG_INFO("Num of nodes: " << network1.GetN());
 
     network1.Add(switch_nodes.Get(0));
     network2.Add(switch_nodes.Get(1));
@@ -315,7 +315,8 @@ int main(int argc, char *argv[]){
       int randomIndex1;
       int randomIndex2;
       int packetSize = randomInt(64, 1517);
-      double startTime = (randomInt(1, endTime * 10))/10.0;
+      double startTime = ((randomInt(1, endTime * 10))/10.0);
+      double appEndTime;
       bool same = true;
 
       NS_LOG_INFO("Start time: " << startTime);
@@ -323,21 +324,25 @@ int main(int argc, char *argv[]){
       while(same){
         randomIndex1 = randomInt(0, endSystems.size()-1);
         randomIndex2 = randomInt(0, endSystems.size()-1);
+        // appEndTime = (randomInt(endTime/2, endTime * 10))/10.0;
 
         if(randomIndex1 != randomIndex2){
           same = false;
         }
       }
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize);
+      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
 
       NodeContainer container1 = endSystems[randomIndex1];
       NodeContainer container2 = endSystems[randomIndex2];
 
+      NS_LOG_INFO("Num of nodes: " << container1.GetN());
+
       Ptr<Node> sender = container1.Get(0);
       Ptr<Node> receiver = container2.Get(0);
 
-      createUdpApplication(sender, receiver, startTime, packetSize);
+      // createUdpApplication(sender, receiver, startTime, appEndTime , packetSize);
+      createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
 
     NS_LOG_INFO("Installing Flow Monitor");
