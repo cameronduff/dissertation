@@ -376,19 +376,19 @@ int main(int argc, char *argv[]){
     flowMonitor = flowHelper.InstallAll();
     
     NS_LOG_INFO("Enabling tracing");
-    csma1.EnablePcapAll("afdx-network1-large", false);
-    csma2.EnablePcapAll("afdx-network2-large", false);
-    csma3.EnablePcapAll("afdx-network3-large", false);
-    csma4.EnablePcapAll("afdx-network4-large", false);
-    csma5.EnablePcapAll("afdx-network5-large", false);
-    csma6.EnablePcapAll("afdx-network6-large", false);
+    // csma1.EnablePcapAll("afdx-network1-large", false);
+    // csma2.EnablePcapAll("afdx-network2-large", false);
+    // csma3.EnablePcapAll("afdx-network3-large", false);
+    // csma4.EnablePcapAll("afdx-network4-large", false);
+    // csma5.EnablePcapAll("afdx-network5-large", false);
+    // csma6.EnablePcapAll("afdx-network6-large", false);
     AsciiTraceHelper ascii;
-    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-network1-large.tr"));
-    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-network2-large.tr"));
-    csma3.EnableAsciiAll(ascii.CreateFileStream("afdx-network3-large.tr"));
-    csma4.EnableAsciiAll(ascii.CreateFileStream("afdx-network4-large.tr"));
-    csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-large.tr"));
-    csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-large.tr"));
+    // csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-network1-large.tr"));
+    // csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-network2-large.tr"));
+    // csma3.EnableAsciiAll(ascii.CreateFileStream("afdx-network3-large.tr"));
+    // csma4.EnableAsciiAll(ascii.CreateFileStream("afdx-network4-large.tr"));
+    // csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-large.tr"));
+    // csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-large.tr"));
 
     NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-large.xml";
@@ -396,8 +396,8 @@ int main(int argc, char *argv[]){
     AnimationInterface anim(animFile);
 
     anim.EnablePacketMetadata();
-    nim.SetMaxPktsPerTraceFile(50000);
-    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    anim.SetMaxPktsPerTraceFile(500000);
+    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
     anim.EnableIpv4RouteTracking("afdx-routing-large", Seconds(0), Seconds(endTime), Seconds(1));
 
     anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);

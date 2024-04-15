@@ -236,11 +236,11 @@ int main(int argc, char *argv[]){
     flowMonitor = flowHelper.InstallAll();
     
     NS_LOG_INFO("Enabling tracing");
-    csma1.EnablePcapAll("afdx-left-small", false);
-    csma2.EnablePcapAll("afdx-right-small", false);
+    // csma1.EnablePcapAll("afdx-left-small", false);
+    // csma2.EnablePcapAll("afdx-right-small", false);
     AsciiTraceHelper ascii;
-    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
-    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
+    // csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
+    // csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
     NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-small.xml";
@@ -248,7 +248,7 @@ int main(int argc, char *argv[]){
     AnimationInterface anim(animFile);
 
     anim.EnablePacketMetadata();
-    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
     anim.EnableIpv4RouteTracking("afdx-routing-small", Seconds(0), Seconds(endTime), Seconds(1));
 
     anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
