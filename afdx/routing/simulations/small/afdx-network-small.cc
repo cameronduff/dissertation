@@ -49,6 +49,43 @@ SetVerbose(std::string value)
   return true;
 }
 
+int randomInt(int min, int max) //range : [min, max]
+{
+  std::random_device rd; // obtain a random number from hardware
+  std::mt19937 gen(rd()); // seed the generator
+  std::uniform_int_distribution<> distr(min, max); // define the range
+
+  return distr(gen);
+}
+
+void installSinksOnNodes(){
+  uint16_t port = 9; // Discard port(RFC 863)
+
+  for(int node=0; node<int(NodeList::GetNNodes()); node++){
+    // Create an optional packet sink to receive these packets on all nodes
+    PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
+    ApplicationContainer sinkApp;
+    sinkApp = sink.Install(NodeList::GetNode(node));
+    sinkApp.Start(Seconds(0.0));
+  }  
+}
+
+void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime, double appEndTime, int packetSize){
+  uint16_t port = 9; // Discard port(RFC 863)
+
+  Ipv4Address receiverIp = receiver->GetObject<Ipv4>()->GetAddress(1,0).GetLocal();
+
+  OnOffHelper onoff("ns3::UdpSocketFactory", Address());
+  onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(receiverIp, port)));
+  onoff.SetAttribute("PacketSize",UintegerValue(packetSize));
+  onoff.SetConstantRate(DataRate("500kb/s"));
+
+  ApplicationContainer app = onoff.Install(sender);
+  
+  app.Start(Seconds(startTime));
+  app.Stop(Seconds(appEndTime));
+}
+
 int main(int argc, char *argv[]){
     CommandLine cmd;
     cmd.Parse(argc, argv);
@@ -133,26 +170,65 @@ int main(int argc, char *argv[]){
 
     psoHelper.PopulateRoutingTables();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
+    installSinksOnNodes();
 
-    NS_LOG_INFO("Create application");
-    uint16_t port = 9; // Discard port(RFC 863)
+    vector<NodeContainer> endSystems;
+    endSystems.push_back(left_nodes);
+    endSystems.push_back(right_nodes);
 
-    OnOffHelper onoff("ns3::UdpSocketFactory", Address());
-    onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(rightInterfaces.GetAddress(0), port)));
-    onoff.SetAttribute("PacketSize",UintegerValue(1517));
-    onoff.SetConstantRate(DataRate("500kb/s"));
+    int numOfApplications = randomInt(NodeList::GetNNodes(), NodeList::GetNNodes() * 2);
 
-    ApplicationContainer app = onoff.Install(left_nodes.Get(0));
-    NS_LOG_INFO("Start application");
-    
-    app.Start(Seconds(1.0));
-    app.Stop(Seconds(endTime));
+    NS_LOG_INFO("Number of applications: " << numOfApplications);
 
-    // Create an optional packet sink to receive these packets on all nodes
-    PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    ApplicationContainer sinkApp;
-    sinkApp = sink.Install(right_nodes.Get(0));
-    sinkApp.Start(Seconds(0.0));
+    for(int i=0; i<numOfApplications; i++){
+      int randomIndex1;
+      int randomIndex2;
+      int packetSize = randomInt(64, 1517);
+      double startTime = ((randomInt(1, endTime * 10))/10.0);
+      double appEndTime;
+      bool sameNetwork = true;
+
+      NS_LOG_INFO("Start time: " << startTime);
+
+      while(sameNetwork){
+        randomIndex1 = randomInt(0, endSystems.size()-1);
+        randomIndex2 = randomInt(0, endSystems.size()-1);
+        // appEndTime = (randomInt(endTime/2, endTime * 10))/10.0;
+
+        if(randomIndex1 != randomIndex2){
+          sameNetwork = false;
+        }
+      }
+
+      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
+
+      NodeContainer container1 = endSystems[randomIndex1];
+      NodeContainer container2 = endSystems[randomIndex2];
+
+      NS_LOG_INFO("Num of nodes: " << container1.GetN());
+
+      bool sameNode = true;
+
+      int randomNode1;
+      int randomNode2;
+
+      while(sameNode){
+        randomNode1 = randomInt(0, container1.GetN()-1);
+        randomNode2 = randomInt(0, container2.GetN()-1);
+
+        if(randomNode1 != randomNode2){
+          sameNode = false;
+        }
+      }
+
+      Ptr<Node> sender = container1.Get(randomNode1);
+      Ptr<Node> receiver = container2.Get(randomNode2);
+
+      // createUdpApplication(sender, receiver, startTime, appEndTime , packetSize);
+
+      NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
+      createUdpApplication(sender, receiver, startTime, endTime, packetSize);
+    }
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
