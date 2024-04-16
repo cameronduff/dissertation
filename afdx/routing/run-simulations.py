@@ -184,13 +184,13 @@ def parseXmlFile(simulationId, xmlFilename, rows):
             rows.append(
                 {'Simulation Id': simulationId,
                 'Flow Id': flow.flowId,
-                'TX bitrate': flow.txBitrate,
-                'RX bitrate': flow.rxBitrate,
-                'Mean Delay': flow.delayMean,
-                'Packet Loss Ratio': flow.packetLossRatio})
+                'TX bitrate kbit/s': flow.txBitrate,
+                'RX bitrate kbit/s': flow.rxBitrate,
+                'Mean Delay ms': flow.delayMean,
+                'Packet Loss Ratio %': flow.packetLossRatio})
 
 def parseAllXmlFiles(numOfSimulations):
-    cols=['Simulation Id', 'Flow Id', 'TX bitrate', 'RX bitrate', 'Mean Delay', 'Packet Loss Ratio']
+    cols=['Simulation Id', 'Flow Id', 'TX bitrate kbit/s', 'RX bitrate kbit/s', 'Mean Delay ms', 'Packet Loss Ratio %']
 
     small = []
     medium = []
