@@ -213,7 +213,7 @@ def parseAllXmlFiles(numOfSimulations):
     dfLarge.to_csv('metrics-large.csv') 
 
 if __name__ == '__main__':
-    #takes roughly 30s to run 1 of each simulation
+    #takes roughly 9s to run 1 of each simulation
     numOfSimulations = 100
     runSimulations(numOfSimulations)
     parseAllXmlFiles(numOfSimulations)
