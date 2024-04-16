@@ -81,10 +81,12 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
 }
 
 int main(int argc, char *argv[]){
-    string flowmonName = "afdx-metrics-medium.xml";
+    string flowmonName = "afdx-metrics-medium.xml";    
+    string runAnimation = "yes";
     
     CommandLine cmd;
     cmd.AddValue("flowmonName", "Sets the name for the flowmon file", flowmonName);
+    cmd.AddValue("runAnimation", "Turns on or off animation", runAnimation);
     cmd.Parse(argc, argv);
 
     if(verbose)
@@ -368,46 +370,48 @@ int main(int argc, char *argv[]){
     // csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-medium.tr"));
     // csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-medium.tr"));
 
-    NS_LOG_INFO("Enabling animation");
-    std::string animFile = "afdx-anim-medium.xml";
-    //create the animation object and configure for specified output
-    AnimationInterface anim(animFile);
+    if(runAnimation == "yes"){
+      NS_LOG_INFO("Enabling animation");
+      std::string animFile = "afdx-anim-medium.xml";
+      //create the animation object and configure for specified output
+      AnimationInterface anim(animFile);
 
-    anim.EnablePacketMetadata();
-    anim.SetMaxPktsPerTraceFile(500000);
-    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
-    anim.EnableIpv4RouteTracking("afdx-routing-medium", Seconds(0), Seconds(endTime), Seconds(1));
+      anim.EnablePacketMetadata();
+      anim.SetMaxPktsPerTraceFile(500000);
+      // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+      anim.EnableIpv4RouteTracking("afdx-routing-medium", Seconds(0), Seconds(endTime), Seconds(1));
 
-    anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);
-    anim.SetConstantPosition(switch_nodes.Get(1), 50,125,0);
-    anim.SetConstantPosition(switch_nodes.Get(2), 150,125,0);
-    anim.SetConstantPosition(switch_nodes.Get(3), 150,75,0);
-    anim.SetConstantPosition(switch_nodes.Get(4), 100,75,0);
-    anim.SetConstantPosition(switch_nodes.Get(5), 100,175,0);
-    anim.SetConstantPosition(switch_nodes.Get(6), 100,125,0);
+      anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);
+      anim.SetConstantPosition(switch_nodes.Get(1), 50,125,0);
+      anim.SetConstantPosition(switch_nodes.Get(2), 150,125,0);
+      anim.SetConstantPosition(switch_nodes.Get(3), 150,75,0);
+      anim.SetConstantPosition(switch_nodes.Get(4), 100,75,0);
+      anim.SetConstantPosition(switch_nodes.Get(5), 100,175,0);
+      anim.SetConstantPosition(switch_nodes.Get(6), 100,125,0);
 
-    anim.SetConstantPosition(network1.Get(0), 25,200,0);
-    anim.SetConstantPosition(network2.Get(0), 25,100,0);
-    anim.SetConstantPosition(network3.Get(0), 175,150,0);
-    anim.SetConstantPosition(network4.Get(0), 175,50,0);
-    anim.SetConstantPosition(network5.Get(0), 75,50,0);
-    anim.SetConstantPosition(network6.Get(0), 125,200,0);
+      anim.SetConstantPosition(network1.Get(0), 25,200,0);
+      anim.SetConstantPosition(network2.Get(0), 25,100,0);
+      anim.SetConstantPosition(network3.Get(0), 175,150,0);
+      anim.SetConstantPosition(network4.Get(0), 175,50,0);
+      anim.SetConstantPosition(network5.Get(0), 75,50,0);
+      anim.SetConstantPosition(network6.Get(0), 125,200,0);
 
-    anim.UpdateNodeDescription(switch_nodes.Get(0), "SW1");
-    anim.UpdateNodeDescription(switch_nodes.Get(1), "SW2");
-    anim.UpdateNodeDescription(switch_nodes.Get(2), "SW3");
-    anim.UpdateNodeDescription(switch_nodes.Get(3), "SW4");
-    anim.UpdateNodeDescription(switch_nodes.Get(4), "SW5");
-    anim.UpdateNodeDescription(switch_nodes.Get(5), "SW6");
-    anim.UpdateNodeDescription(switch_nodes.Get(6), "SW7");
+      anim.UpdateNodeDescription(switch_nodes.Get(0), "SW1");
+      anim.UpdateNodeDescription(switch_nodes.Get(1), "SW2");
+      anim.UpdateNodeDescription(switch_nodes.Get(2), "SW3");
+      anim.UpdateNodeDescription(switch_nodes.Get(3), "SW4");
+      anim.UpdateNodeDescription(switch_nodes.Get(4), "SW5");
+      anim.UpdateNodeDescription(switch_nodes.Get(5), "SW6");
+      anim.UpdateNodeDescription(switch_nodes.Get(6), "SW7");
 
-    anim.UpdateNodeDescription(network1.Get(0), "N1");
-    anim.UpdateNodeDescription(network2.Get(0), "N2");
-    anim.UpdateNodeDescription(network3.Get(0), "N3");
-    anim.UpdateNodeDescription(network4.Get(0), "N4");
-    anim.UpdateNodeDescription(network5.Get(0), "N5");
-    anim.UpdateNodeDescription(network6.Get(0), "N6");
-
+      anim.UpdateNodeDescription(network1.Get(0), "N1");
+      anim.UpdateNodeDescription(network2.Get(0), "N2");
+      anim.UpdateNodeDescription(network3.Get(0), "N3");
+      anim.UpdateNodeDescription(network4.Get(0), "N4");
+      anim.UpdateNodeDescription(network5.Get(0), "N5");
+      anim.UpdateNodeDescription(network6.Get(0), "N6");
+    }
+    
     Simulator::Stop(Seconds(endTime));
     NS_LOG_INFO("Run Simulation");
     Simulator::Run();
