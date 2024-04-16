@@ -87,7 +87,10 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
 }
 
 int main(int argc, char *argv[]){
+    string flowmonName = "afdx-metrics-small.xml";
+    
     CommandLine cmd;
+    cmd.AddValue("flowmonName", "Sets the name for the flowmon file", flowmonName);
     cmd.Parse(argc, argv);
 
     if(verbose)
@@ -243,7 +246,7 @@ int main(int argc, char *argv[]){
     // csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
     NS_LOG_INFO("Enabling animation");
-    std::string animFile = "afdx-small.xml";
+    std::string animFile = "afdx-anim-small.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
 
@@ -277,6 +280,6 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
-    flowMonitor->SerializeToXmlFile("afdx-metrics-small.xml", true, true);
+    flowMonitor->SerializeToXmlFile(flowmonName, true, true);
     return 0;
 }

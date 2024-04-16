@@ -81,7 +81,10 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
 }
 
 int main(int argc, char *argv[]){
+    string flowmonName = "afdx-metrics-medium.xml";
+    
     CommandLine cmd;
+    cmd.AddValue("flowmonName", "Sets the name for the flowmon file", flowmonName);
     cmd.Parse(argc, argv);
 
     if(verbose)
@@ -366,7 +369,7 @@ int main(int argc, char *argv[]){
     // csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-medium.tr"));
 
     NS_LOG_INFO("Enabling animation");
-    std::string animFile = "afdx-medium.xml";
+    std::string animFile = "afdx-anim-medium.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
 
@@ -409,6 +412,6 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
-    flowMonitor->SerializeToXmlFile("afdx-metrics-medium.xml", true, true);
+    flowMonitor->SerializeToXmlFile(flowmonName, true, true);
     return 0;
 }
