@@ -12,8 +12,6 @@ def parse_time_ns(tm):
         return float(tm[:-2])
     raise ValueError(tm)
 
-
-
 class FiveTuple(object):
     __slots_ = ['sourceAddress', 'destinationAddress', 'protocol', 'sourcePort', 'destinationPort']
     def __init__(self, el):
