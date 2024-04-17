@@ -123,6 +123,7 @@ class Simulation(object):
 def runSimulations(numOfSimulations):
 
     for i in range(numOfSimulations):
+        print(f"Running simulation {i}")
         #run small
         os.system('cd')
         os.system('cd ns-allinone-3.40/ns-3.40')
