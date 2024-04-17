@@ -82,6 +82,8 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
 
 int main(int argc, char *argv[]){
     string flowmonName = "afdx-metrics-medium.xml";    
+    int delay = 100000;
+    string dataRate = "100Mbps";
     
     CommandLine cmd;
     cmd.AddValue("flowmonName", "Sets the name for the flowmon file", flowmonName);
@@ -125,43 +127,43 @@ int main(int argc, char *argv[]){
 
     //defining medium for Lan1
     CsmaHelper csma1;
-    csma1.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer network1Devices;
     network1Devices = csma1.Install(network1);
 
     //defining medium for Lan2
     CsmaHelper csma2;
-    csma2.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma2.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer network2Devices;
     network2Devices = csma2.Install(network2);
 
     //defining medium for Lan3
     CsmaHelper csma3;
-    csma3.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma3.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma3.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma3.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer network3Devices;
     network3Devices = csma3.Install(network3);
 
     //defining medium for Lan4
     CsmaHelper csma4;
-    csma4.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma4.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer network4Devices;
     network4Devices = csma4.Install(network4);
 
     //defining medium for Lan5
     CsmaHelper csma5;
-    csma5.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma5.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma5.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma5.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer network5Devices;
     network5Devices = csma5.Install(network5);
 
     //defining medium for Lan6
     CsmaHelper csma6;
-    csma6.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma6.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma6.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma6.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer network6Devices;
     network6Devices = csma6.Install(network6);
 
@@ -169,64 +171,64 @@ int main(int argc, char *argv[]){
 
     //p2p connection between switches 1 & 2
     PointToPointHelper pointToPoint_1_2;
-    pointToPoint_1_2.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_1_2.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_1_2.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_1_2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_1_2;
     switchDevices_1_2 = pointToPoint_1_2.Install(NodeContainer(switch_nodes.Get(0), switch_nodes.Get(1)));
     switchDeviceContainers.push_back(switchDevices_1_2);
 
     //p2p connection between switches 1 & 6
     PointToPointHelper pointToPoint_1_6;
-    pointToPoint_1_6.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_1_6.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_1_6.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_1_6.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_1_6;
     switchDevices_1_6 = pointToPoint_1_6.Install(NodeContainer(switch_nodes.Get(0), switch_nodes.Get(5)));
     switchDeviceContainers.push_back(switchDevices_1_6);
 
     //p2p connection between switches 2 & 7
     PointToPointHelper pointToPoint_2_7;
-    pointToPoint_2_7.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_2_7.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_2_7.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_2_7.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_2_7;
     switchDevices_2_7 = pointToPoint_2_7.Install(NodeContainer(switch_nodes.Get(1), switch_nodes.Get(6)));
     switchDeviceContainers.push_back(switchDevices_2_7);
 
     //p2p connection between switches 6 & 7
     PointToPointHelper pointToPoint_6_7;
-    pointToPoint_6_7.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_6_7.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_6_7.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_6_7.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_6_7;
     switchDevices_6_7 = pointToPoint_6_7.Install(NodeContainer(switch_nodes.Get(5), switch_nodes.Get(6)));
     switchDeviceContainers.push_back(switchDevices_6_7);
 
     //p2p connection between switches 7 & 5
     PointToPointHelper pointToPoint_7_5;
-    pointToPoint_7_5.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_7_5.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_7_5.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_7_5.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_7_5;
     switchDevices_7_5 = pointToPoint_7_5.Install(NodeContainer(switch_nodes.Get(6), switch_nodes.Get(4)));
     switchDeviceContainers.push_back(switchDevices_7_5);
 
     //p2p connection between switches 7 & 3
     PointToPointHelper pointToPoint_7_3;
-    pointToPoint_7_3.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_7_3.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_7_3.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_7_3.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_7_3;
     switchDevices_7_3 = pointToPoint_7_3.Install(NodeContainer(switch_nodes.Get(6), switch_nodes.Get(2)));
     switchDeviceContainers.push_back(switchDevices_7_3);
 
     //p2p connection between switches 5 & 4
     PointToPointHelper pointToPoint_5_4;
-    pointToPoint_5_4.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_5_4.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_5_4.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_5_4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_5_4;
     switchDevices_5_4 = pointToPoint_5_4.Install(NodeContainer(switch_nodes.Get(4), switch_nodes.Get(3)));
     switchDeviceContainers.push_back(switchDevices_5_4);
 
     //p2p connection between switches 3 & 4
     PointToPointHelper pointToPoint_3_4;
-    pointToPoint_3_4.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint_3_4.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint_3_4.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_3_4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices_3_4;
     switchDevices_3_4 = pointToPoint_3_4.Install(NodeContainer(switch_nodes.Get(2), switch_nodes.Get(3)));
     switchDeviceContainers.push_back(switchDevices_3_4);
@@ -312,7 +314,7 @@ int main(int argc, char *argv[]){
 
     int numOfApplications = randomInt(NodeList::GetNNodes(), NodeList::GetNNodes() * 2);
 
-    NS_LOG_INFO("Number of applications: " << numOfApplications);
+    // NS_LOG_INFO("Number of applications: " << numOfApplications);
 
     for(int i=0; i<numOfApplications; i++){
       int randomIndex1;
@@ -322,7 +324,7 @@ int main(int argc, char *argv[]){
       double appEndTime;
       bool same = true;
 
-      NS_LOG_INFO("Start time: " << startTime);
+      // NS_LOG_INFO("Start time: " << startTime);
 
       while(same){
         randomIndex1 = randomInt(0, endSystems.size()-1);
@@ -334,12 +336,12 @@ int main(int argc, char *argv[]){
         }
       }
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
+      // NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
 
       NodeContainer container1 = endSystems[randomIndex1];
       NodeContainer container2 = endSystems[randomIndex2];
 
-      NS_LOG_INFO("Num of nodes: " << container1.GetN());
+      // NS_LOG_INFO("Num of nodes: " << container1.GetN());
 
       Ptr<Node> sender = container1.Get(0);
       Ptr<Node> receiver = container2.Get(0);

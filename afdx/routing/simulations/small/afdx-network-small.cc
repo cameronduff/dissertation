@@ -88,6 +88,8 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
 
 int main(int argc, char *argv[]){
     string flowmonName = "afdx-metrics-small.xml";
+    int delay = 100000;
+    string dataRate = "100Mbps";
     
     CommandLine cmd;
     cmd.AddValue("flowmonName", "Sets the name for the flowmon file", flowmonName);
@@ -117,22 +119,22 @@ int main(int argc, char *argv[]){
 
     //defining medium for Lan1
     CsmaHelper csma1;
-    csma1.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer leftDevices;
     leftDevices = csma1.Install(left_nodes);
 
     //defining medium for Lan2
     CsmaHelper csma2;
-    csma2.SetChannelAttribute("DataRate", StringValue("100Mbps"));
-    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(6560)));
+    csma2.SetChannelAttribute("DataRate", StringValue(dataRate));
+    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer rightDevices;
     rightDevices = csma2.Install(right_nodes);
 
     //p2p connection between switches
     PointToPointHelper pointToPoint;
-    pointToPoint.SetDeviceAttribute("DataRate", StringValue("10Mbps"));
-    pointToPoint.SetChannelAttribute("Delay", StringValue("2ms"));
+    pointToPoint.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
     NetDeviceContainer switchDevices;
     switchDevices = pointToPoint.Install(switch_nodes);
 
@@ -181,7 +183,7 @@ int main(int argc, char *argv[]){
 
     int numOfApplications = randomInt(NodeList::GetNNodes(), NodeList::GetNNodes() * 2);
 
-    NS_LOG_INFO("Number of applications: " << numOfApplications);
+    // NS_LOG_INFO("Number of applications: " << numOfApplications);
 
     for(int i=0; i<numOfApplications; i++){
       int randomIndex1;
@@ -191,7 +193,7 @@ int main(int argc, char *argv[]){
       double appEndTime;
       bool sameNetwork = true;
 
-      NS_LOG_INFO("Start time: " << startTime);
+      // NS_LOG_INFO("Start time: " << startTime);
 
       while(sameNetwork){
         randomIndex1 = randomInt(0, endSystems.size()-1);
@@ -203,12 +205,12 @@ int main(int argc, char *argv[]){
         }
       }
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
+      // NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
 
       NodeContainer container1 = endSystems[randomIndex1];
       NodeContainer container2 = endSystems[randomIndex2];
 
-      NS_LOG_INFO("Num of nodes: " << container1.GetN());
+      // NS_LOG_INFO("Num of nodes: " << container1.GetN());
 
       bool sameNode = true;
 
@@ -229,7 +231,7 @@ int main(int argc, char *argv[]){
 
       // createUdpApplication(sender, receiver, startTime, appEndTime , packetSize);
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
+      // NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
 
@@ -251,7 +253,7 @@ int main(int argc, char *argv[]){
     AnimationInterface anim(animFile);
 
     anim.EnablePacketMetadata();
-    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
     anim.EnableIpv4RouteTracking("afdx-routing-small", Seconds(0), Seconds(endTime), Seconds(1));
 
     anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);

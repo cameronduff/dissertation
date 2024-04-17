@@ -35,7 +35,24 @@ namespace ns3{
             static void PopulateRoutingTables() 
             {
                 PSORoutingProtocol::BuildGlobalRoutingDatabase();
-                // PSORoutingProtocol::InitializeRoutes();
+            }
+
+            // These methods inherited from base class
+            Ptr<Ipv4Route> RouteOutput(Ptr<Packet> p,
+                                    const Ipv4Header& header,
+                                    Ptr<NetDevice> oif,
+                                    Socket::SocketErrno& sockerr) override{
+                NS_LOG_INFO("In RouteOutput");
+            }
+
+            bool RouteInput(Ptr<const Packet> p,
+                            const Ipv4Header& header,
+                            Ptr<const NetDevice> idev,
+                            const UnicastForwardCallback& ucb,
+                            const MulticastForwardCallback& mcb,
+                            const LocalDeliverCallback& lcb,
+                            const ErrorCallback& ecb) override{
+                NS_LOG_INFO("In RouteInput");
             }
         private:
             static void BuildGlobalRoutingDatabase()
@@ -70,17 +87,17 @@ namespace ns3{
                     }   
                 }
 
-                 NS_LOG_INFO("Output matrix");
+                //  NS_LOG_INFO("Output matrix");
                  for(int x=0; x<int(NodeList::GetNNodes()); x++){
                     string row("");
                     for(int y=0; y<int(NodeList::GetNNodes()); y++){
                         auto s = std::to_string(adjacencyMatrix[x][y]);
                         row = row + s;
                     }
-                    NS_LOG_INFO("Node Id: " << x << " " << row);
+                    // NS_LOG_INFO("Node Id: " << x << " " << row);
                 }
 
-                NS_LOG_INFO("");
+                // NS_LOG_INFO("");
 
                 //start finding smallest route assuming equal link weighting
                 NS_LOG_INFO("Finding shortest routes");
@@ -151,7 +168,7 @@ namespace ns3{
             static void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents)
             {
                 int nVertices = distances.size();
-                NS_LOG_INFO("Vertex\t Distance\tPath");
+                // NS_LOG_INFO("Vertex\t Distance\tPath");
             
                 for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
                     if (vertexIndex != startVertex) {
@@ -172,8 +189,8 @@ namespace ns3{
                             Ptr<Node> gatewayNode = NodeList::GetNode(path[j+1]);
                             Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
 
-                            NS_LOG_INFO("Node " << path[j]);
-                            NS_LOG_INFO("Num of devices: " << currentNode->GetNDevices());
+                            // NS_LOG_INFO("Node " << path[j]);
+                            // NS_LOG_INFO("Num of devices: " << currentNode->GetNDevices());
 
                             for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
                                 Ipv4Route route;
@@ -215,12 +232,12 @@ namespace ns3{
                                 // turn off for debugging
                                 if(!checkIfRouteExists(gr, route))
                                 {   
-                                    NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
+                                    // NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
                                     gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
                                 }
                             }
 
-                            NS_LOG_INFO(" ");
+                            // NS_LOG_INFO(" ");
                         }
                     }
                 }
