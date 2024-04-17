@@ -24,7 +24,6 @@ namespace ns3{
     // export NS_LOG=PSORoutingProtocol
     NS_LOG_COMPONENT_DEFINE ("PSORoutingProtocol");
 
-
     class PSORoutingProtocol : public Ipv4GlobalRouting
     {
         public:
@@ -82,6 +81,7 @@ namespace ns3{
                         {
                             Ptr<NetDevice> channelDevice = channel->GetDevice(l);
                             uint32_t id = channelDevice->GetNode()->GetId();
+                            // default weighting (fitness) is set to 1
                             adjacencyMatrix[node->GetId()][id] = 1;
                         }
                     }   

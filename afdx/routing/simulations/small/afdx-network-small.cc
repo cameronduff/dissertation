@@ -20,6 +20,7 @@
 #include "ns3/ipv4-list-routing-helper.h"
 #include "../../../routing/PSO/pso-routing-protocol.cc"
 #include "../../../routing/PSO/pso-routing-helper.cc"
+#include "../../../custom-application/custom-application.cc"
 
 using namespace ns3;
 using namespace std;
@@ -71,19 +72,31 @@ void installSinksOnNodes(){
 }
 
 void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime, double appEndTime, int packetSize){
-  uint16_t port = 9; // Discard port(RFC 863)
+  // uint16_t port = 9; // Discard port(RFC 863)
 
   Ipv4Address receiverIp = receiver->GetObject<Ipv4>()->GetAddress(1,0).GetLocal();
 
-  OnOffHelper onoff("ns3::UdpSocketFactory", Address());
-  onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(receiverIp, port)));
-  onoff.SetAttribute("PacketSize",UintegerValue(packetSize));
-  onoff.SetConstantRate(DataRate("500kb/s"));
+  // OnOffHelper onoff("ns3::UdpSocketFactory", Address());
+  // onoff.SetAttribute("Remote", AddressValue(InetSocketAddress(receiverIp, port)));
+  // onoff.SetAttribute("PacketSize",UintegerValue(packetSize));
+  // onoff.SetConstantRate(DataRate("500kb/s"));
 
-  ApplicationContainer app = onoff.Install(sender);
+  // ApplicationContainer app = onoff.Install(sender);
   
-  app.Start(Seconds(startTime));
-  app.Stop(Seconds(appEndTime));
+  // app.Start(Seconds(startTime));
+  // app.Stop(Seconds(appEndTime));
+
+  Ptr<Socket> udpSocket = Socket::CreateSocket(sender, UdpSocketFactory::GetTypeId());
+  NS_LOG_INFO("UDPSocket created" << udpSocket);
+
+  Ptr<CustomApplication> app = CreateObject<CustomApplication>();  
+  app->Setup(udpSocket, receiverIp, packetSize, 1, DataRate("1Mbps"));
+  sender->AddApplication(app);
+
+  ApplicationContainer container = ApplicationContainer(app);
+
+  container.Start(Seconds(3.0));
+  container.Stop(Seconds(10.0));
 }
 
 int main(int argc, char *argv[]){
@@ -241,11 +254,11 @@ int main(int argc, char *argv[]){
     flowMonitor = flowHelper.InstallAll();
     
     NS_LOG_INFO("Enabling tracing");
-    // csma1.EnablePcapAll("afdx-left-small", false);
-    // csma2.EnablePcapAll("afdx-right-small", false);
+    csma1.EnablePcapAll("afdx-left-small", false);
+    csma2.EnablePcapAll("afdx-right-small", false);
     AsciiTraceHelper ascii;
-    // csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
-    // csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
+    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
+    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
     NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-anim-small.xml";
