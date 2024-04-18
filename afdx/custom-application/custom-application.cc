@@ -77,7 +77,7 @@ void CustomApplication::ScheduleTx (void)
 void CustomApplication::SendPacket (void)
 {
     Ptr<Packet> packet = Create<Packet> (m_packetSize);
-    int success = m_socket->Send (packet);
+    m_socket->Send (packet);
 
     if (++m_packetsSent < m_nPackets)
     {

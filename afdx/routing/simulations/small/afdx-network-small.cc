@@ -203,7 +203,7 @@ int main(int argc, char *argv[]){
       int randomIndex2;
       int packetSize = randomInt(64, 1517);
       double startTime = ((randomInt(1, endTime * 10))/10.0);
-      double appEndTime;
+      // double appEndTime;
       bool sameNetwork = true;
 
       // NS_LOG_INFO("Start time: " << startTime);
