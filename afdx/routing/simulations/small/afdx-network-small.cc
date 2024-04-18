@@ -86,7 +86,7 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender, double startTime
   // app.Start(Seconds(startTime));
   // app.Stop(Seconds(appEndTime));
 
-  Ptr<Socket> udpSocket = Socket::CreateSocket(sender, UdpSocketFactory::GetTypeId());
+  Ptr<Socket> udpSocket = Socket::CreateSocket(sender, TcpSocketFactory::GetTypeId());
   NS_LOG_INFO("UDPSocket created" << udpSocket);
 
   Ptr<CustomApplication> app = CreateObject<CustomApplication>();  
