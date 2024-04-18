@@ -18,9 +18,9 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
-#include "../../../routing/PSO/pso-routing-protocol.cc"
-#include "../../../routing/PSO/pso-routing-helper.cc"
-#include "../../../custom-application/custom-application.cc"
+#include "../../../routing/PSO/pso-routing-helper.h"
+#include "../../../routing/PSO/pso-routing-protocol.h"
+#include "../../../custom-application/custom-application.h"
 
 using namespace ns3;
 using namespace std;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
         // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_INFO);
     }
 
-    NS_LOG_INFO("Create nodes.");
+    // NS_LOG_INFO("Create nodes.");
     //Node containers
     NodeContainer left_nodes;
     NodeContainer right_nodes;
@@ -153,24 +153,24 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     // OlsrHelper olsr;
-    PSORoutingProtocol pso;
+    // PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
     Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;
     // list.Add(olsr, 0);
-    list.Add(psoHelper, 100);
-    // list.Add(ipv4GlobalRoutingHelper, 100);
+    // list.Add(psoHelper, 100);
+    list.Add(ipv4GlobalRoutingHelper, 100);
 
-    NS_LOG_INFO("Install internet");
+    // NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
     stack.SetRoutingHelper(list);
 
     stack.Install(left_nodes);
     stack.Install(right_nodes);
 
-    NS_LOG_INFO("Assign IP addresses");
+    // NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
     //Lan1
@@ -186,8 +186,8 @@ int main(int argc, char *argv[]){
     Ipv4InterfaceContainer switchInterfaces;
     switchInterfaces = address.Assign(switchDevices);
 
-    psoHelper.PopulateRoutingTables();
-    // ipv4GlobalRoutingHelper.PopulateRoutingTables();
+    // psoHelper.PopulateRoutingTables();
+    ipv4GlobalRoutingHelper.PopulateRoutingTables();
     installSinksOnNodes();
 
     vector<NodeContainer> endSystems;
@@ -248,19 +248,19 @@ int main(int argc, char *argv[]){
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
 
-    NS_LOG_INFO("Installing Flow Monitor");
+    // NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
     flowMonitor = flowHelper.InstallAll();
     
-    NS_LOG_INFO("Enabling tracing");
+    // NS_LOG_INFO("Enabling tracing");
     csma1.EnablePcapAll("afdx-left-small", false);
     csma2.EnablePcapAll("afdx-right-small", false);
     AsciiTraceHelper ascii;
     csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
     csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
-    NS_LOG_INFO("Enabling animation");
+    // NS_LOG_INFO("Enabling animation");
     std::string animFile = "afdx-anim-small.xml";
     //create the animation object and configure for specified output
     AnimationInterface anim(animFile);
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]){
     anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
 
     Simulator::Stop(Seconds(endTime));
-    NS_LOG_INFO("Run Simulation");
+    // NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
     flowMonitor->SerializeToXmlFile(flowmonName, true, true);

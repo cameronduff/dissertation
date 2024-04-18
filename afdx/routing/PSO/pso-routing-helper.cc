@@ -1,29 +1,29 @@
-#include "ns3/ipv4-routing-helper.h"
-#include "ns3/node-container.h"
-#include "ns3/ipv4-global-routing.h"
-#include "ns3/ipv4-global-routing-helper.h"
-#include "ns3/node.h"
-#include "ns3/ipv4-global-routing-helper.h"
-#include "ns3/log.h"
-#include "ns3/object-factory.h"
-#include "ns3/ipv4-routing-protocol.h"
-#include "ns3/global-route-manager.h"
-#include "ns3/global-route-manager-impl.h"
+#include "pso-routing-helper.h"
+
+#include "ns3/ipv4-list-routing.h"
+#include "ns3/nstime.h"
+#include "ns3/output-stream-wrapper.h"
+#include "ns3/ptr.h"
 
 using namespace ns3;
+using namespace std;
 
-class PSORoutingHelper : public Ipv4GlobalRoutingHelper
+PSORoutingHelper::PSORoutingHelper()
 {
-    private:
 
-    public:
-        PSORoutingHelper()
-        {
+}
 
-        }
+PSORoutingHelper::~PSORoutingHelper()
+{
 
-        void PopulateRoutingTables()
-        {
-            PSORoutingProtocol::PopulateRoutingTables();
-        }
-};
+}
+
+Ipv4RoutingHelper* PSORoutingHelper::Copy() const
+{
+
+}
+
+Ptr<Ipv4RoutingProtocol> PSORoutingHelper::Create(Ptr<Node> node) const
+{
+
+}
