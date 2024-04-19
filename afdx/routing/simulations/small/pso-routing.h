@@ -48,6 +48,7 @@ class PSO : public Ipv4RoutingProtocol
         void SetIpv4(Ptr<Ipv4> ipv4) override;
         void PrintRoutingTable(Ptr<OutputStreamWrapper> stream,
                             Time::Unit unit = Time::S) const override;
+
     private:
         void BuildGlobalRoutingDatabase();
         void InitializeRoutes();

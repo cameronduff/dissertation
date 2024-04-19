@@ -19,6 +19,7 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
 #include "pso-routing.h"
+#include "pso-routing-helper.h"
 #include "../../../routing/PSO/pso-routing-protocol.cc"
 #include "../../../routing/PSO/pso-routing-helper.cc"
 #include "../../../custom-application/custom-application.cc"
@@ -157,6 +158,7 @@ int main(int argc, char *argv[]){
 
     PSORoutingProtocol pso;
     PSORoutingHelper psoHelper;
+    PSOHelper psoHelperTest;
     PSO psoTest;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
     Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
