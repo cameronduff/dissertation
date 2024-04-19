@@ -22,6 +22,14 @@ namespace ns3
 
 class PSO : public Ipv4RoutingProtocol
 {
+    struct VirtualLink
+    {
+        int srcNode;
+        int dstNode;
+        vector<int> path;
+        double fitness;
+    };
+    
     public:
         // static TypeId GetTypeId();
 
@@ -49,12 +57,16 @@ class PSO : public Ipv4RoutingProtocol
         void PrintRoutingTable(Ptr<OutputStreamWrapper> stream,
                             Time::Unit unit = Time::S) const override;
 
-    private:
         void BuildGlobalRoutingDatabase();
+        void ComputeRoutingTables();
+        void RecomputeRoutingTables();
+
+    private:
         void InitializeRoutes();
-        void minDistance(int distance[], bool shortestPath[]);
         void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents);
         void returnPath(int currentVertex, vector<int> parents, vector<int> &path);
         bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route);
+
+        vector<VirtualLink> _virtualLinks;
 };
 }

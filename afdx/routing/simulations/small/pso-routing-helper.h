@@ -2,6 +2,8 @@
 
 #include "ns3/ipv4-routing-helper.h"
 
+#include "pso-routing.h"
+
 #include "ns3/ipv4-address.h"
 #include "ns3/ipv4-static-routing.h"
 #include "ns3/ipv4.h"
@@ -22,5 +24,8 @@ class PSOHelper : public Ipv4RoutingHelper
         PSOHelper* Copy() const override;
         Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override;
         void PopulateRoutingTables();
+
+    private:
+        PSO pso;
 };
 }

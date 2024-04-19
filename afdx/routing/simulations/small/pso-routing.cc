@@ -24,9 +24,7 @@ using namespace std;
 
 namespace ns3
 {
-    // TypeId PSO::GetTypeId(){
-        
-    // }
+    NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
 
     PSO::PSO()
     {
@@ -87,6 +85,11 @@ namespace ns3
             
     }
 
+    void PSO::RecomputeRoutingTables()
+    {
+
+    }
+
     int minDistance(int distance[], bool shortestPath[])
     {
         int min = INT_MAX, min_index;
@@ -100,7 +103,7 @@ namespace ns3
         return min_index;
     }
 
-    void returnPath(int currentVertex, vector<int> parents, vector<int> &path)
+    void PSO::returnPath(int currentVertex, vector<int> parents, vector<int> &path)
     {
         if (currentVertex == -1) {
             return;
@@ -109,7 +112,7 @@ namespace ns3
         path.push_back(currentVertex);
     }
 
-    bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route)
+    bool PSO::checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route)
     {
         for(uint32_t i=0; i<gr->GetNRoutes(); i++){
             Ipv4RoutingTableEntry routingTableEntry = gr->GetRoute(i);
@@ -122,15 +125,22 @@ namespace ns3
         return false;
     }
 
-    void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents)
+    void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int> parents)
     {
         int nVertices = distances.size();
-        // NS_LOG_INFO("Vertex\t Distance\tPath");
+        NS_LOG_INFO("Vertex\t Distance\tPath");
+        VirtualLink virtualLink;
     
         for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
             if (vertexIndex != startVertex) {
                 vector<int> path;
                 returnPath(vertexIndex, parents, path);
+
+                virtualLink.srcNode = startVertex;
+                virtualLink.dstNode = vertexIndex;
+                virtualLink.path = path;
+                virtualLink.fitness=1.0;
+                _virtualLinks.push_back(virtualLink);
                 
                 string pathString("");
                 for(int i=0; i<int(path.size()); i++){
@@ -138,7 +148,7 @@ namespace ns3
                     pathString = pathString + s + " ";
                 }
 
-                // NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
+                NS_LOG_INFO(startVertex << " -> " << vertexIndex << " \t\t " << distances[vertexIndex] << "\t" << pathString);
 
                 int pathSize = path.size();
 
@@ -149,7 +159,6 @@ namespace ns3
                     Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
 
                     // NS_LOG_INFO("Node " << path[j]);
-                    // NS_LOG_INFO("Num of devices: " << currentNode->GetNDevices());
 
                     for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
                         Ipv4Route route;
@@ -186,14 +195,14 @@ namespace ns3
                         }
 
                         route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask));
-                        Ptr<Ipv4GlobalRouting> gr = NodeList::GetNode(path[j])->GetObject<GlobalRouter>()->GetRoutingProtocol();
+                        // Ptr<Ipv4GlobalRouting> gr = NodeList::GetNode(path[j])->GetObject<GlobalRouter>()->GetRoutingProtocol();
 
-                        // turn off for debugging
-                        if(!checkIfRouteExists(gr, route))
-                        {   
-                            // NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
-                            gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
-                        }
+                        // // turn off for debugging
+                        // if(!checkIfRouteExists(gr, route))
+                        // {   
+                        //     NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
+                        //     gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
+                        // }
                     }
 
                     // NS_LOG_INFO(" ");
@@ -202,20 +211,20 @@ namespace ns3
         }
     }
 
-    void BuildGlobalRoutingDatabase()
+    void PSO::BuildGlobalRoutingDatabase()
     {
-        // NS_LOG_INFO("Building Global Routing Database");
+        NS_LOG_INFO("Building Global Routing Database");
         //database of all connections
         int adjacencyMatrix[NodeList::GetNNodes()][NodeList::GetNNodes()];
 
-        // NS_LOG_INFO("Creating initial adjacency matrix values");
+        NS_LOG_INFO("Creating initial adjacency matrix values");
         for(int x=0; x<int(NodeList::GetNNodes()); x++){
             for(int y=0; y<int(NodeList::GetNNodes()); y++){
                 adjacencyMatrix[x][y] = 0;
             }
         }
 
-        // NS_LOG_INFO("Populating adjacency matrix values");
+        NS_LOG_INFO("Populating adjacency matrix values");
         for (uint32_t i=0; i<NodeList::GetNNodes(); i++)
         {
             Ptr<Node> node = NodeList::GetNode(i);
@@ -242,13 +251,14 @@ namespace ns3
                 auto s = std::to_string(adjacencyMatrix[x][y]);
                 row = row + s;
             }
-            // NS_LOG_INFO("Node Id: " << x << " " << row);
+            NS_LOG_INFO("Node Id: " << x << " " << row);
         }
 
-        // NS_LOG_INFO("");
+        NS_LOG_INFO("");
 
         //start finding smallest route assuming equal link weighting
-        // NS_LOG_INFO("Finding shortest routes");
+        NS_LOG_INFO("Finding shortest routes");
+
         for(int src=0; src<int(NodeList::GetNNodes()); src++)
         {
             int nVertices = int(NodeList::GetNNodes());
@@ -292,6 +302,21 @@ namespace ns3
 
             returnShortestPath(src, shortestDistances, parents);
         }
-        // NS_LOG_INFO("Routing tables populated");
+        NS_LOG_INFO("Routing tables populated");
+
+        
+        for(int i; i<_virtualLinks.size(); i++){
+            NS_LOG_INFO(_virtualLinks[i].srcNode << " -> " << _virtualLinks[i].dstNode);
+            
+            for(int j=0; j<_virtualLinks[i].path.size(); j++){
+                NS_LOG_INFO(_virtualLinks[i].path[j]);
+            }
+
+        }
+    }
+
+    void PSO::ComputeRoutingTables()
+    {
+        BuildGlobalRoutingDatabase();
     }
 }

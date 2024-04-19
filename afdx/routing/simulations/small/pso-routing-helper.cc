@@ -1,4 +1,5 @@
 #include "pso-routing-helper.h"
+
 #include "pso-routing.h"
 
 #include "ns3/ipv4-header.h"
@@ -26,17 +27,23 @@ using namespace std;
 namespace ns3
 {
 
+NS_LOG_COMPONENT_DEFINE("PSORoutingHelper");
+
 PSOHelper* PSOHelper::Copy() const{
     return new PSOHelper(*this);
 }
 
 // This method will be called by ns3::InternetStackHelper::Install
 Ptr<Ipv4RoutingProtocol> PSOHelper::Create(Ptr<Node> node) const{
+    NS_LOG_INFO("Creating PSO routing");
     return CreateObject<PSO>();
 }
 
-void PopulateRoutingTables(){
+// define PopulateRoutingTables method described in header
+void PSOHelper::PopulateRoutingTables(){
+    NS_LOG_INFO("Populating");
 
+    pso.BuildGlobalRoutingDatabase();
 }
 
 }
