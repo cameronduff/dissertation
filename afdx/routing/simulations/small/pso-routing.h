@@ -4,6 +4,7 @@
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4.h"
 #include "ns3/callback.h"
+#include "ns3/ipv4-route.h"
 #include "ns3/nstime.h"
 #include "ns3/object.h"
 #include "ns3/output-stream-wrapper.h"
@@ -65,8 +66,9 @@ class PSO : public Ipv4RoutingProtocol
         void InitializeRoutes();
         void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents);
         void returnPath(int currentVertex, vector<int> parents, vector<int> &path);
-        bool checkIfRouteExists(Ptr<Ipv4GlobalRouting> gr, Ipv4Route route);
+        bool checkIfRouteExists(Ipv4Route route);
 
         vector<VirtualLink> _virtualLinks;
+        vector<Ipv4Route> _routes;
 };
 }
