@@ -28,6 +28,7 @@ using namespace std;
 namespace ns3
 {
 NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
+//export NS_LOG=PSORoutingProtocol:PSORoutingHelper:PSOProtocol
 
 PSO::PSO()
 {
@@ -67,7 +68,7 @@ void PSO::NotifyInterfaceUp(uint32_t interface)
 {
     NS_LOG_INFO("In NotifyInterfaceUp");
     _routes.clear();
-    this->BuildGlobalRoutingDatabase();
+    // this->BuildGlobalRoutingDatabase();
 }
 void PSO::NotifyInterfaceDown(uint32_t interface)
 {
