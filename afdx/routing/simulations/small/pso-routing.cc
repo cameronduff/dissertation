@@ -14,10 +14,13 @@
 #include "ns3/node-list.h"
 #include "ns3/global-router-interface.h"
 #include "ns3/global-route-manager-impl.h"
+#include "ns3/simulator.h"
+#include "ns3/names.h"
 
 #include <list>
 #include <string>
 #include <stdint.h>
+#include <iomanip>
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -63,6 +66,8 @@ bool PSO::RouteInput(Ptr<const Packet> p,
 void PSO::NotifyInterfaceUp(uint32_t interface)
 {
     NS_LOG_INFO("In NotifyInterfaceUp");
+    _routes.clear();
+    this->BuildGlobalRoutingDatabase();
 }
 void PSO::NotifyInterfaceDown(uint32_t interface)
 {
@@ -78,7 +83,9 @@ void PSO::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress address)
 }
 void PSO::SetIpv4(Ptr<Ipv4> ipv4)
 {
-    NS_LOG_INFO("In SetIpv4");
+    NS_LOG_FUNCTION(this << ipv4);
+    NS_ASSERT(!m_ipv4 && ipv4);
+    m_ipv4 = ipv4;
 }
 void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) const
 {
@@ -94,17 +101,20 @@ void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) co
         << ", Local time: " << m_ipv4->GetObject<Node>()->GetLocalTime().As(unit)
         << ", PSORoutingProtocol table" << std::endl;
 
-    if (GetNRoutes() > 0)
+    if (_routes.size() > 0)
     {
         *os << "Destination     Gateway         Genmask         Flags Metric Ref    Use Iface"
             << std::endl;
-        for (uint32_t j = 0; j < GetNRoutes(); j++)
+        for (uint32_t j = 0; j < _routes.size(); j++)
         {
             std::ostringstream dest;
             std::ostringstream gw;
             std::ostringstream mask;
             std::ostringstream flags;
-            Ipv4RoutingTableEntry route = GetRoute(j);
+            Ipv4RoutingTableEntry route = _routes[j];
+
+            NS_LOG_INFO("Route: " << route.GetDest() << " " << route.GetGateway() << " " << route.GetDestNetworkMask() << " " << route.GetInterface());
+
             dest << route.GetDest();
             *os << std::setw(16) << dest.str();
             gw << route.GetGateway();
@@ -175,11 +185,12 @@ void PSO::returnPath(int currentVertex, vector<int> parents, vector<int> &path)
 
 bool PSO::checkIfRouteExists(Ipv4Route route)
 {
-    for(int i=0; i<_routes.size(); i++){
-        if(route = _routes[i]){
-            return true;
-        }
-    }
+    // for(int i=0; i<_routes.size(); i++){
+    //     if(route.GetAddress() = _routes[i].GetDestination() &&
+    //         route.GetGateway = _routes[i].GetGateway){
+    //         return true;
+    //     }
+    // }
 
     return false;
 }
@@ -213,18 +224,28 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
 
             for(int j=0; j<pathSize-1; j++)
             {   
+                NS_LOG_INFO("Setting node values");
                 Ptr<Node> sourceNode = NodeList::GetNode(startVertex);
                 Ptr<Node> currentNode = NodeList::GetNode(path[j]);
                 Ptr<Node> gatewayNode = NodeList::GetNode(path[j+1]);
                 Ptr<Node> destinationNode = NodeList::GetNode(vertexIndex);
 
-                // NS_LOG_INFO("Node " << path[j]);
+                NS_LOG_INFO("Node num: " << NodeList::GetNNodes());
+
+                NS_LOG_INFO("Node " << path[j]);
+                NS_LOG_INFO("DstNode: " << destinationNode->GetObject<Ipv4>());
 
                 for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
+                    NS_LOG_INFO("IP " << ip);
                     Ipv4Route route;
                     route.SetSource(sourceNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
+                    NS_LOG_INFO("Source " << route.GetSource());
                     Ipv4Mask mask = Ipv4Mask("255.255.255.0");
+                    NS_LOG_INFO("Mask " << mask);
+                    NS_LOG_INFO("Dest " << destinationNode->GetObject<Ipv4>()->GetAddress(1, 0));
                     Ipv4Address destNetwork = destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask);
+
+                    NS_LOG_INFO("Source " << route.GetSource());
                     
                     uint32_t interface = ip;
 
@@ -260,8 +281,9 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
                     // turn off for debugging
                     // if(!checkIfRouteExists(route))
                     // {   
-                    //     NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
-                    //     gr->AddNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
+                        NS_LOG_INFO("Dest: " << route.GetDestination() << " Gateway: " << route.GetGateway() << " Interface:" << interface);
+                        Ipv4RoutingTableEntry routeEntry;
+                        _routes.push_back(routeEntry.CreateNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface));
                     // }
                 }
             }

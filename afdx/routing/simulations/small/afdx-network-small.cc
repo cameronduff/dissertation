@@ -160,7 +160,6 @@ int main(int argc, char *argv[]){
     PSORoutingHelper psoHelper;
     PSOHelper psoHelperTest;
     PSO psoTest;
-    // psoTest.BuildGlobalRoutingDatabase();
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
     Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 

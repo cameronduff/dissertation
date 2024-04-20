@@ -8,6 +8,7 @@
 #include "ns3/nstime.h"
 #include "ns3/object.h"
 #include "ns3/output-stream-wrapper.h"
+#include "ns3/ipv4-routing-table-entry.h"
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/packet.h"
 #include "ns3/socket.h"
@@ -69,6 +70,7 @@ class PSO : public Ipv4RoutingProtocol
         bool checkIfRouteExists(Ipv4Route route);
 
         vector<VirtualLink> _virtualLinks;
-        vector<Ipv4Route> _routes;
+        vector<Ipv4RoutingTableEntry> _routes;
+        Ptr<Ipv4> m_ipv4;
 };
 }
