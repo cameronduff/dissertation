@@ -71,6 +71,7 @@ class PSO : public Ipv4RoutingProtocol
         void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents);
         void returnPath(int currentVertex, vector<int> parents, vector<int> &path);
         bool checkIfRouteExists(Ipv4Route route, Ipv4Mask mask, uint32_t interface);
+        Ptr<Ipv4Route> LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif = nullptr);
 
         std::vector<VirtualLink> _virtualLinks;
         Ptr<Ipv4> m_ipv4;
