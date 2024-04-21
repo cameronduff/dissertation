@@ -132,7 +132,50 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const ErrorCallback& ecb)
 {
     NS_LOG_INFO("In RouteInput");
-    return false;
+    // Check if input device supports IP
+    NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
+    uint32_t iif = m_ipv4->GetInterfaceForDevice(idev);
+
+    if (m_ipv4->IsDestinationAddress(header.GetDestination(), iif))
+    {
+        if (!lcb.IsNull())
+        {
+            NS_LOG_LOGIC("Local delivery to " << header.GetDestination());
+            lcb(p, header, iif);
+            return true;
+        }
+        else
+        {
+            // The local delivery callback is null.  This may be a multicast
+            // or broadcast packet, so return false so that another
+            // multicast routing protocol can handle it.  It should be possible
+            // to extend this to explicitly check whether it is a unicast
+            // packet, and invoke the error callback if so
+            return false;
+        }
+    }
+
+    // Check if input device supports IP forwarding
+    if (!m_ipv4->IsForwarding(iif))
+    {
+        NS_LOG_LOGIC("Forwarding disabled for this interface");
+        ecb(p, header, Socket::ERROR_NOROUTETOHOST);
+        return true;
+    }
+    // Next, try to find a route
+    NS_LOG_LOGIC("Unicast destination- looking up global route");
+    Ptr<Ipv4Route> rtentry = LookupRoute(header.GetDestination());
+    if (rtentry)
+    {
+        NS_LOG_LOGIC("Found unicast destination- calling unicast callback");
+        ucb(rtentry, p, header);
+        return true;
+    }
+    else
+    {
+        NS_LOG_LOGIC("Did not find unicast destination- returning false");
+        return false; // Let other routing protocols try to handle this
+    }
 }
 
 void PSO::NotifyInterfaceUp(uint32_t interface)
