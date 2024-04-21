@@ -63,14 +63,16 @@ class PSO : public Ipv4RoutingProtocol
         void ComputeRoutingTables();
         void RecomputeRoutingTables();
 
+        uint32_t GetNRoutes() const;
+        Ipv4RoutingTableEntry* GetRoute(uint32_t index) const;
+
     private:
         void InitializeRoutes();
         void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents);
         void returnPath(int currentVertex, vector<int> parents, vector<int> &path);
-        bool checkIfRouteExists(Ipv4Route route);
+        bool checkIfRouteExists(Ipv4Route route, Ipv4Mask mask, uint32_t interface);
 
-        vector<VirtualLink> _virtualLinks;
-        vector<Ipv4RoutingTableEntry> _routes;
+        std::vector<VirtualLink> _virtualLinks;
         Ptr<Ipv4> m_ipv4;
 };
 }
