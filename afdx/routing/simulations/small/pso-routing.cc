@@ -60,7 +60,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
             {
                 if (oif != m_ipv4->GetNetDevice(((*j).first)->GetInterface()))
                 {
-                    // NS_LOG_LOGIC("Not on requested interface, skipping");
+                    NS_LOG_LOGIC("Not on requested interface, skipping");
                     continue;
                 }
             }
@@ -72,12 +72,12 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     if (!allRoutes.empty()) // if route(s) is found
     {
         // TODO pick which route...
-        uint32_t selectIndex = 0;        
+        uint32_t selectIndex = 0;
+
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
         rtentry = Create<Ipv4Route>();
         rtentry->SetDestination(route->GetDest());
-        /// \todo handle multi-address case
         rtentry->SetSource(m_ipv4->GetAddress(route->GetInterface(), 0).GetLocal());
         rtentry->SetGateway(route->GetGateway());
         uint32_t interfaceIdx = route->GetInterface();
@@ -86,6 +86,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     }
     else
     {
+        NS_LOG_INFO("No route found");
         return nullptr;
     }
 }
@@ -140,7 +141,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     {
         if (!lcb.IsNull())
         {
-            // NS_LOG_LOGIC("Local delivery to " << header.GetDestination());
+            NS_LOG_LOGIC("Local delivery to " << header.GetDestination());
             lcb(p, header, iif);
             return true;
         }
@@ -158,7 +159,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     // Check if input device supports IP forwarding
     if (!m_ipv4->IsForwarding(iif))
     {
-        // NS_LOG_LOGIC("Forwarding disabled for this interface");
+        NS_LOG_LOGIC("Forwarding disabled for this interface");
         ecb(p, header, Socket::ERROR_NOROUTETOHOST);
         return true;
     }
@@ -173,7 +174,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     }
     else
     {
-        // NS_LOG_LOGIC("Did not find unicast destination- returning false");
+        NS_LOG_LOGIC("Did not find unicast destination- returning false");
         return false; // Let other routing protocols try to handle this
     }
 }
@@ -356,7 +357,7 @@ void PSO::returnPath(int currentVertex, vector<int> parents, vector<int> &path)
     path.push_back(currentVertex);
 }
 
-bool PSO::checkIfRouteExists(Ipv4Route route, Ipv4Mask mask, uint32_t interface, uint32_t node)
+bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
 {
     Ipv4Address dest = route.GetDestination();
     Ipv4Address gateway = route.GetGateway();
@@ -369,7 +370,6 @@ bool PSO::checkIfRouteExists(Ipv4Route route, Ipv4Mask mask, uint32_t interface,
             if(id == node && 
                 route.GetDest() == dest && 
                 route.GetGateway() == gateway && 
-                route.GetDestNetworkMask() == mask && 
                 route.GetInterface() == interface){
                 return true;
             }
@@ -448,18 +448,19 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
                             }
                         }
                             
+                        //if not same, sets gateway as next node's IP
                         if(!same){
                             route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
                         }
                     }
 
-                    route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask));
+                    route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal());
 
                     // NS_LOG_INFO("Adding route");
                     auto routeEntry = new Ipv4RoutingTableEntry();
-                    *routeEntry = Ipv4RoutingTableEntry::CreateNetworkRouteTo(route.GetDestination(), mask, route.GetGateway(), interface);
+                    *routeEntry = Ipv4RoutingTableEntry::CreateHostRouteTo(route.GetDestination(), route.GetGateway(), interface);
 
-                    if(!checkIfRouteExists(route, mask, interface, path[j])){
+                    if(!checkIfRouteExists(route, interface, path[j])){
                         networkRoutes.push_back(std::make_pair(routeEntry, path[j]));
 
                         // NS_LOG_INFO("Dest: " << routeEntry->GetDest() 

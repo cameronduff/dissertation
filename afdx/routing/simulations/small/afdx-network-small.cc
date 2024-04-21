@@ -204,7 +204,7 @@ int main(int argc, char *argv[]){
 
     int numOfApplications = randomInt(NodeList::GetNNodes(), NodeList::GetNNodes() * 2);
 
-    // NS_LOG_INFO("Number of applications: " << numOfApplications);
+    NS_LOG_INFO("Number of applications: " << numOfApplications);
 
     for(int i=0; i<numOfApplications; i++){
       int randomIndex1;
@@ -255,6 +255,8 @@ int main(int argc, char *argv[]){
       // NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
+
+    createUdpApplication(left_nodes.Get(0), right_nodes.Get(0), 0, endTime, 100);
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
