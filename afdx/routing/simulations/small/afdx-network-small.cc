@@ -161,14 +161,14 @@ int main(int argc, char *argv[]){
     PSOHelper psoHelperTest;
     PSO psoTest;
     Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
-    // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
+    Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;
     // list.Add(olsr, 0);
     // list.Add(psoHelper, 0);
-    list.Add(psoHelperTest, 10);
+    list.Add(psoHelperTest, 100);
     // list.Add(ipv4RoutingStaticHelper, 0);
-    // list.Add(ipv4GlobalRoutingHelper, 100);
+    list.Add(ipv4GlobalRoutingHelper, 0);
 
     NS_LOG_INFO("Install internet");
     InternetStackHelper stack;

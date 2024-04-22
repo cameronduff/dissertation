@@ -30,8 +30,8 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
 //export NS_LOG=PSORoutingProtocol:PSORoutingHelper:PSOProtocol
 
-typedef std::list<std::pair<Ipv4RoutingTableEntry*, uint32_t>> NetworkRoutes;
-NetworkRoutes networkRoutes;
+typedef std::list<std::pair<Ipv4RoutingTableEntry*, uint32_t>> HostRoutes;
+HostRoutes hostRoutes;
 
 PSO::PSO()
 {
@@ -49,12 +49,10 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     typedef std::vector<Ipv4RoutingTableEntry*> RouteVec_t;
     RouteVec_t allRoutes;
 
-    // NS_LOG_LOGIC("Number of networkRoutes" << networkRoutes.size());
-    for (auto j = networkRoutes.begin(); j != networkRoutes.end(); j++)
+    // NS_LOG_LOGIC("Number of hostRoutes" << hostRoutes.size());
+    for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
     {
-        Ipv4Mask mask = (*j).first->GetDestNetworkMask();
-        Ipv4Address entry = (*j).first->GetDestNetwork();
-        if (mask.IsMatch(dest, entry))
+        if (((*j).first)->GetDest() == dest)
         {
             if (oif)
             {
@@ -65,7 +63,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
                 }
             }
             allRoutes.push_back((*j).first);
-            // NS_LOG_LOGIC(allRoutes.size() << "Found network route" << *j);
+            // NS_LOG_LOGIC(allRoutes.size() << "Found host route" << (*j).first);
         }
     }
 
@@ -86,7 +84,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     }
     else
     {
-        NS_LOG_INFO("No route found");
+        NS_LOG_INFO("No routes found");
         return nullptr;
     }
 }
@@ -208,9 +206,9 @@ void PSO::SetIpv4(Ptr<Ipv4> ipv4)
 Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 {
     uint32_t tmp = 0;
-    if (index < networkRoutes.size())
+    if (index < hostRoutes.size())
     {
-        for (auto j = networkRoutes.begin(); j != networkRoutes.end(); j++)
+        for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
         {
             if((*j).second == node){
                 if (tmp == index)
@@ -229,7 +227,7 @@ Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
                 
         }
     }
-    index -= networkRoutes.size();
+    index -= hostRoutes.size();
     NS_ASSERT(false);
     // quiet compiler.
     return nullptr;
@@ -238,8 +236,8 @@ Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 uint32_t PSO::GetNRoutes(uint32_t node) const
 {
     uint32_t n = 0;
-    if(networkRoutes.size() > 0){
-        for (auto j = networkRoutes.begin(); j != networkRoutes.end(); j++)
+    if(hostRoutes.size() > 0){
+        for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
         {
             uint32_t id = (*j).second;
             if(id == node){
@@ -266,7 +264,7 @@ void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) co
 
     // NS_LOG_INFO("Size: " << GetNRoutes());
 
-    if (networkRoutes.size() > 0)
+    if (hostRoutes.size() > 0)
     {
         *os << "Destination     Gateway         Genmask         Flags Metric Ref    Use Iface"
             << std::endl;
@@ -360,8 +358,8 @@ bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
     Ipv4Address dest = route.GetDestination();
     Ipv4Address gateway = route.GetGateway();
 
-    if(networkRoutes.size() > 0){
-        for (auto j = networkRoutes.begin(); j != networkRoutes.end(); j++)
+    if(hostRoutes.size() > 0){
+        for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
         {
             Ipv4RoutingTableEntry route = (*j).first;
             uint32_t id = (*j).second;
@@ -459,7 +457,7 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
                     *routeEntry = Ipv4RoutingTableEntry::CreateHostRouteTo(route.GetDestination(), route.GetGateway(), interface);
 
                     if(!checkIfRouteExists(route, interface, path[j])){
-                        networkRoutes.push_back(std::make_pair(routeEntry, path[j]));
+                        hostRoutes.push_back(std::make_pair(routeEntry, path[j]));
 
                         // NS_LOG_INFO("Dest: " << routeEntry->GetDest() 
                         // << " Gateway: " << routeEntry->GetGateway() 
