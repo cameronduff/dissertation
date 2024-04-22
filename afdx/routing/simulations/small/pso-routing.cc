@@ -132,7 +132,6 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const LocalDeliverCallback& lcb,
                 const ErrorCallback& ecb)
 {
-    // NS_LOG_INFO("In RouteInput");
     // Check if input device supports IP
     NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
     uint32_t iif = m_ipv4->GetInterfaceForDevice(idev);
@@ -254,7 +253,6 @@ uint32_t PSO::GetNRoutes(uint32_t node) const
 void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) const
 {
     uint32_t node = m_ipv4->GetObject<Node>()->GetId();
-    NS_LOG_INFO("Printing Routing Table for Node: " << node);
     std::ostream* os = stream->GetStream();
     // Copy the current ostream state
     std::ios oldState(nullptr);
