@@ -19,6 +19,8 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
+#include "pso-routing.h"
+#include "pso-routing-helper.h"
 #include "../../../routing/PSO/pso-routing-protocol.cc"
 #include "../../../routing/PSO/pso-routing-helper.cc"
 
@@ -245,14 +247,16 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     // OlsrHelper olsr;
-    PSORoutingProtocol pso;
-    PSORoutingHelper psoHelper;
+    // PSORoutingProtocol pso;
+    // PSORoutingHelper psoHelper;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
-    Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
+    // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
+    PSOHelper psoHelperTest;
+
 
     Ipv4ListRoutingHelper list;
     // list.Add(olsr, 0);
-    list.Add(psoHelper, 100);
+    list.Add(psoHelperTest, 100);
     // list.Add(ipv4GlobalRoutingHelper, 100);
 
     NS_LOG_INFO("Install internet");
@@ -308,7 +312,7 @@ int main(int argc, char *argv[]){
       address.Assign(switchDeviceContainers[i]);
     }    
 
-    psoHelper.PopulateRoutingTables();
+    psoHelperTest.PopulateRoutingTables();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
 
     installSinksOnNodes();

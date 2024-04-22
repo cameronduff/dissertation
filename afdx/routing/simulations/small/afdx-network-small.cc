@@ -157,9 +157,9 @@ int main(int argc, char *argv[]){
     // OlsrHelper olsr;
 
     // PSORoutingProtocol pso;
-    PSORoutingHelper psoHelper;
+    // PSORoutingHelper psoHelper;
     PSOHelper psoHelperTest;
-    PSO psoTest;
+    // PSO psoTest;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
     // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
