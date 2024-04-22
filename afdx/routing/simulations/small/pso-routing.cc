@@ -75,10 +75,10 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
         // TODO pick which route...
         uint32_t selectIndex = 0;
 
-        NS_LOG_INFO("Number of routes: " << allRoutes.size());
+        // NS_LOG_INFO("Number of routes: " << allRoutes.size());
 
         for(int i=0; i<allRoutes.size(); i++){
-            NS_LOG_INFO("Dest :" << allRoutes[i]->GetDest() << " Gateway: " << allRoutes[i]->GetGateway());
+            // NS_LOG_INFO("Dest :" << allRoutes[i]->GetDest() << " Gateway: " << allRoutes[i]->GetGateway());
         }
 
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
