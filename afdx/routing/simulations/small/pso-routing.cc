@@ -62,7 +62,10 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
                     continue;
                 }
             }
-            allRoutes.push_back((*j).first);
+            if((*j).second == m_ipv4->GetObject<Node>()->GetId()){
+                allRoutes.push_back((*j).first);
+            }
+            
             // NS_LOG_LOGIC(allRoutes.size() << "Found host route" << (*j).first);
         }
     }
@@ -71,6 +74,12 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     {
         // TODO pick which route...
         uint32_t selectIndex = 0;
+
+        NS_LOG_INFO("Number of routes: " << allRoutes.size());
+
+        for(int i=0; i<allRoutes.size(); i++){
+            NS_LOG_INFO("Dest :" << allRoutes[i]->GetDest() << " Gateway: " << allRoutes[i]->GetGateway());
+        }
 
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
@@ -144,11 +153,6 @@ bool PSO::RouteInput(Ptr<const Packet> p,
         }
         else
         {
-            // The local delivery callback is null.  This may be a multicast
-            // or broadcast packet, so return false so that another
-            // multicast routing protocol can handle it.  It should be possible
-            // to extend this to explicitly check whether it is a unicast
-            // packet, and invoke the error callback if so
             return false;
         }
     }
@@ -178,22 +182,22 @@ bool PSO::RouteInput(Ptr<const Packet> p,
 
 void PSO::NotifyInterfaceUp(uint32_t interface)
 {
-
+    NS_LOG_INFO("In NotifyInterfaceDown");
 }
 
 void PSO::NotifyInterfaceDown(uint32_t interface)
 {
-    // NS_LOG_INFO("In NotifyInterfaceDown");
+    NS_LOG_INFO("In NotifyInterfaceDown");
 }
 
 void PSO::NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress address)
 {
-    // NS_LOG_INFO("In NotifyAddAddress");
+    NS_LOG_INFO("In NotifyAddAddress");
 }
 
 void PSO::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress address)
 {
-    // NS_LOG_INFO("In NotifyRemoveAddress");
+    NS_LOG_INFO("In NotifyRemoveAddress");
 }
 
 void PSO::SetIpv4(Ptr<Ipv4> ipv4)
