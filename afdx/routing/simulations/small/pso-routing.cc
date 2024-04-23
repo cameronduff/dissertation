@@ -20,6 +20,7 @@
 #include <list>
 #include <string>
 #include <stdint.h>
+#include <vector>
 #include <iomanip>
 #include <bits/stdc++.h>
 
@@ -45,6 +46,7 @@ PSO::~PSO()
 
 Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
 {
+    // NS_LOG_INFO("In LookupRoute");
     Ptr<Ipv4Route> rtentry = nullptr;
     typedef std::vector<Ipv4RoutingTableEntry*> RouteVec_t;
     RouteVec_t allRoutes;
@@ -106,6 +108,7 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
                         Ptr<NetDevice> oif,
                         Socket::SocketErrno& sockerr)
 {
+    // NS_LOG_INFO("In RouteOutput");
     Ipv4Address dest = header.GetDestination();
     Ptr<Ipv4Route> route = nullptr;
 
@@ -139,6 +142,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const LocalDeliverCallback& lcb,
                 const ErrorCallback& ecb)
 {
+    // NS_LOG_INFO("In RouteInput");
     // Check if input device supports IP
     NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
     uint32_t iif = m_ipv4->GetInterfaceForDevice(idev);
@@ -209,6 +213,7 @@ void PSO::SetIpv4(Ptr<Ipv4> ipv4)
 
 Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 {
+    // NS_LOG_INFO("In GetRoute");
     uint32_t tmp = 0;
     if (index < hostRoutes.size())
     {
@@ -239,6 +244,7 @@ Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 
 uint32_t PSO::GetNRoutes(uint32_t node) const
 {
+    // NS_LOG_INFO("In GetNRoutes");
     uint32_t n = 0;
     if(hostRoutes.size() > 0){
         for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
@@ -252,8 +258,32 @@ uint32_t PSO::GetNRoutes(uint32_t node) const
     return n;
 }
 
+bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
+{
+    // NS_LOG_INFO("In checkIfRouteExists");
+    Ipv4Address dest = route.GetDestination();
+    Ipv4Address gateway = route.GetGateway();
+
+    if(hostRoutes.size() > 0){
+        for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
+        {
+            Ipv4RoutingTableEntry route = (*j).first;
+            uint32_t id = (*j).second;
+            if(id == node && 
+                route.GetDest() == dest && 
+                route.GetGateway() == gateway && 
+                route.GetInterface() == interface){
+                return true;
+            }
+        }
+    }   
+
+    return false;
+}
+
 void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) const
 {
+    // NS_LOG_INFO("In PrintRoutingTable");
     uint32_t node = m_ipv4->GetObject<Node>()->GetId();
     std::ostream* os = stream->GetStream();
     // Copy the current ostream state
@@ -357,28 +387,6 @@ void PSO::returnPath(int currentVertex, vector<int> parents, vector<int> &path)
     path.push_back(currentVertex);
 }
 
-bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
-{
-    Ipv4Address dest = route.GetDestination();
-    Ipv4Address gateway = route.GetGateway();
-
-    if(hostRoutes.size() > 0){
-        for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
-        {
-            Ipv4RoutingTableEntry route = (*j).first;
-            uint32_t id = (*j).second;
-            if(id == node && 
-                route.GetDest() == dest && 
-                route.GetGateway() == gateway && 
-                route.GetInterface() == interface){
-                return true;
-            }
-        }
-    }   
-
-    return false;
-}
-
 void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int> parents)
 {
     int nVertices = distances.size();
@@ -475,19 +483,97 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
     }
 }
 
-void PSO::BuildGlobalRoutingDatabase()
-{
-    NS_LOG_INFO("Building Global Routing Database");
-    //database of all connections
-    int adjacencyMatrix[NodeList::GetNNodes()][NodeList::GetNNodes()];
+void PSO::addRoutesOfPath(int startVertex, int destinationVertex, int path[], int path_index){
+    // NS_LOG_INFO("In addRoutesOfPath");
+    for(int j=0; j<path_index-1; j++)
+    {   
+        Ptr<Node> sourceNode = NodeList::GetNode(startVertex);
+        Ptr<Node> currentNode = NodeList::GetNode(path[j]);
+        Ptr<Node> gatewayNode = NodeList::GetNode(path[j+1]);
+        Ptr<Node> destinationNode = NodeList::GetNode(destinationVertex);
 
-    NS_LOG_INFO("Creating initial adjacency matrix values");
-    for(int x=0; x<int(NodeList::GetNNodes()); x++){
-        for(int y=0; y<int(NodeList::GetNNodes()); y++){
-            adjacencyMatrix[x][y] = 0;
+        for(uint32_t ip=1; ip<destinationNode->GetNDevices(); ip++){
+            Ipv4Route route;
+            route.SetSource(sourceNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
+            Ipv4Mask mask = Ipv4Mask("255.255.255.0");
+            Ipv4Address destNetwork = destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal().CombineMask(mask);
+            
+            uint32_t interface = ip;
+
+            //checks if destination is on the same network as the source
+            //if true, no need for a gateway (0.0.0.0)
+            if(currentNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal().CombineMask(mask) == destNetwork) {
+                route.SetGateway(Ipv4Address("0.0.0.0"));
+            } else{
+                bool same = false;
+
+                //loops through to see if the current node and gateway node share a network
+                for(uint32_t i=1; i<currentNode->GetNDevices(); i++){
+                    for(uint32_t j=1; j<gatewayNode->GetNDevices(); j++){
+                        Ipv4Address currentNetwork = currentNode->GetObject<Ipv4>()->GetAddress(i, 0).GetLocal().CombineMask(mask);
+                        Ipv4Address nextNetwork = gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal().CombineMask(mask);
+
+                        //sets the gateway to the same network
+                        if(currentNetwork == nextNetwork){
+                            route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal());
+                            interface = i;
+                            same = true;
+                        }
+                    }
+                }
+                    
+                //if not same, sets gateway as next node's IP
+                if(!same){
+                    route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
+                }
+            }
+
+            route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal());
+
+            // NS_LOG_INFO("Adding route");
+            auto routeEntry = new Ipv4RoutingTableEntry();
+            *routeEntry = Ipv4RoutingTableEntry::CreateHostRouteTo(route.GetDestination(), route.GetGateway(), interface);
+
+            if(!checkIfRouteExists(route, interface, path[j])){
+                hostRoutes.push_back(std::make_pair(routeEntry, path[j]));
+            }
         }
     }
+}
 
+void PSO::printAllPathsUtil(int u, int d, bool visited[], int path[], int& path_index, int **adjacencyMatrix)
+{
+    // NS_LOG_INFO("In printAllPathsUtil");
+    // Mark the current node and store it in path[]
+    visited[u] = true;
+    path[path_index] = u;
+    path_index++;
+ 
+    // If current vertex is same as destination, then print
+    // current path[]
+    if (u == d) {
+        addRoutesOfPath(u, d, path, path_index);
+    }
+    else // If current vertex is not destination
+    {
+        // Recur for all the vertices adjacent to current
+        // vertex
+        for(int i=0; i<NodeList::GetNNodes(); i++){
+            if(adjacencyMatrix[u][i] != 0){
+                if(!visited[i]){
+                    printAllPathsUtil(i, d, visited, path, path_index, adjacencyMatrix);
+                }
+            }
+        }
+    }
+ 
+    // Remove current vertex from path[] and mark it as
+    // unvisited
+    path_index--;
+    visited[u] = false;
+}
+
+void PSO::PopulateAdjacencyMatrix(int **adjacencyMatrix){
     NS_LOG_INFO("Populating adjacency matrix values");
     for (uint32_t i=0; i<NodeList::GetNNodes(); i++)
     {
@@ -507,70 +593,68 @@ void PSO::BuildGlobalRoutingDatabase()
             }
         }   
     }
+}
+
+void PSO::BuildGlobalRoutingDatabase()
+{
+    NS_LOG_INFO("Building Global Routing Database");
+    //database of all connections
+    // int adjacencyMatrix[NodeList::GetNNodes()][NodeList::GetNNodes()];
+
+    int **adjacencyMatrix = NULL;
+    adjacencyMatrix = new int *[NodeList::GetNNodes()];
+    for(int i = 0; i <NodeList::GetNNodes(); i++){
+        adjacencyMatrix[i] = new int[NodeList::GetNNodes()];
+    }
+    
+    NS_LOG_INFO("Creating initial adjacency matrix values");
+    for(int x=0; x<int(NodeList::GetNNodes()); x++){
+        for(int y=0; y<int(NodeList::GetNNodes()); y++){
+            adjacencyMatrix[x][y] = 0;
+        }
+    }
+
+    PopulateAdjacencyMatrix(adjacencyMatrix);
 
     //  NS_LOG_INFO("Output matrix");
         for(int x=0; x<int(NodeList::GetNNodes()); x++){
         string row("");
-        for(int y=0; y<int(NodeList::GetNNodes()); y++){
-            auto s = std::to_string(adjacencyMatrix[x][y]);
-            row = row + s;
+            for(int y=0; y<int(NodeList::GetNNodes()); y++){
+                auto s = std::to_string(adjacencyMatrix[x][y]);
+                row = row + s;
+            }
+            NS_LOG_INFO("Node Id: " << x << " " << row);
         }
-        NS_LOG_INFO("Node Id: " << x << " " << row);
-    }
 
     NS_LOG_INFO("");
 
-    //start finding smallest route assuming equal link weighting
-    NS_LOG_INFO("Finding shortest routes");
-
-    for(int src=0; src<int(NodeList::GetNNodes()); src++)
-    {
-        int nVertices = int(NodeList::GetNNodes());
-        vector<int> shortestDistances(nVertices);
-        vector<bool> added(nVertices);
-
-        for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
-        {
-            shortestDistances[vertexIndex] = INT_MAX;
-            added[vertexIndex] = false;
-        }
-        
-        shortestDistances[src] = 0;
-        vector<int> parents(nVertices);
-        parents[src] = -1;
-    
-        for (int i = 1; i < nVertices; i++) 
-        {
-            int nearestVertex = -1;
-            int shortestDistance = INT_MAX;
-
-            for (int vertexIndex = 0; vertexIndex < nVertices;
-                vertexIndex++) {
-                if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance) {
-                    nearestVertex = vertexIndex;
-                    shortestDistance = shortestDistances[vertexIndex];
-                }
-            }
-
-            added[nearestVertex] = true;
-
-            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
-                int edgeDistance = adjacencyMatrix[nearestVertex][vertexIndex];
-    
-                if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex])) {
-                    parents[vertexIndex] = nearestVertex;
-                    shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
-                }
-            }
-        }
-
-        returnShortestPath(src, shortestDistances, parents);
+    // Mark all the vertices as not visited
+    bool* visited = new bool[NodeList::GetNNodes()];
+ 
+    // Create an array to store paths
+    int* path = new int[NodeList::GetNNodes()];
+    int path_index = 0; // Initialize path[] as empty
+ 
+    // Initialize all vertices as not visited
+    for (int i = 0; i < NodeList::GetNNodes(); i++){
+        visited[i] = false;
     }
+     
+    // finds every route from each node to each other node
+    for(int s=0; s<NodeList::GetNNodes(); s++){
+        for(int d=0; d<NodeList::GetNNodes(); d++){
+            // NS_LOG_INFO("Finding all paths from node " << s << " to node " << d);
+            // Call the recursive helper function to print all paths
+            printAllPathsUtil(s, d, visited, path, path_index, adjacencyMatrix);
+        }
+    }
+    
     NS_LOG_INFO("Routing tables populated");
 }
 
 void PSO::ComputeRoutingTables()
 {
+    NS_LOG_INFO("In ComputeRoutingTables");
     BuildGlobalRoutingDatabase();
 }
 }

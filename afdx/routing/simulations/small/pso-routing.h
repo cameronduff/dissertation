@@ -70,7 +70,12 @@ class PSO : public Ipv4RoutingProtocol
         void InitializeRoutes();
         void returnShortestPath(int startVertex, vector<int> distances, vector<int> parents);
         void returnPath(int currentVertex, vector<int> parents, vector<int> &path);
+        void addRoutesOfPath(int startVertex, int destinationVertex, int path[], int path_index);
+        void printAllPathsUtil(int u, int d, bool visited[],
+                              int path[], int& path_index,
+                              int **adjacencyMatrix);
         bool checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node);
+        void PopulateAdjacencyMatrix(int **adjacencyMatrix);
         Ptr<Ipv4Route> LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif = nullptr);
 
         std::vector<VirtualLink> _virtualLinks;
