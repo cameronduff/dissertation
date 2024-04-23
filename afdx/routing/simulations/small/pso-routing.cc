@@ -6,6 +6,7 @@
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4.h"
+#include "ns3/packet.h"
 #include "ns3/ipv4-route.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
@@ -145,7 +146,18 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const LocalDeliverCallback& lcb,
                 const ErrorCallback& ecb)
 {
-    // NS_LOG_INFO("In RouteInput");
+    // NS_LOG_INFO("In RouteInput"); 
+
+    Time sourceTime;
+    Time now = Simulator::Now();
+    TimestampTag timestamp;
+    bool found = p->FindFirstMatchingByteTag(timestamp);
+    sourceTime = timestamp.GetTimestamp();
+
+    Time delay = now - sourceTime;
+
+    NS_LOG_INFO("Delay: " << delay);
+    
     // Check if input device supports IP
     NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
     uint32_t iif = m_ipv4->GetInterfaceForDevice(idev);
