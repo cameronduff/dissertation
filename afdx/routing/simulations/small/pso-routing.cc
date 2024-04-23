@@ -35,7 +35,7 @@ namespace ns3
 NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
 //export NS_LOG=PSORoutingProtocol:PSORoutingHelper:PSOProtocol
 
-typedef std::list<std::pair<Ipv4RoutingTableEntry*, uint32_t>> HostRoutes;
+typedef list<pair<Ipv4RoutingTableEntry*, uint32_t>> HostRoutes;
 HostRoutes hostRoutes;
 
 PSO::PSO()
@@ -148,15 +148,11 @@ bool PSO::RouteInput(Ptr<const Packet> p,
 {
     // NS_LOG_INFO("In RouteInput"); 
 
-    Time sourceTime;
     Time now = Simulator::Now();
+    Time sourceTime;
     TimestampTag timestamp;
     bool found = p->FindFirstMatchingByteTag(timestamp);
     sourceTime = timestamp.GetTimestamp();
-
-    Time delay = now - sourceTime;
-
-    NS_LOG_INFO("Delay: " << delay);
     
     // Check if input device supports IP
     NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
@@ -164,6 +160,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
 
     if (m_ipv4->IsDestinationAddress(header.GetDestination(), iif))
     {
+        NS_LOG_INFO("Destination address");
         if (!lcb.IsNull())
         {
             NS_LOG_LOGIC("Local delivery to " << header.GetDestination());
@@ -175,6 +172,15 @@ bool PSO::RouteInput(Ptr<const Packet> p,
             return false;
         }
     }
+
+    Time delay = now - sourceTime;
+    uint32_t size = p->GetSize();
+
+    uint32_t throughput = size / delay.GetSeconds();
+
+    NS_LOG_INFO("Delay from " << header.GetSource() << " to " << header.GetDestination());
+    NS_LOG_INFO("           Delay: "<< delay.GetSeconds() << "s");
+    NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
 
     // Check if input device supports IP forwarding
     if (!m_ipv4->IsForwarding(iif))
