@@ -36,7 +36,7 @@ HostRoutes hostRoutes;
 
 PSO::PSO()
 {
-    
+    m_rand = CreateObject<UniformRandomVariable>();
 }
 
 PSO::~PSO()
@@ -75,9 +75,8 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     if (!allRoutes.empty()) // if route(s) is found
     {
         // TODO pick which route...
-        uint32_t selectIndex = 0;
-
-        // NS_LOG_INFO("Number of routes: " << allRoutes.size());
+        uint32_t selectIndex;
+        selectIndex = m_rand->GetInteger(0, allRoutes.size() - 1);
 
         for(int i=0; i<allRoutes.size(); i++){
             // NS_LOG_INFO("Dest :" << allRoutes[i]->GetDest() << " Gateway: " << allRoutes[i]->GetGateway());

@@ -79,6 +79,7 @@ class PSO : public Ipv4RoutingProtocol
         Ptr<Ipv4Route> LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif = nullptr);
 
         std::vector<VirtualLink> _virtualLinks;
+        Ptr<UniformRandomVariable> m_rand;
         Ptr<Ipv4> m_ipv4;
 };
 }
