@@ -7,6 +7,9 @@
 #include "ns3/ipv4-global-routing.h"
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-route.h"
+#include "ns3/network-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/stats-module.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
 #include "ns3/log.h"
@@ -123,6 +126,11 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     {
         sockerr = Socket::ERROR_NOROUTETOHOST;
     }
+
+    TimestampTag timestamp;
+    timestamp.SetTimestamp(Simulator::Now());
+    p->AddByteTag(timestamp);
+
     return route;
 }
 
@@ -651,4 +659,70 @@ void PSO::ComputeRoutingTables()
     NS_LOG_INFO("In ComputeRoutingTables");
     BuildGlobalRoutingDatabase();
 }
+
+
+// ===========TimeStamp Class ===============
+
+TypeId 
+TimestampTag::GetTypeId (void)
+{
+static TypeId tid = TypeId ("TimestampTag")
+.SetParent<Tag> ()
+.AddConstructor<TimestampTag> ()
+.AddAttribute ("Timestamp",
+            "Some momentous point in time!",
+            EmptyAttributeValue (),
+            MakeTimeAccessor (&TimestampTag::GetTimestamp),
+            MakeTimeChecker ());
+    return tid;
 }
+
+TypeId 
+TimestampTag::GetInstanceTypeId (void) const
+{
+    return GetTypeId ();
+}
+
+uint32_t 
+TimestampTag::GetSerializedSize (void) const
+{
+    return 8;
+}
+
+void 
+TimestampTag::Serialize (TagBuffer i) const
+{
+    int64_t t = m_timestamp.GetNanoSeconds ();
+    i.Write ((const uint8_t *)&t, 8);
+}
+
+void 
+TimestampTag::Deserialize (TagBuffer i)
+{
+    int64_t t;
+    i.Read ((uint8_t *)&t, 8);
+    m_timestamp = NanoSeconds (t);
+}
+
+void
+TimestampTag::SetTimestamp (Time time)
+{
+    m_timestamp = time;
+}
+
+Time
+TimestampTag::GetTimestamp (void) const
+{
+    return m_timestamp;
+}
+
+void 
+TimestampTag::Print (std::ostream &os) const
+{
+    os << "t=" << m_timestamp;
+}
+
+}
+
+
+

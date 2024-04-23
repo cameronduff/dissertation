@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ns3/ipv4-header.h"
+#include "ns3/stats-module.h"
+#include "ns3/core-module.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4.h"
 #include "ns3/callback.h"
@@ -81,5 +83,25 @@ class PSO : public Ipv4RoutingProtocol
         std::vector<VirtualLink> _virtualLinks;
         Ptr<UniformRandomVariable> m_rand;
         Ptr<Ipv4> m_ipv4;
+};
+
+class TimeStampTag : public Tag
+{
+public:
+    static TypeId GetTypeId (void);
+    virtual TypeId GetInstanceTypeId (void) const;
+
+    virtual uint32_t GetSerializedSize (void) const;
+    virtual void Serialize (TagBuffer i) const;
+    virtual void Deserialize (TagBuffer i);
+
+    // these are our accessors to our tag structure
+    void SetTimestamp (Time time);
+    Time GetTimestamp (void) const;
+
+    void Print (std::ostream &os) const;
+
+private:
+    Time m_timestamp;
 };
 }
