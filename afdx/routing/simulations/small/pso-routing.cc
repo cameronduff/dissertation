@@ -77,11 +77,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
         // TODO pick which route...
         uint32_t selectIndex;
         selectIndex = m_rand->GetInteger(0, allRoutes.size() - 1);
-
-        for(int i=0; i<allRoutes.size(); i++){
-            // NS_LOG_INFO("Dest :" << allRoutes[i]->GetDest() << " Gateway: " << allRoutes[i]->GetGateway());
-        }
-
+        
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
         rtentry = Create<Ipv4Route>();
@@ -642,7 +638,6 @@ void PSO::BuildGlobalRoutingDatabase()
     // finds every route from each node to each other node
     for(int s=0; s<NodeList::GetNNodes(); s++){
         for(int d=0; d<NodeList::GetNNodes(); d++){
-            // NS_LOG_INFO("Finding all paths from node " << s << " to node " << d);
             // Call the recursive helper function to print all paths
             printAllPathsUtil(s, d, visited, path, path_index, adjacencyMatrix);
         }
