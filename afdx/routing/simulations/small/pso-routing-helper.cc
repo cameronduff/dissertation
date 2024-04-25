@@ -46,4 +46,8 @@ void PSOHelper::PopulateRoutingTables(){
     pso.BuildGlobalRoutingDatabase();
 }
 
+void PSOHelper::ReceivePacket(Ptr<Socket> socket){
+    pso.RecvPso(socket);
+}
+
 }

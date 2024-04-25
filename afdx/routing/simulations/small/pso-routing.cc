@@ -12,6 +12,8 @@
 #include "ns3/internet-module.h"
 #include "ns3/stats-module.h"
 #include "ns3/ipv4-address.h"
+#include "ns3/socket-factory.h"
+#include "ns3/udp-socket-factory.h"
 #include "ns3/ptr.h"
 #include "ns3/log.h"
 #include "ns3/ipv4-routing-table-entry.h"
@@ -24,6 +26,7 @@
 #include <list>
 #include <string>
 #include <stdint.h>
+#include <map>
 #include <vector>
 #include <iomanip>
 #include <bits/stdc++.h>
@@ -37,6 +40,7 @@ NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
 
 typedef list<pair<Ipv4RoutingTableEntry*, uint32_t>> HostRoutes;
 HostRoutes hostRoutes;
+map<uint64_t, vector<int>> routesTaken;
 
 PSO::PSO()
 {
@@ -132,6 +136,8 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     timestamp.SetTimestamp(Simulator::Now());
     p->AddByteTag(timestamp);
 
+    routesTaken[p->GetUid()].push_back(m_ipv4->GetObject<Node>()->GetId());
+
     return route;
 }
 
@@ -158,12 +164,16 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
     uint32_t iif = m_ipv4->GetInterfaceForDevice(idev);
 
+    if(m_ipv4->GetAddress(1,0).GetLocal() == header.GetDestination()){
+        NS_LOG_INFO("Node: " << m_ipv4->GetAddress(1,0).GetLocal() << " Dest: " << header.GetDestination());
+    }
+    
+
     if (m_ipv4->IsDestinationAddress(header.GetDestination(), iif))
     {
-        NS_LOG_INFO("Destination address");
         if (!lcb.IsNull())
         {
-            NS_LOG_LOGIC("Local delivery to " << header.GetDestination());
+            NS_LOG_INFO("Local delivery to " << header.GetDestination());
             lcb(p, header, iif);
             return true;
         }
@@ -178,9 +188,9 @@ bool PSO::RouteInput(Ptr<const Packet> p,
 
     uint32_t throughput = size / delay.GetSeconds();
 
-    NS_LOG_INFO("Delay from " << header.GetSource() << " to " << header.GetDestination());
-    NS_LOG_INFO("           Delay: "<< delay.GetSeconds() << "s");
-    NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
+    // NS_LOG_INFO("Delay from " << header.GetSource() << " to " << header.GetDestination());
+    // NS_LOG_INFO("           Delay: "<< delay.GetSeconds() << "s");
+    // NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
 
     // Check if input device supports IP forwarding
     if (!m_ipv4->IsForwarding(iif))
@@ -196,6 +206,28 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     {
         // NS_LOG_LOGIC("Found unicast destination- calling unicast callback");
         ucb(rtentry, p, header);
+        routesTaken[p->GetUid()].push_back(m_ipv4->GetObject<Node>()->GetId());
+
+        // map iterator created 
+        // iterator pointing to start of map 
+        map<uint64_t, vector<int>>::iterator it = routesTaken.begin(); 
+    
+        // Iterating over the map using Iterator till map end. 
+        while (it != routesTaken.end()) { 
+            // Accessing the key 
+            uint64_t id = it->first; 
+            // Accessing the value 
+            vector<int> path = it->second; 
+            string pathString("");
+            for(int i=0; i<int(path.size()); i++){
+                auto s = std::to_string(path[i]);
+                pathString = pathString + s + " ";
+            }
+            // NS_LOG_INFO("Packet ID: " << id << " path: " << pathString); 
+            // iterator incremented to point next item 
+            it++; 
+        }        
+
         return true;
     }
     else
@@ -678,6 +710,36 @@ void PSO::ComputeRoutingTables()
     BuildGlobalRoutingDatabase();
 }
 
+void PSO::RecvPso(Ptr<Socket> socket){
+    Time now = Simulator::Now();
+    Time sourceTime;
+    TimestampTag timestamp;
+
+    NS_LOG_INFO("Packet received");
+    Ptr<Packet> receivedPacket;
+    Address sourceAddress;
+    receivedPacket = socket->RecvFrom(sourceAddress);
+
+    bool found = receivedPacket->FindFirstMatchingByteTag(timestamp);
+    sourceTime = timestamp.GetTimestamp();
+
+    // NS_LOG_INFO(receivedPacket->GetUid());
+    vector<int> path = routesTaken.at(receivedPacket->GetUid());
+    string pathString("");
+    for(int i=0; i<int(path.size()); i++){
+        auto s = std::to_string(path[i]);
+        pathString = pathString + s + " ";
+    }
+    NS_LOG_INFO("Packet ID: " << receivedPacket->GetUid() << " path: " << pathString); 
+
+    Time delay = now - sourceTime;
+    uint32_t size = receivedPacket->GetSize();
+
+    uint32_t throughput = size / delay.GetSeconds();
+
+    NS_LOG_INFO("           Delay: "<< delay.GetSeconds() << "s");
+    NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
+}
 
 // ===========TimeStamp Class ===============
 

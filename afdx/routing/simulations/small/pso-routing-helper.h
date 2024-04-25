@@ -24,7 +24,7 @@ class PSOHelper : public Ipv4RoutingHelper
         PSOHelper* Copy() const override;
         Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override;
         void PopulateRoutingTables();
-
+        void ReceivePacket(Ptr<Socket> socket);
     private:
         PSO pso;
 };

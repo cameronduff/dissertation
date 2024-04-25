@@ -67,6 +67,7 @@ class PSO : public Ipv4RoutingProtocol
 
         uint32_t GetNRoutes(uint32_t node) const;
         Ipv4RoutingTableEntry* GetRoute(uint32_t index, uint32_t node) const;
+        void RecvPso(Ptr<Socket> socket);
 
     private:
         void InitializeRoutes();
@@ -83,6 +84,7 @@ class PSO : public Ipv4RoutingProtocol
         std::vector<VirtualLink> _virtualLinks;
         Ptr<UniformRandomVariable> m_rand;
         Ptr<Ipv4> m_ipv4;
+        Ptr<Socket> m_recvSocket;
 };
 
 class TimeStampTag : public Tag
