@@ -80,6 +80,7 @@ class PSO : public Ipv4RoutingProtocol
         bool checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node);
         void PopulateAdjacencyMatrix(int **adjacencyMatrix);
         Ptr<Ipv4Route> LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif = nullptr);
+        double calculateFitness(double delay, uint32_t throughput);
 
         std::vector<VirtualLink> _virtualLinks;
         Ptr<UniformRandomVariable> m_rand;

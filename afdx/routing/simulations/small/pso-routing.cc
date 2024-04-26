@@ -1,6 +1,7 @@
 #include "pso-routing.h"
 
 #include "ns3/ipv4-header.h"
+#include "ns3/ppp-header.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4-interface-address.h"
 #include "ns3/ipv4-interface.h"
@@ -41,6 +42,9 @@ NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
 typedef list<pair<Ipv4RoutingTableEntry*, uint32_t>> HostRoutes;
 HostRoutes hostRoutes;
 map<uint64_t, vector<int>> routesTaken;
+double packetsSent;
+double packetsReceived;
+Time start;
 
 PSO::PSO()
 {
@@ -138,6 +142,7 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
 
     routesTaken[p->GetUid()].push_back(m_ipv4->GetObject<Node>()->GetId());
 
+    packetsSent = packetsSent + p->GetSize();
     return route;
 }
 
@@ -710,6 +715,11 @@ void PSO::ComputeRoutingTables()
     BuildGlobalRoutingDatabase();
 }
 
+double PSO::calculateFitness(double delay, uint32_t throughput){
+    double fitness = throughput - (delay);
+    return fitness;
+}
+
 void PSO::RecvPso(Ptr<Socket> socket){
     Time now = Simulator::Now();
     Time sourceTime;
@@ -734,11 +744,12 @@ void PSO::RecvPso(Ptr<Socket> socket){
 
     Time delay = now - sourceTime;
     uint32_t size = receivedPacket->GetSize();
+    double throughput = size / delay.GetSeconds(); // bps to mbps
+    packetsReceived = packetsReceived + size;
 
-    uint32_t throughput = size / delay.GetSeconds();
-
-    NS_LOG_INFO("           Delay: "<< delay.GetSeconds() << "s");
+    NS_LOG_INFO("           Delay: "<< delay.GetNanoSeconds() << "ns");
     NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
+    NS_LOG_INFO("           Fitness: " << calculateFitness(delay.GetNanoSeconds()   , throughput));
 }
 
 // ===========TimeStamp Class ===============
@@ -803,6 +814,3 @@ TimestampTag::Print (std::ostream &os) const
 }
 
 }
-
-
-
