@@ -26,14 +26,6 @@ namespace ns3
 
 class PSO : public Ipv4RoutingProtocol
 {
-    struct VirtualLink
-    {
-        int srcNode;
-        int dstNode;
-        vector<int> path;
-        double fitness;
-    };
-    
     public:
         // static TypeId GetTypeId();
 
@@ -81,8 +73,8 @@ class PSO : public Ipv4RoutingProtocol
         void PopulateAdjacencyMatrix(int **adjacencyMatrix);
         Ptr<Ipv4Route> LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif = nullptr);
         double calculateFitness(double delay, uint32_t throughput);
+        int randomInt(int min, int max);
 
-        std::vector<VirtualLink> _virtualLinks;
         Ptr<UniformRandomVariable> m_rand;
         Ptr<Ipv4> m_ipv4;
         Ptr<Socket> m_recvSocket;
@@ -106,5 +98,24 @@ public:
 
 private:
     Time m_timestamp;
+};
+
+class DestinationNodeTag : public Tag
+{
+public:
+    virtual TypeId GetInstanceTypeId (void) const;
+
+    virtual uint32_t GetSerializedSize (void) const;
+    virtual void Serialize (TagBuffer i) const;
+    virtual void Deserialize (TagBuffer i);
+
+    // these are our accessors to our tag structure
+    void SetDestinationNode (uint32_t node);
+    uint32_t GetDestinationNode (void) const;
+
+    void Print (std::ostream &os) const;
+
+private:
+    uint32_t m_destinationNode;
 };
 }

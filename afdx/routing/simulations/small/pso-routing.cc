@@ -34,6 +34,14 @@
 
 using namespace std;
 
+struct VirtualLink
+{
+    int srcNode;
+    int dstNode;
+    vector<int> path;
+    double fitness = -DBL_MAX;
+};
+
 namespace ns3
 {
 NS_LOG_COMPONENT_DEFINE ("PSOProtocol");
@@ -45,6 +53,10 @@ map<uint64_t, vector<int>> routesTaken;
 double packetsSent;
 double packetsReceived;
 Time start;
+map<pair<uint32_t, uint32_t>, double> routeCost;
+vector<VirtualLink> virtualLinks;
+uint32_t currentNode;
+
 
 PSO::PSO()
 {
@@ -54,6 +66,15 @@ PSO::PSO()
 PSO::~PSO()
 {
 
+}
+
+int PSO::randomInt(int min, int max) //range : [min, max]
+{
+  std::random_device rd; // obtain a random number from hardware
+  std::mt19937 gen(rd()); // seed the generator
+  std::uniform_int_distribution<> distr(min, max); // define the range
+
+  return distr(gen);
 }
 
 Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
@@ -88,7 +109,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     {
         // TODO pick which route...
         uint32_t selectIndex;
-        selectIndex = m_rand->GetInteger(0, allRoutes.size() - 1);
+        selectIndex = randomInt(0, allRoutes.size() - 1);
         
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
@@ -117,12 +138,38 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
 {
     // NS_LOG_INFO("In RouteOutput");
     Ipv4Address dest = header.GetDestination();
+    uint32_t sourceNode = m_ipv4->GetObject<Node>()->GetId();
+    uint32_t destNode;
+    
+    for(uint32_t i = 0; i < NodeList::GetNNodes(); i++){
+        Ptr<Node> node = NodeList::GetNode(i);
+
+        if(node->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal() == dest){
+            destNode = node->GetId();
+            break;
+        }
+    }
+    
     Ptr<Ipv4Route> route = nullptr;
 
     if (dest.IsMulticast())
     {
         // NS_LOG_LOGIC("Multicast destination-- returning false");
         return route; // Let other routing protocols try to handle this
+    }
+
+    // variable which decides whether to take the following options
+    // 0 - global best
+    // 1 - local best
+    // 2 - random
+    int routeToTake = randomInt(0, 2);
+
+    if(routeToTake == 0){
+
+    } else if(routeToTake == 1){
+
+    } else if(routeToTake == 2){
+
     }
 
     // NS_LOG_LOGIC("Unicast destination- looking up");
@@ -140,7 +187,11 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     timestamp.SetTimestamp(Simulator::Now());
     p->AddByteTag(timestamp);
 
-    routesTaken[p->GetUid()].push_back(m_ipv4->GetObject<Node>()->GetId());
+    DestinationNodeTag destinationNode;
+    destinationNode.SetDestinationNode(destNode);
+    p->AddByteTag(destinationNode);
+
+    routesTaken[p->GetUid()].push_back(sourceNode);
 
     packetsSent = packetsSent + p->GetSize();
     return route;
@@ -455,12 +506,6 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
         if (vertexIndex != startVertex) {
             vector<int> path;
             returnPath(vertexIndex, parents, path);
-
-            virtualLink.srcNode = startVertex;
-            virtualLink.dstNode = vertexIndex;
-            virtualLink.path = path;
-            virtualLink.fitness=1.0;
-            _virtualLinks.push_back(virtualLink);
             
             string pathString("");
             for(int i=0; i<int(path.size()); i++){
@@ -716,7 +761,7 @@ void PSO::ComputeRoutingTables()
 }
 
 double PSO::calculateFitness(double delay, uint32_t throughput){
-    double fitness = throughput - (delay);
+    double fitness = (1 * throughput) - (1 * delay);
     return fitness;
 }
 
@@ -724,16 +769,21 @@ void PSO::RecvPso(Ptr<Socket> socket){
     Time now = Simulator::Now();
     Time sourceTime;
     TimestampTag timestamp;
+    uint32_t destNode;
+    DestinationNodeTag destinationNode;
 
-    NS_LOG_INFO("Packet received");
     Ptr<Packet> receivedPacket;
     Address sourceAddress;
     receivedPacket = socket->RecvFrom(sourceAddress);
 
-    bool found = receivedPacket->FindFirstMatchingByteTag(timestamp);
+    receivedPacket->FindFirstMatchingByteTag(timestamp);
     sourceTime = timestamp.GetTimestamp();
 
-    // NS_LOG_INFO(receivedPacket->GetUid());
+    receivedPacket->FindFirstMatchingByteTag(destinationNode);
+    destNode = destinationNode.GetDestinationNode();
+
+    routesTaken[receivedPacket->GetUid()].push_back(destNode);
+
     vector<int> path = routesTaken.at(receivedPacket->GetUid());
     string pathString("");
     for(int i=0; i<int(path.size()); i++){
@@ -747,9 +797,61 @@ void PSO::RecvPso(Ptr<Socket> socket){
     double throughput = size / delay.GetSeconds(); // bps to mbps
     packetsReceived = packetsReceived + size;
 
+    // map<pair<uint32_t, uint32_t>, double> routeCost;
+
+    double fitness = calculateFitness(delay.GetNanoSeconds(), throughput);
+
+    pair<uint32_t, uint32_t> endToEnd;
+    endToEnd.first = path.front();
+    endToEnd.second = path.back();
+
+    bool travelled = false;
+
+    for (auto const& x : routeCost)
+    {
+        pair<uint32_t, uint32_t> key = x.first;
+
+        if(key.first == endToEnd.first && key.second == endToEnd.second){
+            NS_LOG_INFO("           Route taken before");
+            travelled = true;
+            if(x.second < fitness){
+                routeCost.erase(key);
+                routeCost.insert({endToEnd, fitness});
+                NS_LOG_INFO("           New global optimum: " << fitness);
+            }
+        }
+    }
+
+    for(int i=0; i<virtualLinks.size(); i++){
+        VirtualLink virtualLink = virtualLinks[i];
+
+        if(virtualLink.srcNode == path.front() && 
+            virtualLink.dstNode == path.back() && 
+            virtualLink.fitness < fitness){
+            virtualLinks.erase(virtualLinks.begin() + i);
+
+            VirtualLink newVirtualLink;
+            newVirtualLink.srcNode = path.front();
+            newVirtualLink.dstNode = path.back();
+            newVirtualLink.path = path;
+            newVirtualLink.fitness = fitness;
+
+            virtualLinks.push_back(newVirtualLink);
+        }
+    }
+
+    if(virtualLinks.size() == 0){
+        VirtualLink virtualLink;
+        virtualLink.srcNode = path.front();
+        virtualLink.dstNode = path.back();
+        virtualLink.path = path;
+        virtualLink.fitness = fitness;
+        virtualLinks.push_back(virtualLink);
+    }
+
     NS_LOG_INFO("           Delay: "<< delay.GetNanoSeconds() << "ns");
     NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
-    NS_LOG_INFO("           Fitness: " << calculateFitness(delay.GetNanoSeconds()   , throughput));
+    NS_LOG_INFO("           Fitness: " << fitness);
 }
 
 // ===========TimeStamp Class ===============
@@ -811,6 +913,66 @@ void
 TimestampTag::Print (std::ostream &os) const
 {
     os << "t=" << m_timestamp;
+}
+
+// ===========DestinationNode Class ===============
+
+// TypeId 
+// DestinationNodeTag::GetTypeId (void)
+// {
+// static TypeId tid = TypeId ("DestinationNodeTag")
+// .SetParent<Tag> ()
+// .AddConstructor<DestinationNodeTag> ()
+// .AddAttribute ("DestinationNode",
+//             "Adds destination node value to a packet!",
+//             EmptyAttributeValue (),
+//             MakeTimeAccessor (&DestinationNodeTag::GetDestinationNode));
+//     return tid;
+// }
+
+TypeId 
+DestinationNodeTag::GetInstanceTypeId (void) const
+{
+    return GetTypeId ();
+}
+
+uint32_t 
+DestinationNodeTag::GetSerializedSize (void) const
+{
+    return 8;
+}
+
+void 
+DestinationNodeTag::Serialize (TagBuffer i) const
+{
+    uint32_t t = m_destinationNode;
+    i.Write ((const uint8_t *)&t, 8);
+}
+
+void 
+DestinationNodeTag::Deserialize (TagBuffer i)
+{
+    int64_t t;
+    i.Read ((uint8_t *)&t, 8);
+    m_destinationNode = t;
+}
+
+void
+DestinationNodeTag::SetDestinationNode (uint32_t node)
+{
+    m_destinationNode = node;
+}
+
+uint32_t
+DestinationNodeTag::GetDestinationNode (void) const
+{
+    return m_destinationNode;
+}
+
+void 
+DestinationNodeTag::Print (std::ostream &os) const
+{
+    os << "t=" << m_destinationNode;
 }
 
 }
