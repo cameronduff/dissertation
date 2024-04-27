@@ -917,19 +917,6 @@ TimestampTag::Print (std::ostream &os) const
 
 // ===========DestinationNode Class ===============
 
-// TypeId 
-// DestinationNodeTag::GetTypeId (void)
-// {
-// static TypeId tid = TypeId ("DestinationNodeTag")
-// .SetParent<Tag> ()
-// .AddConstructor<DestinationNodeTag> ()
-// .AddAttribute ("DestinationNode",
-//             "Adds destination node value to a packet!",
-//             EmptyAttributeValue (),
-//             MakeTimeAccessor (&DestinationNodeTag::GetDestinationNode));
-//     return tid;
-// }
-
 TypeId 
 DestinationNodeTag::GetInstanceTypeId (void) const
 {

@@ -25,6 +25,7 @@ class PSOHelper : public Ipv4RoutingHelper
         Ptr<Ipv4RoutingProtocol> Create(Ptr<Node> node) const override;
         void PopulateRoutingTables();
         void ReceivePacket(Ptr<Socket> socket);
+        void InstallSinkOnNodes();
     private:
         PSO pso;
 };

@@ -50,4 +50,18 @@ void PSOHelper::ReceivePacket(Ptr<Socket> socket){
     pso.RecvPso(socket);
 }
 
+void PSOHelper::InstallSinkOnNodes(){
+    uint16_t port = 9; // Discard port(RFC 863)
+
+    for(int i=0; i<int(NodeList::GetNNodes()); i++){
+        Ptr<Node> node = NodeList::GetNode(i);    
+        TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
+        Ptr<Socket> sink = Socket::CreateSocket(NodeList::GetNode(i), tid);
+        InetSocketAddress local = InetSocketAddress(node->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal(), port);
+        sink->Bind(local);
+        sink->SetRecvCallback(MakeCallback(&PSOHelper::ReceivePacket, this));
+        NS_LOG_INFO("Sink installed on node " << i);
+    }
+}
+
 }

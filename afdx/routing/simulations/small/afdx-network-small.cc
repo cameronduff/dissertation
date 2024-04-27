@@ -61,24 +61,6 @@ int randomInt(int min, int max) //range : [min, max]
   return distr(gen);
 }
 
-void installSinksOnNodes(PSOHelper psoHelperTest){
-  uint16_t port = 9; // Discard port(RFC 863)
-
-  for(int node=0; node<int(NodeList::GetNNodes()); node++){
-    // Create an optional packet sink to receive these packets on all nodes
-    // PacketSinkHelper sink("ns3::UdpSocketFactory", Address(InetSocketAddress(Ipv4Address::GetAny(), port)));
-    // ApplicationContainer sinkApp;
-    // sinkApp = sink.Install(NodeList::GetNode(node));
-    // sinkApp.Start(Seconds(0.0));
-
-    TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
-    Ptr<Socket> sink = Socket::CreateSocket(NodeList::GetNode(node), tid);
-    InetSocketAddress local = InetSocketAddress(Ipv4Address("10.1.2.1"), port);
-    sink->Bind(local);
-    sink->SetRecvCallback(MakeCallback(&PSOHelper::ReceivePacket, &psoHelperTest));
-  }  
-}
-
 void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender,
                           double startTime, double appEndTime, 
                           int packetSize, PSOHelper &psoHelper){
@@ -92,29 +74,9 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender,
   onoff.SetConstantRate(DataRate("500kb/s"));
 
   ApplicationContainer app = onoff.Install(sender);
-
-  // Use Downcasting for your purpose
-  Ptr<OnOffApplication> application = DynamicCast <OnOffApplication> (app.Get(0));
-
-  // Then access the socket
-  Ptr<Socket> socket = application->GetSocket();
-  // socket->SetRecvCallback(MakeCallback(&PSOHelper::ReceivePacket, &psoHelper));
-  NS_LOG_INFO("Socket found");
   
   app.Start(Seconds(startTime));
   app.Stop(Seconds(appEndTime));
-
-  // Ptr<Socket> udpSocket = Socket::CreateSocket(sender, TcpSocketFactory::GetTypeId());
-  // NS_LOG_INFO("UDPSocket created" << udpSocket);
-
-  // Ptr<CustomApplication> app = CreateObject<CustomApplication>();  
-  // app->Setup(udpSocket, receiverIp, packetSize, 1, DataRate("1Mbps"));
-  // sender->AddApplication(app);
-
-  // ApplicationContainer container = ApplicationContainer(app);
-
-  // container.Start(Seconds(3.0));
-  // container.Stop(Seconds(10.0));
 }
 
 int main(int argc, char *argv[]){
@@ -212,7 +174,7 @@ int main(int argc, char *argv[]){
     // psoHelper.PopulateRoutingTables();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
     psoHelperTest.PopulateRoutingTables();
-    installSinksOnNodes(psoHelperTest);
+    psoHelperTest.InstallSinkOnNodes();
 
     vector<NodeContainer> endSystems;
     endSystems.push_back(left_nodes);
