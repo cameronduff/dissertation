@@ -53,7 +53,6 @@ map<uint64_t, vector<int>> routesTaken;
 double packetsSent;
 double packetsReceived;
 Time start;
-map<pair<uint32_t, uint32_t>, double> routeCost;
 vector<VirtualLink> virtualLinks;
 uint32_t currentNode;
 
@@ -785,6 +784,7 @@ void PSO::RecvPso(Ptr<Socket> socket){
     routesTaken[receivedPacket->GetUid()].push_back(destNode);
 
     vector<int> path = routesTaken.at(receivedPacket->GetUid());
+    routesTaken.erase(receivedPacket->GetUid());
     string pathString("");
     for(int i=0; i<int(path.size()); i++){
         auto s = std::to_string(path[i]);
@@ -796,8 +796,6 @@ void PSO::RecvPso(Ptr<Socket> socket){
     uint32_t size = receivedPacket->GetSize();
     double throughput = size / delay.GetSeconds(); // bps to mbps
     packetsReceived = packetsReceived + size;
-
-    // map<pair<uint32_t, uint32_t>, double> routeCost;
 
     double fitness = calculateFitness(delay.GetNanoSeconds(), throughput);
     bool found = false;
@@ -837,9 +835,13 @@ void PSO::RecvPso(Ptr<Socket> socket){
         virtualLinks.push_back(virtualLink);
     }
 
-    NS_LOG_INFO("           Delay: "<< delay.GetNanoSeconds() << "ns");
-    NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
-    NS_LOG_INFO("           Fitness: " << fitness);
+    NS_LOG_INFO("Virtual Links size: " << virtualLinks.size());
+    NS_LOG_INFO("Host Routes size: " << HostRoutes.size());
+    NS_LOG_INFO("Routes taken size: " << routesTaken.size());
+
+    // NS_LOG_INFO("           Delay: "<< delay.GetNanoSeconds() << "ns");
+    // NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
+    // NS_LOG_INFO("           Fitness: " << fitness);
 }
 
 // ===========TimeStamp Class ===============
