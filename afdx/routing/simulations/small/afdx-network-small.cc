@@ -41,7 +41,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 3;
+int endTime = 30;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -63,7 +63,7 @@ int randomInt(int min, int max) //range : [min, max]
 
 void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender,
                           double startTime, double appEndTime, 
-                          int packetSize, PSOHelper &psoHelper){
+                          int packetSize){
   uint16_t port = 9; // Discard port(RFC 863)
 
   Ipv4Address receiverIp = receiver->GetObject<Ipv4>()->GetAddress(1,0).GetLocal();
@@ -184,59 +184,59 @@ int main(int argc, char *argv[]){
 
     NS_LOG_INFO("Number of applications: " << numOfApplications);
 
-    // for(int i=0; i<numOfApplications; i++){
-    //   int randomIndex1;
-    //   int randomIndex2;
-    //   int packetSize = randomInt(64, 1517);
-    //   double startTime = ((randomInt(1, endTime * 10))/10.0);
-    //   // double appEndTime;
-    //   bool sameNetwork = true;
+    for(int i=0; i<numOfApplications; i++){
+      int randomIndex1;
+      int randomIndex2;
+      int packetSize = randomInt(64, 1517);
+      double startTime = ((randomInt(1, endTime * 10))/10.0);
+      // double appEndTime;
+      bool sameNetwork = true;
 
-    //   // NS_LOG_INFO("Start time: " << startTime);
+      // NS_LOG_INFO("Start time: " << startTime);
 
-    //   while(sameNetwork){
-    //     randomIndex1 = randomInt(0, endSystems.size()-1);
-    //     randomIndex2 = randomInt(0, endSystems.size()-1);
-    //     // appEndTime = (randomInt(endTime/2, endTime * 10))/10.0;
+      while(sameNetwork){
+        randomIndex1 = randomInt(0, endSystems.size()-1);
+        randomIndex2 = randomInt(0, endSystems.size()-1);
+        // appEndTime = (randomInt(endTime/2, endTime * 10))/10.0;
 
-    //     if(randomIndex1 != randomIndex2){
-    //       sameNetwork = false;
-    //     }
-    //   }
+        if(randomIndex1 != randomIndex2){
+          sameNetwork = false;
+        }
+      }
 
-    //   // NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
+      // NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
 
-    //   NodeContainer container1 = endSystems[randomIndex1];
-    //   NodeContainer container2 = endSystems[randomIndex2];
+      NodeContainer container1 = endSystems[randomIndex1];
+      NodeContainer container2 = endSystems[randomIndex2];
 
-    //   // NS_LOG_INFO("Num of nodes: " << container1.GetN());
+      // NS_LOG_INFO("Num of nodes: " << container1.GetN());
 
-    //   bool sameNode = true;
+      bool sameNode = true;
 
-    //   int randomNode1;
-    //   int randomNode2;
+      int randomNode1;
+      int randomNode2;
 
-    //   while(sameNode){
-    //     randomNode1 = randomInt(0, container1.GetN()-2);
-    //     randomNode2 = randomInt(0, container2.GetN()-2);
+      while(sameNode){
+        randomNode1 = randomInt(0, container1.GetN()-2);
+        randomNode2 = randomInt(0, container2.GetN()-2);
 
-    //     if(randomNode1 != randomNode2){
-    //       sameNode = false;
-    //     }
-    //   }
+        if(randomNode1 != randomNode2){
+          sameNode = false;
+        }
+      }
 
-    //   Ptr<Node> sender = container1.Get(randomNode1);
-    //   Ptr<Node> receiver = container2.Get(randomNode2);
+      Ptr<Node> sender = container1.Get(randomNode1);
+      Ptr<Node> receiver = container2.Get(randomNode2);
 
-    //   NS_LOG_INFO("Sender: " << sender->GetId() << " Receiver: " << receiver->GetId());
+      NS_LOG_INFO("Sender: " << sender->GetId() << " Receiver: " << receiver->GetId());
 
-    //   // createUdpApplication(sender, receiver, startTime, appEndTime , packetSize);
+      // createUdpApplication(sender, receiver, startTime, appEndTime , packetSize);
 
-    //   // NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
-    //   createUdpApplication(sender, receiver, startTime, endTime, packetSize);
-    // }
+      // NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
+      createUdpApplication(sender, receiver, startTime, endTime, packetSize);
+    }
 
-    createUdpApplication(right_nodes.Get(0), left_nodes.Get(0), 0, endTime, 100, psoHelperTest);
+    createUdpApplication(right_nodes.Get(0), left_nodes.Get(0), 0, endTime, 100);
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;

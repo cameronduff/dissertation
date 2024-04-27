@@ -790,7 +790,7 @@ void PSO::RecvPso(Ptr<Socket> socket){
         auto s = std::to_string(path[i]);
         pathString = pathString + s + " ";
     }
-    NS_LOG_INFO("Packet ID: " << receivedPacket->GetUid() << " path: " << pathString); 
+    // NS_LOG_INFO("Packet ID: " << receivedPacket->GetUid() << " path: " << pathString); 
 
     Time delay = now - sourceTime;
     uint32_t size = receivedPacket->GetSize();
@@ -800,47 +800,35 @@ void PSO::RecvPso(Ptr<Socket> socket){
     // map<pair<uint32_t, uint32_t>, double> routeCost;
 
     double fitness = calculateFitness(delay.GetNanoSeconds(), throughput);
-
-    pair<uint32_t, uint32_t> endToEnd;
-    endToEnd.first = path.front();
-    endToEnd.second = path.back();
-
-    bool travelled = false;
-
-    for (auto const& x : routeCost)
-    {
-        pair<uint32_t, uint32_t> key = x.first;
-
-        if(key.first == endToEnd.first && key.second == endToEnd.second){
-            NS_LOG_INFO("           Route taken before");
-            travelled = true;
-            if(x.second < fitness){
-                routeCost.erase(key);
-                routeCost.insert({endToEnd, fitness});
-                NS_LOG_INFO("           New global optimum: " << fitness);
-            }
-        }
-    }
+    bool found = false;
 
     for(int i=0; i<virtualLinks.size(); i++){
         VirtualLink virtualLink = virtualLinks[i];
 
         if(virtualLink.srcNode == path.front() && 
-            virtualLink.dstNode == path.back() && 
-            virtualLink.fitness < fitness){
-            virtualLinks.erase(virtualLinks.begin() + i);
+            virtualLink.dstNode == path.back()){
+            
+            if(virtualLink.fitness < fitness){
+                virtualLinks.erase(virtualLinks.begin() + i);
 
-            VirtualLink newVirtualLink;
-            newVirtualLink.srcNode = path.front();
-            newVirtualLink.dstNode = path.back();
-            newVirtualLink.path = path;
-            newVirtualLink.fitness = fitness;
+                VirtualLink newVirtualLink;
+                newVirtualLink.srcNode = path.front();
+                newVirtualLink.dstNode = path.back();
+                newVirtualLink.path = path;
+                newVirtualLink.fitness = fitness;
 
-            virtualLinks.push_back(newVirtualLink);
+                NS_LOG_INFO("New global optimum: " << fitness << " for " << newVirtualLink.srcNode << " -> " << newVirtualLink.dstNode << " : " << pathString);
+                virtualLinks.push_back(newVirtualLink);
+                break;
+            } else {
+                found=true;
+                break;
+            }
+            
         }
     }
 
-    if(virtualLinks.size() == 0){
+    if(virtualLinks.size() == 0 || found == false){
         VirtualLink virtualLink;
         virtualLink.srcNode = path.front();
         virtualLink.dstNode = path.back();
