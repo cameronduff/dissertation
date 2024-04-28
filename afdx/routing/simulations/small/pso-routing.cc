@@ -216,10 +216,16 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     // NS_LOG_INFO("In RouteInput"); 
 
     Time now = Simulator::Now();
+
     Time sourceTime;
     TimestampTag timestamp;
-    bool found = p->FindFirstMatchingByteTag(timestamp);
+    p->FindFirstMatchingByteTag(timestamp);
     sourceTime = timestamp.GetTimestamp();
+
+    PathType pathType;
+    PathTypeTag pathTypeTag;
+    p->FindFirstMatchingByteTag(pathTypeTag);
+    pathType = pathTypeTag.GetPathType();
     
     // Check if input device supports IP
     NS_ASSERT(m_ipv4->GetInterfaceForDevice(idev) >= 0);
@@ -791,8 +797,6 @@ void PSO::RecvPso(Ptr<Socket> socket){
 
     receivedPacket->FindFirstMatchingByteTag(pathTypeTag);
     pathType = pathTypeTag.GetPathType();
-
-    NS_LOG_INFO("Path Type: " << pathType);
 
     routesTaken[receivedPacket->GetUid()].push_back(destNode);
 
