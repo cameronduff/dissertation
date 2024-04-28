@@ -109,14 +109,91 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
         uint32_t selectIndex;
 
         if(pathType == PathType::Global){
-            selectIndex = randomInt(0, allRoutes.size() - 1);
+
+            // NS_LOG_INFO("Virtual links size: " << virtualLinks.size());
+            for(int j=0;j<virtualLinks.size();j++){
+                string VL("");
+                for(int i=0; i<int(virtualLinks[j].path.size()); i++){
+                    auto s = std::to_string(virtualLinks[j].path[i]);
+                    VL = VL + s + " ";
+                }
+                // NS_LOG_INFO("Global best: " << VL); 
+            }
+            
+
+            uint32_t currentNode = m_ipv4->GetObject<Node>()->GetId();
+            // NS_LOG_INFO("Current Node: " << currentNode);
+            vector<int> currentPathTravelled = routesTaken[p->GetUid()];
+
+            string currentPath("");
+            for(int i=0; i<int(currentPathTravelled.size()); i++){
+                auto s = std::to_string(currentPathTravelled[i]);
+                currentPath = currentPath + s + " ";
+            }
+            // NS_LOG_INFO("Current path: " << currentPath << currentNode); 
+
+            DestinationNodeTag destinationNode;
+            p->FindFirstMatchingByteTag(destinationNode);
+            uint32_t destNode = destinationNode.GetDestinationNode();
+            uint32_t srcNode;
+
+            if(currentPathTravelled.size() == 0){
+                srcNode = currentNode;
+            } else {
+                srcNode = currentPathTravelled.front();
+            }
+
+            if(virtualLinks.size() == 0){
+                // NS_LOG_INFO("No global bests yet");
+                selectIndex = randomInt(0, allRoutes.size() - 1);
+            } else{
+                for(int i=0; i<virtualLinks.size(); i++){
+                    if(virtualLinks[i].srcNode == srcNode && virtualLinks[i].dstNode == destNode){                    
+                        // NS_LOG_INFO(srcNode << " -> " << destNode);
+                        bool finalNode = false;
+                        uint32_t nextNode;
+                        if(currentPathTravelled.size() == virtualLinks[i].path.size()-2){
+                            nextNode = virtualLinks[i].path.back();
+                            finalNode = true;
+                            // NS_LOG_INFO("Onto final node");
+                        } else{
+                            nextNode = virtualLinks[i].path[currentPathTravelled.size() + 1];
+                        }
+                        
+                        // NS_LOG_INFO("Next Node: " << nextNode);
+                        Ptr<Node> gatewayNode = NodeList::GetNode(nextNode);
+
+                        int ip=1;
+                        int NDevices = gatewayNode->GetNDevices();
+                        while(ip<NDevices){
+                            Ipv4Address address = gatewayNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal();
+
+                            if(finalNode){
+                                address=Ipv4Address("0.0.0.0");
+                            }
+
+                            // NS_LOG_INFO("IP: " << ip << " Address: " << address);
+
+                            for(int j=0; j<allRoutes.size(); j++){
+                                Ipv4RoutingTableEntry* entry = allRoutes[j];
+                                if(address == entry->GetGateway()){
+                                    // NS_LOG_INFO("Gateway address: " << address);
+                                    selectIndex=j;
+                                    ip=NDevices;
+                                }
+                            }
+                            ip++;
+                        }
+                    }
+                }
+            }            
         } else if(pathType == PathType::Local){
             selectIndex = randomInt(0, allRoutes.size() - 1);
+            // NS_LOG_INFO("Local");
         } else if(pathType == PathType::Random){
             selectIndex = randomInt(0, allRoutes.size() - 1);
+            // NS_LOG_INFO("Random");
         }
-
-        // selectIndex = randomInt(0, allRoutes.size() - 1);
         
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
@@ -181,6 +258,17 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
         pathType = PathType::Random;
     }
 
+    // stops packets trying to find VL if mid transit
+    if(virtualLinks.size() == 0){
+        pathType = PathType::Random;
+    }
+
+    // NS_LOG_LOGIC("Unicast destination- looking up");
+
+    DestinationNodeTag destinationNode;
+    destinationNode.SetDestinationNode(destNode);
+    p->AddByteTag(destinationNode);
+
     // NS_LOG_LOGIC("Unicast destination- looking up");
     route = LookupRoute(p, header, pathType, oif);
     if (route)
@@ -195,10 +283,6 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     TimestampTag timestamp;
     timestamp.SetTimestamp(Simulator::Now());
     p->AddByteTag(timestamp);
-
-    DestinationNodeTag destinationNode;
-    destinationNode.SetDestinationNode(destNode);
-    p->AddByteTag(destinationNode);
 
     PathTypeTag pathTypeTag;
     pathTypeTag.SetPathType(pathType);
@@ -785,6 +869,8 @@ double PSO::calculateFitness(double delay, uint32_t throughput){
 }
 
 void PSO::RecvPso(Ptr<Socket> socket){
+    // NS_LOG_INFO("=========================================");
+    // NS_LOG_INFO("Packet received");
     Time now = Simulator::Now();
     Time sourceTime;
     TimestampTag timestamp;
@@ -824,23 +910,40 @@ void PSO::RecvPso(Ptr<Socket> socket){
     double fitness = calculateFitness(delay.GetNanoSeconds(), throughput);
     bool found = false;
 
+    // NS_LOG_INFO("From " << path.front() << " -> " << path.back());
+
+    // NS_LOG_INFO("Current Number of Virtual Links: " << virtualLinks.size());
+    // for(int i=0;i<virtualLinks.size(); i++){
+    //     VirtualLink virtualLink = virtualLinks[i];
+    //     vector<int> VLPath = virtualLink.path;
+    //     string pathString("");
+    //     for(int i=0; i<int(VLPath.size()); i++){
+    //         auto s = std::to_string(VLPath[i]);
+    //         pathString = pathString + s + " ";
+    //     }
+
+    //     NS_LOG_INFO("VL " << i << " : " << pathString << " fitness: " << virtualLink.fitness);
+    // }
+
     for(int i=0; i<virtualLinks.size(); i++){
         VirtualLink virtualLink = virtualLinks[i];
 
         if(virtualLink.srcNode == path.front() && 
             virtualLink.dstNode == path.back()){
             
-            if(virtualLink.fitness < fitness){
+            if(virtualLink.fitness <= fitness){
+                // NS_LOG_INFO("Removing VL: " << i << " for new VL");
                 virtualLinks.erase(virtualLinks.begin() + i);
 
                 VirtualLink newVirtualLink;
                 newVirtualLink.srcNode = path.front();
                 newVirtualLink.dstNode = path.back();
                 newVirtualLink.path = path;
-                newVirtualLink.fitness = fitness;
-
-                NS_LOG_INFO("New global optimum: " << fitness << " for " << newVirtualLink.srcNode << " -> " << newVirtualLink.dstNode << " : " << pathString);
+                newVirtualLink.fitness = fitness;                
                 virtualLinks.push_back(newVirtualLink);
+
+                NS_LOG_INFO("VL updated");
+                found=true;
                 break;
             } else {
                 found=true;
@@ -851,13 +954,30 @@ void PSO::RecvPso(Ptr<Socket> socket){
     }
 
     if(virtualLinks.size() == 0 || found == false){
+        // NS_LOG_INFO("No VL's ... adding ...");
         VirtualLink virtualLink;
         virtualLink.srcNode = path.front();
         virtualLink.dstNode = path.back();
         virtualLink.path = path;
         virtualLink.fitness = fitness;
+        NS_LOG_INFO("New VL added");
         virtualLinks.push_back(virtualLink);
     }
+
+    // NS_LOG_INFO("Final Number of Virtual Links: " << virtualLinks.size());
+    // for(int i=0;i<virtualLinks.size(); i++){
+    //     VirtualLink virtualLink = virtualLinks[i];
+    //     vector<int> VLPath = virtualLink.path;
+    //     string pathString("");
+    //     for(int i=0; i<int(VLPath.size()); i++){
+    //         auto s = std::to_string(VLPath[i]);
+    //         pathString = pathString + s + " ";
+    //     }
+
+    //     NS_LOG_INFO("VL " << i << " : " << pathString << " fitness: " << virtualLink.fitness);
+    // }
+    
+    // NS_LOG_INFO("=========================================");
 
     // NS_LOG_INFO("Virtual Links size: " << virtualLinks.size());
     // NS_LOG_INFO("Host Routes size: " << hostRoutes.size());

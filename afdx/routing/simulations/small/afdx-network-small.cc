@@ -236,7 +236,8 @@ int main(int argc, char *argv[]){
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
 
-    createUdpApplication(right_nodes.Get(0), left_nodes.Get(0), 0, endTime, 100);
+    createUdpApplication(right_nodes.Get(1), left_nodes.Get(1), 0, endTime, 100);
+    createUdpApplication(right_nodes.Get(2), left_nodes.Get(0), 0, endTime, 100);
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
