@@ -836,7 +836,7 @@ void PSO::RecvPso(Ptr<Socket> socket){
     }
 
     NS_LOG_INFO("Virtual Links size: " << virtualLinks.size());
-    NS_LOG_INFO("Host Routes size: " << HostRoutes.size());
+    NS_LOG_INFO("Host Routes size: " << hostRoutes.size());
     NS_LOG_INFO("Routes taken size: " << routesTaken.size());
 
     // NS_LOG_INFO("           Delay: "<< delay.GetNanoSeconds() << "ns");
