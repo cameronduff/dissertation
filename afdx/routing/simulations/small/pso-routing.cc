@@ -76,7 +76,7 @@ int PSO::randomInt(int min, int max) //range : [min, max]
   return distr(gen);
 }
 
-Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
+Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, PathType pathType, Ptr<NetDevice> oif)
 {
     // NS_LOG_INFO("In LookupRoute");
     Ptr<Ipv4Route> rtentry = nullptr;
@@ -86,7 +86,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
     // NS_LOG_LOGIC("Number of hostRoutes" << hostRoutes.size());
     for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
     {
-        if (((*j).first)->GetDest() == dest)
+        if (((*j).first)->GetDest() == header.GetDestination())
         {
             if (oif)
             {
@@ -106,9 +106,17 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif)
 
     if (!allRoutes.empty()) // if route(s) is found
     {
-        // TODO pick which route...
         uint32_t selectIndex;
-        selectIndex = randomInt(0, allRoutes.size() - 1);
+
+        if(pathType == PathType::Global){
+            selectIndex = randomInt(0, allRoutes.size() - 1);
+        } else if(pathType == PathType::Local){
+            selectIndex = randomInt(0, allRoutes.size() - 1);
+        } else if(pathType == PathType::Random){
+            selectIndex = randomInt(0, allRoutes.size() - 1);
+        }
+
+        // selectIndex = randomInt(0, allRoutes.size() - 1);
         
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
@@ -174,7 +182,7 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     }
 
     // NS_LOG_LOGIC("Unicast destination- looking up");
-    route = LookupRoute(header.GetDestination(), oif);
+    route = LookupRoute(p, header, pathType, oif);
     if (route)
     {
         sockerr = Socket::ERROR_NOTERROR;
@@ -268,7 +276,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
     }
     // Next, try to find a route
     // NS_LOG_LOGIC("Unicast destination- looking up global route");
-    Ptr<Ipv4Route> rtentry = LookupRoute(header.GetDestination());
+    Ptr<Ipv4Route> rtentry = LookupRoute(p, header, pathType);
     if (rtentry)
     {
         // NS_LOG_LOGIC("Found unicast destination- calling unicast callback");

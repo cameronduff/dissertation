@@ -74,7 +74,7 @@ class PSO : public Ipv4RoutingProtocol
                               int **adjacencyMatrix);
         bool checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node);
         void PopulateAdjacencyMatrix(int **adjacencyMatrix);
-        Ptr<Ipv4Route> LookupRoute(Ipv4Address dest, Ptr<NetDevice> oif = nullptr);
+        Ptr<Ipv4Route> LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, PathType pathType, Ptr<NetDevice> oif = nullptr);
         double calculateFitness(double delay, uint32_t throughput);
         int randomInt(int min, int max);
 
