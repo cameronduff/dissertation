@@ -163,12 +163,14 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     // 2 - random
     int routeToTake = randomInt(0, 2);
 
+    PathType pathType;
+
     if(routeToTake == 0){
-        NS_LOG_INFO("Global best");
+        pathType = PathType::Global;
     } else if(routeToTake == 1){
-        NS_LOG_INFO("Local best");
+        pathType = PathType::Local;
     } else if(routeToTake == 2){
-        NS_LOG_INFO("Random");
+        pathType = PathType::Random;
     }
 
     // NS_LOG_LOGIC("Unicast destination- looking up");
@@ -189,6 +191,10 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     DestinationNodeTag destinationNode;
     destinationNode.SetDestinationNode(destNode);
     p->AddByteTag(destinationNode);
+
+    PathTypeTag pathTypeTag;
+    pathTypeTag.SetPathType(pathType);
+    p->AddByteTag(pathTypeTag);
 
     routesTaken[p->GetUid()].push_back(sourceNode);
 
@@ -770,6 +776,8 @@ void PSO::RecvPso(Ptr<Socket> socket){
     TimestampTag timestamp;
     uint32_t destNode;
     DestinationNodeTag destinationNode;
+    PathType pathType;
+    PathTypeTag pathTypeTag;
 
     Ptr<Packet> receivedPacket;
     Address sourceAddress;
@@ -781,6 +789,11 @@ void PSO::RecvPso(Ptr<Socket> socket){
     receivedPacket->FindFirstMatchingByteTag(destinationNode);
     destNode = destinationNode.GetDestinationNode();
 
+    receivedPacket->FindFirstMatchingByteTag(pathTypeTag);
+    pathType = pathTypeTag.GetPathType();
+
+    NS_LOG_INFO("Path Type: " << pathType);
+
     routesTaken[receivedPacket->GetUid()].push_back(destNode);
 
     vector<int> path = routesTaken.at(receivedPacket->GetUid());
@@ -790,7 +803,6 @@ void PSO::RecvPso(Ptr<Socket> socket){
         auto s = std::to_string(path[i]);
         pathString = pathString + s + " ";
     }
-    // NS_LOG_INFO("Packet ID: " << receivedPacket->GetUid() << " path: " << pathString); 
 
     Time delay = now - sourceTime;
     uint32_t size = receivedPacket->GetSize();
@@ -835,9 +847,9 @@ void PSO::RecvPso(Ptr<Socket> socket){
         virtualLinks.push_back(virtualLink);
     }
 
-    NS_LOG_INFO("Virtual Links size: " << virtualLinks.size());
-    NS_LOG_INFO("Host Routes size: " << hostRoutes.size());
-    NS_LOG_INFO("Routes taken size: " << routesTaken.size());
+    // NS_LOG_INFO("Virtual Links size: " << virtualLinks.size());
+    // NS_LOG_INFO("Host Routes size: " << hostRoutes.size());
+    // NS_LOG_INFO("Routes taken size: " << routesTaken.size());
 
     // NS_LOG_INFO("           Delay: "<< delay.GetNanoSeconds() << "ns");
     // NS_LOG_INFO("           Throughput: "<< throughput << " bits/s");
@@ -908,6 +920,15 @@ TimestampTag::Print (std::ostream &os) const
 // ===========DestinationNode Class ===============
 
 TypeId 
+DestinationNodeTag::GetTypeId (void)
+{
+static TypeId tid = TypeId ("DestinationNodeTag")
+.SetParent<Tag> ()
+.AddConstructor<DestinationNodeTag> ();
+    return tid;
+}
+
+TypeId 
 DestinationNodeTag::GetInstanceTypeId (void) const
 {
     return GetTypeId ();
@@ -953,6 +974,14 @@ DestinationNodeTag::Print (std::ostream &os) const
 }
 
 // ===========PathTypeTag Class ===============
+TypeId 
+PathTypeTag::GetTypeId (void)
+{
+static TypeId tid = TypeId ("PathTypeTag")
+.SetParent<Tag> ()
+.AddConstructor<PathTypeTag> ();
+    return tid;
+}
 
 TypeId 
 PathTypeTag::GetInstanceTypeId (void) const
@@ -969,7 +998,7 @@ PathTypeTag::GetSerializedSize (void) const
 void 
 PathTypeTag::Serialize (TagBuffer i) const
 {
-    PathType t = m_pathType;
+    uint32_t t = m_pathType;
     i.Write ((const uint8_t *)&t, 8);
 }
 

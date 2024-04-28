@@ -18,13 +18,14 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <string>
 
 using namespace std;
 
+enum PathType{Global, Local, Random};
+
 namespace ns3
 {
-
-enum PathType {Global, Local, Random};
 
 class PSO : public Ipv4RoutingProtocol
 {
@@ -105,6 +106,7 @@ private:
 class DestinationNodeTag : public Tag
 {
 public:
+    static TypeId GetTypeId (void);
     virtual TypeId GetInstanceTypeId (void) const;
 
     virtual uint32_t GetSerializedSize (void) const;
@@ -124,6 +126,7 @@ private:
 class PathTypeTag : public Tag
 {
 public:
+    static TypeId GetTypeId (void);
     virtual TypeId GetInstanceTypeId (void) const;
 
     virtual uint32_t GetSerializedSize (void) const;
