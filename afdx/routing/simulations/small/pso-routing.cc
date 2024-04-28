@@ -164,11 +164,11 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     int routeToTake = randomInt(0, 2);
 
     if(routeToTake == 0){
-
+        NS_LOG_INFO("Global best");
     } else if(routeToTake == 1){
-
+        NS_LOG_INFO("Local best");
     } else if(routeToTake == 2){
-
+        NS_LOG_INFO("Random");
     }
 
     // NS_LOG_LOGIC("Unicast destination- looking up");
@@ -950,6 +950,53 @@ void
 DestinationNodeTag::Print (std::ostream &os) const
 {
     os << "t=" << m_destinationNode;
+}
+
+// ===========PathTypeTag Class ===============
+
+TypeId 
+PathTypeTag::GetInstanceTypeId (void) const
+{
+    return GetTypeId ();
+}
+
+uint32_t 
+PathTypeTag::GetSerializedSize (void) const
+{
+    return 8;
+}
+
+void 
+PathTypeTag::Serialize (TagBuffer i) const
+{
+    PathType t = m_pathType;
+    i.Write ((const uint8_t *)&t, 8);
+}
+
+void 
+PathTypeTag::Deserialize (TagBuffer i)
+{
+    PathType t;
+    i.Read ((uint8_t *)&t, 8);
+    m_pathType = t;
+}
+
+void
+PathTypeTag::SetPathType (PathType pathType)
+{
+    m_pathType = pathType;
+}
+
+PathType
+PathTypeTag::GetPathType (void) const
+{
+    return m_pathType;
+}
+
+void 
+PathTypeTag::Print (std::ostream &os) const
+{
+    os << "t=" << m_pathType;
 }
 
 }

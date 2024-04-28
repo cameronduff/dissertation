@@ -24,6 +24,8 @@ using namespace std;
 namespace ns3
 {
 
+enum PathType {Global, Local, Random};
+
 class PSO : public Ipv4RoutingProtocol
 {
     public:
@@ -117,5 +119,24 @@ public:
 
 private:
     uint32_t m_destinationNode;
+};
+
+class PathTypeTag : public Tag
+{
+public:
+    virtual TypeId GetInstanceTypeId (void) const;
+
+    virtual uint32_t GetSerializedSize (void) const;
+    virtual void Serialize (TagBuffer i) const;
+    virtual void Deserialize (TagBuffer i);
+
+    // these are our accessors to our tag structure
+    void SetPathType (PathType pathType);
+    PathType GetPathType (void) const;
+
+    void Print (std::ostream &os) const;
+
+private:
+    PathType m_pathType;
 };
 }
