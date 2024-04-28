@@ -258,9 +258,17 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
         pathType = PathType::Random;
     }
 
+    bool exists=false;
+
     // stops packets trying to find VL if mid transit
-    if(virtualLinks.size() == 0){
-        pathType = PathType::Random;
+    for(int i=0; i<virtualLinks.size(); i++){
+        if(virtualLinks[i].srcNode == sourceNode && virtualLinks[i].dstNode == destNode){
+            exists=true;
+        }
+    }
+
+    if(!exists){
+        pathType = PathType::Random
     }
 
     // NS_LOG_LOGIC("Unicast destination- looking up");
@@ -327,7 +335,6 @@ bool PSO::RouteInput(Ptr<const Packet> p,
         NS_LOG_INFO("Node: " << m_ipv4->GetAddress(1,0).GetLocal() << " Dest: " << header.GetDestination());
     }
     
-
     if (m_ipv4->IsDestinationAddress(header.GetDestination(), iif))
     {
         if (!lcb.IsNull())
