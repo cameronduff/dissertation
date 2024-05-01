@@ -101,7 +101,6 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                 allRoutes.push_back((*j).first);
             }
             
-            // NS_LOG_LOGIC(allRoutes.size() << "Found host route" << (*j).first);
         }
     }
 
@@ -125,20 +124,14 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                 pathString = pathString + s + " ";
             }
 
-            NS_LOG_INFO("Path left: " << pathString);
-            NS_LOG_INFO("Packet Id: " << p->GetUid() << " Current node: " << m_ipv4->GetObject<Node>()->GetId() << " type: " << pathType);
-            NS_LOG_INFO("Destination Node: " << destNode);
-
             nextNode = path.front();
-            NS_LOG_INFO("Next Node: " << nextNode);
             globalRouteManager[p->GetUid()].erase(globalRouteManager[p->GetUid()].begin());
 
             if(globalRouteManager[p->GetUid()].size()==0){
                 finalNode=true;
-                // globalRouteManager.erase(p->GetUid());
+                globalRouteManager.erase(p->GetUid());
             }
                                 
-            NS_LOG_INFO("Next Node: " << nextNode);
             Ptr<Node> gatewayNode = NodeList::GetNode(nextNode);
 
             int size=allRoutes.size();
@@ -146,7 +139,6 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
 
             // for(int i=0; i<allRoutes.size(); i++){
             while(sizeCounter<size){
-                NS_LOG_INFO("AllRoutes gateway: " << allRoutes[sizeCounter]->GetGateway());
                 int devices = gatewayNode->GetNDevices();
                 int devicesCounter=1;
 
@@ -159,10 +151,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                         address=Ipv4Address("0.0.0.0");
                     }
                     
-                    NS_LOG_INFO("Address " << address);
-
                     if(address == entry->GetGateway()){
-                        NS_LOG_INFO("Index set: " << entry->GetGateway());
                         selectIndex=sizeCounter;
                         devicesCounter=devices;
                         sizeCounter=size;
@@ -179,8 +168,6 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
             selectIndex = randomInt(0, allRoutes.size() - 1);
             // NS_LOG_INFO("Random");
         }
-
-        NS_LOG_INFO("Selected Index: " << selectIndex);
         
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
@@ -207,11 +194,10 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
                         Ptr<NetDevice> oif,
                         Socket::SocketErrno& sockerr)
 {
-    NS_LOG_INFO("In RouteOutput: " << p->GetUid());
+    // NS_LOG_INFO("In RouteOutput: " << p->GetUid());
     Ipv4Address dest = header.GetDestination();
     uint32_t sourceNode = m_ipv4->GetObject<Node>()->GetId();
     uint32_t destNode;
-    NS_LOG_INFO("Here 1");
     for(uint32_t i = 0; i < NodeList::GetNNodes(); i++){
         Ptr<Node> node = NodeList::GetNode(i);
 
@@ -220,7 +206,6 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
             break;
         }
     }
-    NS_LOG_INFO("Here 2");
     Ptr<Ipv4Route> route = nullptr;
 
     if (dest.IsMulticast())
@@ -234,7 +219,6 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     // 1 - local best
     // 2 - random
     int routeToTake = randomInt(0, 2);
-    NS_LOG_INFO("Here 3");
     PathType pathType;
 
     if(routeToTake == 0){
@@ -251,12 +235,10 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
 
                 path.erase(path.begin());
                 globalRouteManager.insert({p->GetUid(), path});
-                NS_LOG_INFO("Packet Id: " << p->GetUid() << " Path: " << pathString);
+                // NS_LOG_INFO("Packet Id: " << p->GetUid() << " Path: " << pathString);
                 found=true;
             }
         } 
-
-        NS_LOG_INFO("Here 4: " << found);
 
         if(!found){
             pathType = PathType::Random;
@@ -266,7 +248,6 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     } else if(routeToTake == 2){
         pathType = PathType::Random;
     }
-    NS_LOG_INFO("Here 5");
     DestinationNodeTag destinationNode;
     destinationNode.SetDestinationNode(destNode);
     p->AddByteTag(destinationNode);
@@ -307,7 +288,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const LocalDeliverCallback& lcb,
                 const ErrorCallback& ecb)
 {
-    NS_LOG_INFO("In RouteInput: " << p->GetUid()); 
+    // NS_LOG_INFO("In RouteInput: " << p->GetUid()); 
 
     Time now = Simulator::Now();
 
@@ -872,7 +853,6 @@ double PSO::calculateFitness(double delay, uint32_t throughput){
 
 void PSO::RecvPso(Ptr<Socket> socket){
     // NS_LOG_INFO("=========================================");
-    // NS_LOG_INFO("Packet received");
     Time now = Simulator::Now();
     Time sourceTime;
     TimestampTag timestamp;
@@ -882,8 +862,11 @@ void PSO::RecvPso(Ptr<Socket> socket){
     PathTypeTag pathTypeTag;
 
     Ptr<Packet> receivedPacket;
+
     Address sourceAddress;
     receivedPacket = socket->RecvFrom(sourceAddress);
+
+    NS_LOG_INFO("Packet " << receivedPacket->GetUid() << " received");
 
     receivedPacket->FindFirstMatchingByteTag(timestamp);
     sourceTime = timestamp.GetTimestamp();
@@ -950,7 +933,7 @@ void PSO::RecvPso(Ptr<Socket> socket){
                     pathString = pathString + s + " ";
                 }
 
-                NS_LOG_INFO("VL updated " << pathString);
+                // NS_LOG_INFO("VL updated " << pathString);
                 found=true;
                 break;
             } else {
@@ -975,7 +958,7 @@ void PSO::RecvPso(Ptr<Socket> socket){
             pathString = pathString + s + " ";
         }
 
-        NS_LOG_INFO("New VL added " << pathString);
+        // NS_LOG_INFO("New VL added " << pathString);
         virtualLinks.push_back(virtualLink);
     }
 
