@@ -787,9 +787,8 @@ void PSO::PopulateAdjacencyMatrix(int **adjacencyMatrix){
 void PSO::BuildGlobalRoutingDatabase()
 {
     NS_LOG_INFO("Building Global Routing Database");
-    //database of all connections
-    // int adjacencyMatrix[NodeList::GetNNodes()][NodeList::GetNNodes()];
 
+    //database of all connections
     int **adjacencyMatrix = NULL;
     adjacencyMatrix = new int *[NodeList::GetNNodes()];
     for(int i = 0; i <NodeList::GetNNodes(); i++){
@@ -852,7 +851,6 @@ double PSO::calculateFitness(double delay, uint32_t throughput){
 }
 
 void PSO::RecvPso(Ptr<Socket> socket){
-    // NS_LOG_INFO("=========================================");
     Time now = Simulator::Now();
     Time sourceTime;
     TimestampTag timestamp;
@@ -867,6 +865,10 @@ void PSO::RecvPso(Ptr<Socket> socket){
     receivedPacket = socket->RecvFrom(sourceAddress);
 
     NS_LOG_INFO("Packet " << receivedPacket->GetUid() << " received");
+    NS_LOG_INFO("hostRoutes: " << hostRoutes.size());
+    NS_LOG_INFO("routesTaken: " << routesTaken.size());
+    NS_LOG_INFO("virtualLinks: " << virtualLinks.size());
+    NS_LOG_INFO("globalRouteManager: " << globalRouteManager.size());
 
     receivedPacket->FindFirstMatchingByteTag(timestamp);
     sourceTime = timestamp.GetTimestamp();
@@ -894,21 +896,6 @@ void PSO::RecvPso(Ptr<Socket> socket){
 
     double fitness = calculateFitness(delay.GetNanoSeconds(), throughput);
     bool found = false;
-
-    // NS_LOG_INFO("From " << path.front() << " -> " << path.back());
-
-    // NS_LOG_INFO("Current Number of Virtual Links: " << virtualLinks.size());
-    // for(int i=0;i<virtualLinks.size(); i++){
-    //     VirtualLink virtualLink = virtualLinks[i];
-    //     vector<int> VLPath = virtualLink.path;
-    //     string pathString("");
-    //     for(int i=0; i<int(VLPath.size()); i++){
-    //         auto s = std::to_string(VLPath[i]);
-    //         pathString = pathString + s + " ";
-    //     }
-
-    //     NS_LOG_INFO("VL " << i << " : " << pathString << " fitness: " << virtualLink.fitness);
-    // }
 
     for(int i=0; i<virtualLinks.size(); i++){
         VirtualLink virtualLink = virtualLinks[i];
