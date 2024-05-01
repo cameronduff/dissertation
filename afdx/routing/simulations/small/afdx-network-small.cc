@@ -41,7 +41,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 2;
+int endTime = 120;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
