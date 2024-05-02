@@ -313,9 +313,8 @@ int main(int argc, char *argv[]){
     }    
 
     psoHelperTest.PopulateRoutingTables();
+    psoHelperTest.InstallSinkOnNodes();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
-
-    installSinksOnNodes();
 
     vector<NodeContainer> endSystems;
     endSystems.push_back(network1);

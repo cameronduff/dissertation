@@ -34,7 +34,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 10;
+int endTime = 60;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -304,10 +304,10 @@ int main(int argc, char *argv[]){
 
     // psoHelper.PopulateRoutingTables();
     psoHelperTest.PopulateRoutingTables();
+    psoHelperTest.InstallSinkOnNodes();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
 
     NS_LOG_INFO("Create application");  
-    installSinksOnNodes();
 
     vector<NodeContainer> endSystems;
     endSystems.push_back(network1);
