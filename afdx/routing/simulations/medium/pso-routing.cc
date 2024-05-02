@@ -248,7 +248,6 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
     } else if(routeToTake == 2){
         pathType = PathType::Random;
     }
-    
     DestinationNodeTag destinationNode;
     destinationNode.SetDestinationNode(destNode);
     p->AddByteTag(destinationNode);
@@ -311,6 +310,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
         NS_LOG_INFO("Node: " << m_ipv4->GetAddress(1,0).GetLocal() << " Dest: " << header.GetDestination());
     }
     
+
     if (m_ipv4->IsDestinationAddress(header.GetDestination(), iif))
     {
         if (!lcb.IsNull())

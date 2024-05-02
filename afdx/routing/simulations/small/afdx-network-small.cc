@@ -41,7 +41,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 2;
+int endTime = 60;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -246,43 +246,43 @@ int main(int argc, char *argv[]){
 
     
     // Renable for testing but slows performance on longer sims
-    NS_LOG_INFO("Enabling tracing");
-    csma1.EnablePcapAll("afdx-left-small", false);
-    csma2.EnablePcapAll("afdx-right-small", false);
-    AsciiTraceHelper ascii;
-    csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
-    csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
+    // NS_LOG_INFO("Enabling tracing");
+    // csma1.EnablePcapAll("afdx-left-small", false);
+    // csma2.EnablePcapAll("afdx-right-small", false);
+    // AsciiTraceHelper ascii;
+    // csma1.EnableAsciiAll(ascii.CreateFileStream("afdx-left-small.tr"));
+    // csma2.EnableAsciiAll(ascii.CreateFileStream("afdx-right-small.tr"));
 
-    NS_LOG_INFO("Enabling animation");
-    std::string animFile = "afdx-anim-small.xml";
-    //create the animation object and configure for specified output
-    AnimationInterface anim(animFile);
+    // NS_LOG_INFO("Enabling animation");
+    // std::string animFile = "afdx-anim-small.xml";
+    // //create the animation object and configure for specified output
+    // AnimationInterface anim(animFile);
 
-    anim.EnablePacketMetadata();
-    anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
-    anim.EnableIpv4RouteTracking("afdx-routing-small", Seconds(0), Seconds(endTime), Seconds(1));
+    // anim.EnablePacketMetadata();
+    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    // anim.EnableIpv4RouteTracking("afdx-routing-small", Seconds(0), Seconds(endTime), Seconds(1));
 
-    anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
-    anim.SetConstantPosition(left_nodes.Get(1), 40,125,0);
-    anim.SetConstantPosition(left_nodes.Get(2), 50,150,0);
+    // anim.SetConstantPosition(left_nodes.Get(0), 50,100,0);
+    // anim.SetConstantPosition(left_nodes.Get(1), 40,125,0);
+    // anim.SetConstantPosition(left_nodes.Get(2), 50,150,0);
 
-    anim.SetConstantPosition(switch_nodes.Get(0), 100,125,0);
-    anim.SetConstantPosition(switch_nodes.Get(1), 150,125,0);
+    // anim.SetConstantPosition(switch_nodes.Get(0), 100,125,0);
+    // anim.SetConstantPosition(switch_nodes.Get(1), 150,125,0);
 
-    anim.SetConstantPosition(right_nodes.Get(0), 200,100,0);
-    anim.SetConstantPosition(right_nodes.Get(1), 210,125,0);
-    anim.SetConstantPosition(right_nodes.Get(2), 200,150,0);
+    // anim.SetConstantPosition(right_nodes.Get(0), 200,100,0);
+    // anim.SetConstantPosition(right_nodes.Get(1), 210,125,0);
+    // anim.SetConstantPosition(right_nodes.Get(2), 200,150,0);
 
-    anim.UpdateNodeDescription(left_nodes.Get(0), "N0");
-    anim.UpdateNodeDescription(left_nodes.Get(1), "N1");
-    anim.UpdateNodeDescription(left_nodes.Get(2), "N2");
+    // anim.UpdateNodeDescription(left_nodes.Get(0), "N0");
+    // anim.UpdateNodeDescription(left_nodes.Get(1), "N1");
+    // anim.UpdateNodeDescription(left_nodes.Get(2), "N2");
 
-    anim.UpdateNodeDescription(switch_nodes.Get(0), "SW0");
-    anim.UpdateNodeDescription(switch_nodes.Get(1), "SW1");
+    // anim.UpdateNodeDescription(switch_nodes.Get(0), "SW0");
+    // anim.UpdateNodeDescription(switch_nodes.Get(1), "SW1");
 
-    anim.UpdateNodeDescription(right_nodes.Get(0), "N3");
-    anim.UpdateNodeDescription(right_nodes.Get(1), "N4");
-    anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
+    // anim.UpdateNodeDescription(right_nodes.Get(0), "N3");
+    // anim.UpdateNodeDescription(right_nodes.Get(1), "N4");
+    // anim.UpdateNodeDescription(right_nodes.Get(2), "N5");
 
     Simulator::Stop(Seconds(endTime));
     NS_LOG_INFO("Run Simulation");
