@@ -245,16 +245,14 @@ int main(int argc, char *argv[]){
 
     //add routing protocols
     // OlsrHelper olsr;
-    // PSORoutingProtocol pso;
-    // PSORoutingHelper psoHelper;
-    PSOHelper psoHelperTest;
+    PSOHelper psoHelper;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
     // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
 
     Ipv4ListRoutingHelper list;
     // list.Add(olsr, 0);
     // list.Add(psoHelper, 100);
-    list.Add(psoHelperTest, 100);
+    list.Add(psoHelper, 100);
     // list.Add(ipv4GlobalRoutingHelper, 100);
 
     NS_LOG_INFO("Install internet");
@@ -311,8 +309,8 @@ int main(int argc, char *argv[]){
     }    
 
     // psoHelper.PopulateRoutingTables();
-    psoHelperTest.PopulateRoutingTables();
-    psoHelperTest.InstallSinkOnNodes();
+    psoHelper.PopulateRoutingTables();
+    psoHelper.InstallSinkOnNodes();
     // ipv4GlobalRoutingHelper.PopulateRoutingTables();
 
     NS_LOG_INFO("Create application");  
