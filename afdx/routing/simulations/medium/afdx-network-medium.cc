@@ -127,13 +127,6 @@ int main(int argc, char *argv[]){
     network5.Add(switch_nodes.Get(4));
     network6.Add(switch_nodes.Get(5));
 
-    //defining medium for Lan1
-    // CsmaHelper csma1;
-    // csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
-    // csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    // NetDeviceContainer network1Devices;
-    // network1Devices = csma1.Install(network1);
-
     vector<NetDeviceContainer> endSystemConnections;
 
     //p2p connection between ES1 & SW1
@@ -144,41 +137,46 @@ int main(int argc, char *argv[]){
     link_ES1_SW1 = pointToPoint_ES1_SW1.Install(NodeContainer(network1.Get(0), switch_nodes.Get(0)));
     endSystemConnections.push_back(link_ES1_SW1);
 
-    //defining medium for Lan2
-    CsmaHelper csma2;
-    csma2.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer network2Devices;
-    network2Devices = csma2.Install(network2);
+    //p2p connection between ES2 & SW2
+    PointToPointHelper pointToPoint_ES2_SW2;
+    pointToPoint_ES2_SW2.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_ES2_SW2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    NetDeviceContainer link_ES2_SW2;
+    link_ES2_SW2 = pointToPoint_ES2_SW2.Install(NodeContainer(network2.Get(0), switch_nodes.Get(1)));
+    endSystemConnections.push_back(link_ES2_SW2);
 
-    //defining medium for Lan3
-    CsmaHelper csma3;
-    csma3.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma3.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer network3Devices;
-    network3Devices = csma3.Install(network3);
+    //p2p connection between ES3 & SW3
+    PointToPointHelper pointToPoint_ES3_SW3;
+    pointToPoint_ES3_SW3.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_ES3_SW3.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    NetDeviceContainer link_ES3_SW3;
+    link_ES3_SW3 = pointToPoint_ES3_SW3.Install(NodeContainer(network3.Get(0), switch_nodes.Get(2)));
+    endSystemConnections.push_back(link_ES3_SW3);
 
-    //defining medium for Lan4
-    CsmaHelper csma4;
-    csma4.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer network4Devices;
-    network4Devices = csma4.Install(network4);
+    //p2p connection between ES4 & SW4
+    PointToPointHelper pointToPoint_ES4_SW4;
+    pointToPoint_ES4_SW4.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_ES4_SW4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    NetDeviceContainer link_ES4_SW4;
+    link_ES4_SW4 = pointToPoint_ES4_SW4.Install(NodeContainer(network4.Get(0), switch_nodes.Get(3)));
+    endSystemConnections.push_back(link_ES4_SW4);
 
-    //defining medium for Lan5
-    CsmaHelper csma5;
-    csma5.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma5.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer network5Devices;
-    network5Devices = csma5.Install(network5);
+    //p2p connection between ES5 & SW5
+    PointToPointHelper pointToPoint_ES5_SW5;
+    pointToPoint_ES5_SW5.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_ES5_SW5.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    NetDeviceContainer link_ES5_SW5;
+    link_ES5_SW5 = pointToPoint_ES5_SW5.Install(NodeContainer(network5.Get(0), switch_nodes.Get(4)));
+    endSystemConnections.push_back(link_ES5_SW5);
 
-    //defining medium for Lan6
-    CsmaHelper csma6;
-    csma6.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma6.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer network6Devices;
-    network6Devices = csma6.Install(network6);
-
+    //p2p connection between ES6 & SW6
+    PointToPointHelper pointToPoint_ES6_SW6;
+    pointToPoint_ES6_SW6.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_ES6_SW6.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    NetDeviceContainer link_ES6_SW6;
+    link_ES6_SW6 = pointToPoint_ES6_SW6.Install(NodeContainer(network6.Get(0), switch_nodes.Get(5)));
+    endSystemConnections.push_back(link_ES6_SW6);
+    
     vector<NetDeviceContainer> switchDeviceContainers;
 
     //p2p connection between switches 1 & 2
@@ -283,27 +281,27 @@ int main(int argc, char *argv[]){
     //Lan2
     address.NewNetwork();
     Ipv4InterfaceContainer network2Interfaces;
-    network2Interfaces = address.Assign(network2Devices);
+    network2Interfaces = address.Assign(endSystemConnections[1]);
 
     //Lan3
     address.NewNetwork();
     Ipv4InterfaceContainer network3Interfaces;
-    network3Interfaces = address.Assign(network3Devices);
+    network3Interfaces = address.Assign(endSystemConnections[2]);
 
     //Lan4
     address.NewNetwork();
     Ipv4InterfaceContainer network4Interfaces;
-    network4Interfaces = address.Assign(network4Devices);
+    network4Interfaces = address.Assign(endSystemConnections[3]);
 
     //Lan5
     address.NewNetwork();
     Ipv4InterfaceContainer network5Interfaces;
-    network5Interfaces = address.Assign(network5Devices);
+    network5Interfaces = address.Assign(endSystemConnections[4]);
 
     //Lan6
     address.NewNetwork();
     Ipv4InterfaceContainer network6Interfaces;
-    network6Interfaces = address.Assign(network6Devices);
+    network6Interfaces = address.Assign(endSystemConnections[5]);
     
     //switches
     for(int i=0; i<switchDeviceContainers.size(); i++){
