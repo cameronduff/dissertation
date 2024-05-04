@@ -34,7 +34,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 60;
+int endTime = 10;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -128,11 +128,21 @@ int main(int argc, char *argv[]){
     network6.Add(switch_nodes.Get(5));
 
     //defining medium for Lan1
-    CsmaHelper csma1;
-    csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer network1Devices;
-    network1Devices = csma1.Install(network1);
+    // CsmaHelper csma1;
+    // csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network1Devices;
+    // network1Devices = csma1.Install(network1);
+
+    vector<NetDeviceContainer> endSystemConnections;
+
+    //p2p connection between ES1 & SW1
+    PointToPointHelper pointToPoint_ES1_SW1;
+    pointToPoint_ES1_SW1.SetDeviceAttribute("DataRate", StringValue(dataRate));
+    pointToPoint_ES1_SW1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    NetDeviceContainer link_ES1_SW1;
+    link_ES1_SW1 = pointToPoint_ES1_SW1.Install(NodeContainer(network1.Get(0), switch_nodes.Get(0)));
+    endSystemConnections.push_back(link_ES1_SW1);
 
     //defining medium for Lan2
     CsmaHelper csma2;
@@ -268,7 +278,7 @@ int main(int argc, char *argv[]){
     //Lan1
     address.NewNetwork();
     Ipv4InterfaceContainer network1Interfaces;
-    network1Interfaces = address.Assign(network1Devices);
+    network1Interfaces = address.Assign(endSystemConnections[0]);
 
     //Lan2
     address.NewNetwork();
@@ -375,45 +385,45 @@ int main(int argc, char *argv[]){
     // // csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-medium.tr"));
     // // csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-medium.tr"));
 
-    // NS_LOG_INFO("Enabling animation");
-    // std::string animFile = "afdx-anim-medium.xml";
-    // //create the animation object and configure for specified output
-    // AnimationInterface anim(animFile);
+    NS_LOG_INFO("Enabling animation");
+    std::string animFile = "afdx-anim-medium.xml";
+    //create the animation object and configure for specified output
+    AnimationInterface anim(animFile);
 
-    // anim.EnablePacketMetadata();
-    // anim.SetMaxPktsPerTraceFile(500000);
-    // // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
-    // anim.EnableIpv4RouteTracking("afdx-routing-medium", Seconds(0), Seconds(endTime), Seconds(1));
+    anim.EnablePacketMetadata();
+    anim.SetMaxPktsPerTraceFile(500000);
+    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    anim.EnableIpv4RouteTracking("afdx-routing-medium", Seconds(0), Seconds(endTime), Seconds(1));
 
-    // anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);
-    // anim.SetConstantPosition(switch_nodes.Get(1), 50,125,0);
-    // anim.SetConstantPosition(switch_nodes.Get(2), 150,125,0);
-    // anim.SetConstantPosition(switch_nodes.Get(3), 150,75,0);
-    // anim.SetConstantPosition(switch_nodes.Get(4), 100,75,0);
-    // anim.SetConstantPosition(switch_nodes.Get(5), 100,175,0);
-    // anim.SetConstantPosition(switch_nodes.Get(6), 100,125,0);
+    anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);
+    anim.SetConstantPosition(switch_nodes.Get(1), 50,125,0);
+    anim.SetConstantPosition(switch_nodes.Get(2), 150,125,0);
+    anim.SetConstantPosition(switch_nodes.Get(3), 150,75,0);
+    anim.SetConstantPosition(switch_nodes.Get(4), 100,75,0);
+    anim.SetConstantPosition(switch_nodes.Get(5), 100,175,0);
+    anim.SetConstantPosition(switch_nodes.Get(6), 100,125,0);
 
-    // anim.SetConstantPosition(network1.Get(0), 25,200,0);
-    // anim.SetConstantPosition(network2.Get(0), 25,100,0);
-    // anim.SetConstantPosition(network3.Get(0), 175,150,0);
-    // anim.SetConstantPosition(network4.Get(0), 175,50,0);
-    // anim.SetConstantPosition(network5.Get(0), 75,50,0);
-    // anim.SetConstantPosition(network6.Get(0), 125,200,0);
+    anim.SetConstantPosition(network1.Get(0), 25,200,0);
+    anim.SetConstantPosition(network2.Get(0), 25,100,0);
+    anim.SetConstantPosition(network3.Get(0), 175,150,0);
+    anim.SetConstantPosition(network4.Get(0), 175,50,0);
+    anim.SetConstantPosition(network5.Get(0), 75,50,0);
+    anim.SetConstantPosition(network6.Get(0), 125,200,0);
 
-    // anim.UpdateNodeDescription(switch_nodes.Get(0), "SW1");
-    // anim.UpdateNodeDescription(switch_nodes.Get(1), "SW2");
-    // anim.UpdateNodeDescription(switch_nodes.Get(2), "SW3");
-    // anim.UpdateNodeDescription(switch_nodes.Get(3), "SW4");
-    // anim.UpdateNodeDescription(switch_nodes.Get(4), "SW5");
-    // anim.UpdateNodeDescription(switch_nodes.Get(5), "SW6");
-    // anim.UpdateNodeDescription(switch_nodes.Get(6), "SW7");
+    anim.UpdateNodeDescription(switch_nodes.Get(0), "SW1");
+    anim.UpdateNodeDescription(switch_nodes.Get(1), "SW2");
+    anim.UpdateNodeDescription(switch_nodes.Get(2), "SW3");
+    anim.UpdateNodeDescription(switch_nodes.Get(3), "SW4");
+    anim.UpdateNodeDescription(switch_nodes.Get(4), "SW5");
+    anim.UpdateNodeDescription(switch_nodes.Get(5), "SW6");
+    anim.UpdateNodeDescription(switch_nodes.Get(6), "SW7");
 
-    // anim.UpdateNodeDescription(network1.Get(0), "N1");
-    // anim.UpdateNodeDescription(network2.Get(0), "N2");
-    // anim.UpdateNodeDescription(network3.Get(0), "N3");
-    // anim.UpdateNodeDescription(network4.Get(0), "N4");
-    // anim.UpdateNodeDescription(network5.Get(0), "N5");
-    // anim.UpdateNodeDescription(network6.Get(0), "N6");
+    anim.UpdateNodeDescription(network1.Get(0), "N1");
+    anim.UpdateNodeDescription(network2.Get(0), "N2");
+    anim.UpdateNodeDescription(network3.Get(0), "N3");
+    anim.UpdateNodeDescription(network4.Get(0), "N4");
+    anim.UpdateNodeDescription(network5.Get(0), "N5");
+    anim.UpdateNodeDescription(network6.Get(0), "N6");
     
     Simulator::Stop(Seconds(endTime));
     NS_LOG_INFO("Run Simulation");

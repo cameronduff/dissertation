@@ -416,8 +416,6 @@ int main(int argc, char *argv[]){
       Ptr<Node> sender = container1.Get(randomNode1);
       Ptr<Node> receiver = container2.Get(randomNode2);
 
-      // createUdpApplication(sender, receiver, startTime, appEndTime , packetSize);
-
       NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
