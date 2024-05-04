@@ -31,7 +31,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 10;
+int endTime = 4;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -94,6 +94,18 @@ void populateCoordinates(double x, double y, NodeContainer &nodes, AnimationInte
   }
 }
 
+void installPointToPointOnNetwork(NodeContainer& network, Ptr<Node> switchNode, vector<NetDeviceContainer>& lanConnections){
+  for(int i=0;i<network.GetN(); i++){
+      //p2p connection for SW1
+      PointToPointHelper p2p;
+      p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
+      p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
+      NetDeviceContainer link;
+      link = p2p.Install(NodeContainer(network.Get(i), switchNode));
+      lanConnections.push_back(link);
+    }
+}
+
 int main(int argc, char *argv[]){
     string flowmonName = "afdx-metrics-large.xml";  
     int delay = 100000;
@@ -137,79 +149,62 @@ int main(int argc, char *argv[]){
     network5.Add(switch_nodes.Get(4));
     network6.Add(switch_nodes.Get(5));
 
-    NS_LOG_INFO("p2p connection between LAN1 and switch 1");
-    vector<NetDeviceContainer> network1DeviceContainer;
+    //defining medium for Lan1
+    // CsmaHelper csma1;
+    // csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network1Devices;
+    // network1Devices = csma1.Install(network1);
 
-    for(int i=0; i<network1.GetN(); i++){
-      PointToPointHelper Network1PointToPointHelper;
-      Network1PointToPointHelper.SetDeviceAttribute("DataRate", StringValue(dataRate));
-      Network1PointToPointHelper.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-      NetDeviceContainer devices;
-      devices = Network1PointToPointHelper.Install(NodeContainer(network1.Get(i), switch_nodes.Get(0)));
-      network1DeviceContainer.push_back(devices);
-    }
+    vector<NetDeviceContainer> lan1Connections;
+    vector<NetDeviceContainer> lan2Connections;
+    vector<NetDeviceContainer> lan3Connections;
+    vector<NetDeviceContainer> lan4Connections;
+    vector<NetDeviceContainer> lan5Connections;
+    vector<NetDeviceContainer> lan6Connections;
 
-    NS_LOG_INFO("p2p connection between LAN2 and switch 2");
-    vector<NetDeviceContainer> network2DeviceContainer;
+    installPointToPointOnNetwork(network1, switch_nodes.Get(0), lan1Connections);
+    installPointToPointOnNetwork(network2, switch_nodes.Get(1), lan2Connections);
+    installPointToPointOnNetwork(network3, switch_nodes.Get(2), lan3Connections);
+    installPointToPointOnNetwork(network4, switch_nodes.Get(3), lan4Connections);
+    installPointToPointOnNetwork(network5, switch_nodes.Get(4), lan5Connections);
+    installPointToPointOnNetwork(network6, switch_nodes.Get(5), lan6Connections);
+    
 
-    for(int i=0; i<network2.GetN(); i++){
-      PointToPointHelper network2PointToPointHelper;
-      network2PointToPointHelper.SetDeviceAttribute("DataRate", StringValue(dataRate));
-      network2PointToPointHelper.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-      NetDeviceContainer devices;
-      devices = network2PointToPointHelper.Install(NodeContainer(network2.Get(i), switch_nodes.Get(1)));
-      network2DeviceContainer.push_back(devices);
-    }
+    //defining medium for Lan2
+    // CsmaHelper csma2;
+    // csma2.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network2Devices;
+    // network2Devices = csma2.Install(network2);
 
-    NS_LOG_INFO("p2p connection between LAN3 and switch 3");
-    vector<NetDeviceContainer> network3DeviceContainer;
+    // //defining medium for Lan3
+    // CsmaHelper csma3;
+    // csma3.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma3.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network3Devices;
+    // network3Devices = csma3.Install(network3);
 
-    for(int i=0; i<network3.GetN(); i++){
-      PointToPointHelper network3PointToPointHelper;
-      network3PointToPointHelper.SetDeviceAttribute("DataRate", StringValue(dataRate));
-      network3PointToPointHelper.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-      NetDeviceContainer devices;
-      devices = network3PointToPointHelper.Install(NodeContainer(network3.Get(i), switch_nodes.Get(2)));
-      network3DeviceContainer.push_back(devices);
-    }
+    // //defining medium for Lan4
+    // CsmaHelper csma4;
+    // csma4.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma4.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network4Devices;
+    // network4Devices = csma4.Install(network4);
 
-    NS_LOG_INFO("p2p connection between LAN4 and switch 4");
-    vector<NetDeviceContainer> network4DeviceContainer;
+    // //defining medium for Lan5
+    // CsmaHelper csma5;
+    // csma5.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma5.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network5Devices;
+    // network5Devices = csma5.Install(network5);
 
-    for(int i=0; i<network4.GetN(); i++){
-      PointToPointHelper network4PointToPointHelper;
-      network4PointToPointHelper.SetDeviceAttribute("DataRate", StringValue(dataRate));
-      network4PointToPointHelper.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-      NetDeviceContainer devices;
-      devices = network4PointToPointHelper.Install(NodeContainer(network4.Get(i), switch_nodes.Get(3)));
-      network4DeviceContainer.push_back(devices);
-    }
-
-    NS_LOG_INFO("p2p connection between LAN5 and switch 5");
-    vector<NetDeviceContainer> network5DeviceContainer;
-
-    for(int i=0; i<network5.GetN(); i++){
-      PointToPointHelper network5PointToPointHelper;
-      network5PointToPointHelper.SetDeviceAttribute("DataRate", StringValue(dataRate));
-      network5PointToPointHelper.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-      NetDeviceContainer devices;
-      devices = network5PointToPointHelper.Install(NodeContainer(network5.Get(i), switch_nodes.Get(4)));
-      network5DeviceContainer.push_back(devices);
-    }
-
-    NS_LOG_INFO("p2p connection between LAN6 and switch 6");
-    vector<NetDeviceContainer> network6DeviceContainer;
-
-    for(int i=0; i<network6.GetN(); i++){
-      PointToPointHelper network6PointToPointHelper;
-      network6PointToPointHelper.SetDeviceAttribute("DataRate", StringValue(dataRate));
-      network6PointToPointHelper.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-      NetDeviceContainer devices;
-      devices = network6PointToPointHelper.Install(NodeContainer(network6.Get(i), switch_nodes.Get(5)));
-      network6DeviceContainer.push_back(devices);
-    }
-
-    NS_LOG_INFO("Network 6 Devices: " << network6DeviceContainer.size());
+    // //defining medium for Lan6
+    // CsmaHelper csma6;
+    // csma6.SetChannelAttribute("DataRate", StringValue(dataRate));
+    // csma6.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
+    // NetDeviceContainer network6Devices;
+    // network6Devices = csma6.Install(network6);
 
     vector<NetDeviceContainer> switchDeviceContainers;
 
@@ -288,7 +283,7 @@ int main(int argc, char *argv[]){
 
     Ipv4ListRoutingHelper list;
     // list.Add(olsr, 0);
-    // list.Add(psoHelperTest, 100);
+    list.Add(psoHelperTest, 100);
     // list.Add(ipv4GlobalRoutingHelper, 100);
 
     NS_LOG_INFO("Install internet");
@@ -308,46 +303,66 @@ int main(int argc, char *argv[]){
     address.SetBase("10.1.0.0", "255.255.255.0");
 
     //Lan1
-    for(int j=0; j<network1DeviceContainer.size(); j++){
+    for(int j=0; j<lan1Connections.size(); j++){
       address.NewNetwork();
-      Ipv4InterfaceContainer deviceInterfaces;
-      address.Assign(network1DeviceContainer[j]);
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(lan1Connections[j]);
+    }
+
+    for(int j=0; j<lan2Connections.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(lan2Connections[j]);
+    }
+
+    for(int j=0; j<lan3Connections.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(lan3Connections[j]);
+    }
+
+    for(int j=0; j<lan4Connections.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(lan4Connections[j]);
+    }
+
+    for(int j=0; j<lan5Connections.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(lan5Connections[j]);
+    }
+
+    for(int j=0; j<lan6Connections.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(lan6Connections[j]);
     }
 
     //Lan2
-    for(int j=0; j<network2DeviceContainer.size(); j++){
-      address.NewNetwork();
-      Ipv4InterfaceContainer deviceInterfaces;
-      address.Assign(network2DeviceContainer[j]);
-    } 
+    // address.NewNetwork();
+    // Ipv4InterfaceContainer network2Interfaces;
+    // network2Interfaces = address.Assign(network2Devices);
 
-    //Lan3
-    for(int j=0; j<network3DeviceContainer.size(); j++){
-      address.NewNetwork();
-      Ipv4InterfaceContainer deviceInterfaces;
-      address.Assign(network3DeviceContainer[j]);
-    } 
+    // //Lan3
+    // address.NewNetwork();
+    // Ipv4InterfaceContainer network3Interfaces;
+    // network3Interfaces = address.Assign(network3Devices);
 
-    //Lan4
-    for(int j=0; j<network4DeviceContainer.size(); j++){
-      address.NewNetwork();
-      Ipv4InterfaceContainer deviceInterfaces;
-      address.Assign(network4DeviceContainer[j]);
-    } 
+    // //Lan4
+    // address.NewNetwork();
+    // Ipv4InterfaceContainer network4Interfaces;
+    // network4Interfaces = address.Assign(network4Devices);
 
-    //Lan5
-    for(int j=0; j<network5DeviceContainer.size(); j++){
-      address.NewNetwork();
-      Ipv4InterfaceContainer deviceInterfaces;
-      address.Assign(network5DeviceContainer[j]);
-    } 
+    // //Lan5
+    // address.NewNetwork();
+    // Ipv4InterfaceContainer network5Interfaces;
+    // network5Interfaces = address.Assign(network5Devices);
 
-    //Lan6
-    for(int j=0; j<network6DeviceContainer.size(); j++){
-      address.NewNetwork();
-      Ipv4InterfaceContainer deviceInterfaces;
-      address.Assign(network6DeviceContainer[j]);
-    }   
+    // //Lan6
+    // address.NewNetwork();
+    // Ipv4InterfaceContainer network6Interfaces;
+    // network6Interfaces = address.Assign(network6Devices);
     
     //switches
     for(int i=0; i<switchDeviceContainers.size(); i++){
@@ -419,6 +434,9 @@ int main(int argc, char *argv[]){
       NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
+
+
+    createUdpApplication(network1.Get(0), network4.Get(0), 0.0, 10.0, 1500);
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
