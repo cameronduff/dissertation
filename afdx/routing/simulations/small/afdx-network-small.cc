@@ -79,6 +79,18 @@ void createUdpApplication(Ptr<Node> receiver, Ptr<Node> sender,
   app.Stop(Seconds(appEndTime));
 }
 
+void installPointToPointOnNetwork(NodeContainer& network, Ptr<Node> switchNode, vector<NetDeviceContainer>& lanConnections){
+  for(int i=0;i<network.GetN(); i++){
+      //p2p connection for SW1
+      PointToPointHelper p2p;
+      p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
+      p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
+      NetDeviceContainer link;
+      link = p2p.Install(NodeContainer(network.Get(i), switchNode));
+      lanConnections.push_back(link);
+    }
+}
+
 int main(int argc, char *argv[]){
     string flowmonName = "afdx-metrics-small.xml";
     int delay = 100000;
@@ -110,19 +122,12 @@ int main(int argc, char *argv[]){
     left_nodes.Add(switch_nodes.Get(0));
     right_nodes.Add(switch_nodes.Get(1));
 
-    //defining medium for Lan1
-    CsmaHelper csma1;
-    csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer leftDevices;
-    leftDevices = csma1.Install(left_nodes);
+    //defining medium for Lans
+    vector<NetDeviceContainer> left_lan;
+    vector<NetDeviceContainer> right_lan;
 
-    //defining medium for Lan2
-    CsmaHelper csma2;
-    csma2.SetChannelAttribute("DataRate", StringValue(dataRate));
-    csma2.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    NetDeviceContainer rightDevices;
-    rightDevices = csma2.Install(right_nodes);
+    installPointToPointOnNetwork(left_nodes, switch_nodes.Get(0), left_lan);
+    installPointToPointOnNetwork(right_nodes, switch_nodes.Get(1), right_lan);
 
     //p2p connection between switches
     PointToPointHelper pointToPoint;
@@ -158,14 +163,21 @@ int main(int argc, char *argv[]){
     NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
+
     //Lan1
-    address.NewNetwork();
-    Ipv4InterfaceContainer leftInterfaces;
-    leftInterfaces = address.Assign(leftDevices);
+    for(int j=0; j<left_lan.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(left_lan[j]);
+    }
+
     //Lan2
-    address.NewNetwork();
-    Ipv4InterfaceContainer rightInterfaces;
-    rightInterfaces = address.Assign(rightDevices);
+    for(int j=0; j<right_lan.size(); j++){
+      address.NewNetwork();
+      // Ipv4InterfaceContainer network1Interfaces;
+      address.Assign(right_lan[j]);
+    }
+
     //switches
     address.NewNetwork();
     Ipv4InterfaceContainer switchInterfaces;
