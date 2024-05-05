@@ -79,7 +79,7 @@ int PSO::randomInt(int min, int max) //range : [min, max]
 
 Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, PathType pathType, Ptr<NetDevice> oif)
 {
-    NS_LOG_INFO("In LookupRoute");
+    // NS_LOG_INFO("In LookupRoute");
     Ptr<Ipv4Route> rtentry = nullptr;
     typedef std::vector<Ipv4RoutingTableEntry*> RouteVec_t;
     RouteVec_t allRoutes;
@@ -131,16 +131,18 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                 finalNode=true;
                 globalRouteManager.erase(p->GetUid());
             }
-  
+                                
             Ptr<Node> gatewayNode = NodeList::GetNode(nextNode);
 
             int size=allRoutes.size();
             int sizeCounter=0;
 
+            // for(int i=0; i<allRoutes.size(); i++){
             while(sizeCounter<size){
                 int devices = gatewayNode->GetNDevices();
                 int devicesCounter=1;
 
+                // for(int k=1; k<devices; k++){
                 while(devicesCounter<devices){
                     Ipv4Address address = gatewayNode->GetObject<Ipv4>()->GetAddress(devicesCounter,0).GetLocal();
                     Ipv4RoutingTableEntry* entry = allRoutes[sizeCounter];
@@ -192,7 +194,7 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
                         Ptr<NetDevice> oif,
                         Socket::SocketErrno& sockerr)
 {
-    NS_LOG_INFO("In RouteOutput: " << p->GetUid());
+    // NS_LOG_INFO("In RouteOutput: " << p->GetUid());
     Ipv4Address dest = header.GetDestination();
     uint32_t sourceNode = m_ipv4->GetObject<Node>()->GetId();
     uint32_t destNode;
@@ -287,7 +289,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const LocalDeliverCallback& lcb,
                 const ErrorCallback& ecb)
 {
-    NS_LOG_INFO("In RouteInput: " << p->GetUid()); 
+    // NS_LOG_INFO("In RouteInput: " << p->GetUid()); 
 
     Time now = Simulator::Now();
 
@@ -406,7 +408,7 @@ void PSO::SetIpv4(Ptr<Ipv4> ipv4)
 
 Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 {
-    NS_LOG_INFO("In GetRoute");
+    // NS_LOG_INFO("In GetRoute");
     uint32_t tmp = 0;
     if (index < hostRoutes.size())
     {
@@ -437,7 +439,7 @@ Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 
 uint32_t PSO::GetNRoutes(uint32_t node) const
 {
-    NS_LOG_INFO("In GetNRoutes");
+    // NS_LOG_INFO("In GetNRoutes");
     uint32_t n = 0;
     if(hostRoutes.size() > 0){
         for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
@@ -453,7 +455,7 @@ uint32_t PSO::GetNRoutes(uint32_t node) const
 
 bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
 {
-    NS_LOG_INFO("In checkIfRouteExists");
+    // NS_LOG_INFO("In checkIfRouteExists");
     Ipv4Address dest = route.GetDestination();
     Ipv4Address gateway = route.GetGateway();
 
@@ -476,7 +478,7 @@ bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
 
 void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) const
 {
-    NS_LOG_INFO("In PrintRoutingTable");
+    // NS_LOG_INFO("In PrintRoutingTable");
     uint32_t node = m_ipv4->GetObject<Node>()->GetId();
     std::ostream* os = stream->GetStream();
     // Copy the current ostream state
@@ -671,7 +673,7 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
 }
 
 void PSO::addRoutesOfPath(int startVertex, int destinationVertex, int path[], int path_index){
-    NS_LOG_INFO("In addRoutesOfPath");
+    // NS_LOG_INFO("In addRoutesOfPath");
     for(int j=0; j<path_index-1; j++)
     {   
         Ptr<Node> sourceNode = NodeList::GetNode(startVertex);
@@ -730,7 +732,7 @@ void PSO::addRoutesOfPath(int startVertex, int destinationVertex, int path[], in
 
 void PSO::printAllPathsUtil(int u, int d, bool visited[], int path[], int& path_index, int **adjacencyMatrix)
 {
-    NS_LOG_INFO("In printAllPathsUtil");
+    // NS_LOG_INFO("In printAllPathsUtil");
     // Mark the current node and store it in path[]
     visited[u] = true;
     path[path_index] = u;
@@ -784,7 +786,7 @@ void PSO::PopulateAdjacencyMatrix(int **adjacencyMatrix){
 
 void PSO::BuildGlobalRoutingDatabase()
 {
-    NS_LOG_INFO("In Building Global Routing Database");
+    NS_LOG_INFO("Building Global Routing Database");
 
     //database of all connections
     int **adjacencyMatrix = NULL;
