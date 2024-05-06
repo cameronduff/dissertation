@@ -108,7 +108,8 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
     {
         uint32_t selectIndex;
 
-        if(pathType == PathType::Global){            
+        if(pathType == PathType::Global){        
+
 
             DestinationNodeTag destinationNode;
             p->FindFirstMatchingByteTag(destinationNode);
@@ -122,7 +123,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
             for(int i=0; i<int(path.size()); i++){
                 auto s = std::to_string(path[i]);
                 pathString = pathString + s + " ";
-            }
+            }  
 
             nextNode = path.front();
             globalRouteManager[p->GetUid()].erase(globalRouteManager[p->GetUid()].begin());
@@ -133,6 +134,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
             }
   
             Ptr<Node> gatewayNode = NodeList::GetNode(nextNode);
+            NS_LOG_INFO("Next node: " << gatewayNode->GetId());  
 
             int size=allRoutes.size();
             int sizeCounter=0;
@@ -150,6 +152,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                     }
                     
                     if(address == entry->GetGateway()){
+                        NS_LOG_INFO("Entry found"); 
                         selectIndex=sizeCounter;
                         devicesCounter=devices;
                         sizeCounter=size;
@@ -158,6 +161,8 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                 }
                 sizeCounter++;
             }
+
+            NS_LOG_INFO("Select Index: " << selectIndex);
 
         } else if(pathType == PathType::Local){
             selectIndex = randomInt(0, allRoutes.size() - 1);
