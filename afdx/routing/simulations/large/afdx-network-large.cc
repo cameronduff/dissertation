@@ -94,18 +94,6 @@ void populateCoordinates(double x, double y, NodeContainer &nodes, AnimationInte
   }
 }
 
-void installPointToPointOnNetwork(NodeContainer& network, Ptr<Node> switchNode, vector<NetDeviceContainer>& lanConnections){
-  for(int i=0;i<network.GetN(); i++){
-      //p2p connection for SW1
-      PointToPointHelper p2p;
-      p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
-      p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
-      NetDeviceContainer link;
-      link = p2p.Install(NodeContainer(network.Get(i), switchNode));
-      lanConnections.push_back(link);
-    }
-}
-
 int main(int argc, char *argv[]){
     string flowmonName = "afdx-metrics-large.xml";  
     int delay = 100000;
@@ -162,13 +150,6 @@ int main(int argc, char *argv[]){
     vector<NetDeviceContainer> lan4Connections;
     vector<NetDeviceContainer> lan5Connections;
     vector<NetDeviceContainer> lan6Connections;
-
-    // installPointToPointOnNetwork(network1, switch_nodes.Get(0), lan1Connections);
-    // installPointToPointOnNetwork(network2, switch_nodes.Get(1), lan2Connections);
-    // installPointToPointOnNetwork(network3, switch_nodes.Get(2), lan3Connections);
-    // installPointToPointOnNetwork(network4, switch_nodes.Get(3), lan4Connections);
-    // installPointToPointOnNetwork(network5, switch_nodes.Get(4), lan5Connections);
-    // installPointToPointOnNetwork(network6, switch_nodes.Get(5), lan6Connections);
 
     for(int i=0;i<network1.GetN(); i++){
       //p2p connection for SW1
