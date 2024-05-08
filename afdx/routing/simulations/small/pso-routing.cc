@@ -79,7 +79,7 @@ int PSO::randomInt(int min, int max) //range : [min, max]
 
 Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, PathType pathType, Ptr<NetDevice> oif)
 {
-    NS_LOG_INFO("In LookupRoute");
+    // NS_LOG_INFO("In LookupRoute");
     Ptr<Ipv4Route> rtentry = nullptr;
     typedef std::vector<Ipv4RoutingTableEntry*> RouteVec_t;
     RouteVec_t allRoutes;
@@ -108,9 +108,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
     {
         uint32_t selectIndex;
 
-        if(pathType == PathType::Global){        
-
-
+        if(pathType == PathType::Global){     
             DestinationNodeTag destinationNode;
             p->FindFirstMatchingByteTag(destinationNode);
             uint32_t destNode = destinationNode.GetDestinationNode();
@@ -119,11 +117,11 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
             uint32_t nextNode;                    
             vector<int> path = globalRouteManager[p->GetUid()];
 
-            string pathString("");
-            for(int i=0; i<int(path.size()); i++){
-                auto s = std::to_string(path[i]);
-                pathString = pathString + s + " ";
-            }  
+            // string pathString("");
+            // for(int i=0; i<int(path.size()); i++){
+            //     auto s = std::to_string(path[i]);
+            //     pathString = pathString + s + " ";
+            // }  
 
             nextNode = path.front();
             globalRouteManager[p->GetUid()].erase(globalRouteManager[p->GetUid()].begin());
@@ -134,10 +132,14 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
             }
   
             Ptr<Node> gatewayNode = NodeList::GetNode(nextNode);
-            NS_LOG_INFO("Next node: " << gatewayNode->GetId());  
-
             int size=allRoutes.size();
             int sizeCounter=0;
+
+            // for(int i=0; i<allRoutes.size(); i++){
+            //     NS_LOG_INFO("Route " << i+1 << "/" << allRoutes.size());
+            //     NS_LOG_INFO("       Dest: " << allRoutes[i]->GetDest());
+            //     NS_LOG_INFO("       Gateway: " << allRoutes[i]->GetGateway());
+            // }
 
             while(sizeCounter<size){
                 int devices = gatewayNode->GetNDevices();
@@ -152,7 +154,6 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                     }
                     
                     if(address == entry->GetGateway()){
-                        NS_LOG_INFO("Entry found"); 
                         selectIndex=sizeCounter;
                         devicesCounter=devices;
                         sizeCounter=size;
@@ -171,7 +172,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
             selectIndex = randomInt(0, allRoutes.size() - 1);
             // NS_LOG_INFO("Random");
         }
-        
+
         Ipv4RoutingTableEntry* route = allRoutes.at(selectIndex);
         // create a Ipv4Route object from the selected routing table entry
         rtentry = Create<Ipv4Route>();
@@ -197,7 +198,7 @@ Ptr<Ipv4Route> PSO::RouteOutput(Ptr<Packet> p,
                         Ptr<NetDevice> oif,
                         Socket::SocketErrno& sockerr)
 {
-    NS_LOG_INFO("In RouteOutput: " << p->GetUid());
+    // NS_LOG_INFO("In RouteOutput: " << p->GetUid());
     Ipv4Address dest = header.GetDestination();
     uint32_t sourceNode = m_ipv4->GetObject<Node>()->GetId();
     uint32_t destNode;
@@ -292,7 +293,7 @@ bool PSO::RouteInput(Ptr<const Packet> p,
                 const LocalDeliverCallback& lcb,
                 const ErrorCallback& ecb)
 {
-    NS_LOG_INFO("In RouteInput: " << p->GetUid()); 
+    // NS_LOG_INFO("In RouteInput: " << p->GetUid()); 
 
     Time now = Simulator::Now();
 
@@ -384,34 +385,34 @@ bool PSO::RouteInput(Ptr<const Packet> p,
 
 void PSO::NotifyInterfaceUp(uint32_t interface)
 {
-    NS_LOG_INFO("In NotifyInterfaceDown");
+    // NS_LOG_INFO("In NotifyInterfaceDown");
 }
 
 void PSO::NotifyInterfaceDown(uint32_t interface)
 {
-    NS_LOG_INFO("In NotifyInterfaceDown");
+    // NS_LOG_INFO("In NotifyInterfaceDown");
 }
 
 void PSO::NotifyAddAddress(uint32_t interface, Ipv4InterfaceAddress address)
 {
-    NS_LOG_INFO("In NotifyAddAddress");
+    // NS_LOG_INFO("In NotifyAddAddress");
 }
 
 void PSO::NotifyRemoveAddress(uint32_t interface, Ipv4InterfaceAddress address)
 {
-    NS_LOG_INFO("In NotifyRemoveAddress");
+    // NS_LOG_INFO("In NotifyRemoveAddress");
 }
 
 void PSO::SetIpv4(Ptr<Ipv4> ipv4)
 {
-    NS_LOG_FUNCTION("In SetIpv4");
+    // NS_LOG_FUNCTION("In SetIpv4");
     NS_ASSERT(!m_ipv4 && ipv4);
     m_ipv4 = ipv4;
 }
 
 Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 {
-    NS_LOG_INFO("In GetRoute");
+    // NS_LOG_INFO("In GetRoute");
     uint32_t tmp = 0;
     if (index < hostRoutes.size())
     {
@@ -442,7 +443,7 @@ Ipv4RoutingTableEntry* PSO::GetRoute(uint32_t index, uint32_t node) const
 
 uint32_t PSO::GetNRoutes(uint32_t node) const
 {
-    NS_LOG_INFO("In GetNRoutes");
+    // NS_LOG_INFO("In GetNRoutes");
     uint32_t n = 0;
     if(hostRoutes.size() > 0){
         for (auto j = hostRoutes.begin(); j != hostRoutes.end(); j++)
@@ -481,7 +482,7 @@ bool PSO::checkIfRouteExists(Ipv4Route route, uint32_t interface, uint32_t node)
 
 void PSO::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) const
 {
-    NS_LOG_INFO("In PrintRoutingTable");
+    // NS_LOG_INFO("In PrintRoutingTable");
     uint32_t node = m_ipv4->GetObject<Node>()->GetId();
     std::ostream* os = stream->GetStream();
     // Copy the current ostream state
@@ -628,31 +629,48 @@ void PSO::returnShortestPath(int startVertex, vector<int> distances, vector<int>
 
                     //checks if destination is on the same network as the source
                     //if true, no need for a gateway (0.0.0.0)
-                    if(currentNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal().CombineMask(mask) == destNetwork) {
-                        route.SetGateway(Ipv4Address("0.0.0.0"));
-                    } else{
+                    // if(currentNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal().CombineMask(mask) == destNetwork) {
+                    //     route.SetGateway(Ipv4Address("0.0.0.0"));
+                    // } else{
                         bool same = false;
+                        int currentNodeNetDevicesCounter = 1;
+                        int currentNodeNetDevices = currentNode->GetNDevices();
+                        int gatewayNodeNetDevicesCounter = 1;
+                        int gatewayNodeNetDevices = gatewayNode->GetNDevices();
 
                         //loops through to see if the current node and gateway node share a network
-                        for(uint32_t i=1; i<currentNode->GetNDevices(); i++){
-                            for(uint32_t j=1; j<gatewayNode->GetNDevices(); j++){
-                                Ipv4Address currentNetwork = currentNode->GetObject<Ipv4>()->GetAddress(i, 0).GetLocal().CombineMask(mask);
-                                Ipv4Address nextNetwork = gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal().CombineMask(mask);
+                        // for(uint32_t i=1; i<currentNode->GetNDevices(); i++){
+                        while(currentNodeNetDevicesCounter<currentNodeNetDevices){
+                            // for(uint32_t j=1; j<gatewayNode->GetNDevices(); j++){
+                            while(gatewayNodeNetDevicesCounter<gatewayNodeNetDevices){
+                                Ipv4Address currentNetwork = currentNode->GetObject<Ipv4>()->GetAddress(currentNodeNetDevicesCounter, 0).GetLocal().CombineMask(mask);
+                                Ipv4Address nextNetwork = gatewayNode->GetObject<Ipv4>()->GetAddress(gatewayNodeNetDevicesCounter, 0).GetLocal().CombineMask(mask);
 
                                 //sets the gateway to the same network
                                 if(currentNetwork == nextNetwork){
-                                    route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal());
-                                    interface = i;
+                                    route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(gatewayNodeNetDevicesCounter, 0).GetLocal());
+                                    interface = currentNodeNetDevicesCounter;
                                     same = true;
+                                    currentNodeNetDevicesCounter=currentNodeNetDevices;
+                                    gatewayNodeNetDevicesCounter=gatewayNodeNetDevices;
+                                    NS_LOG_INFO("Loop exited");
+                                } else if(currentNode->GetObject<Ipv4>()->GetAddress(currentNodeNetDevicesCounter, 0).GetLocal().CombineMask(mask) == destNetwork){
+                                    route.SetGateway(Ipv4Address("0.0.0.0"));
+                                    interface = currentNodeNetDevicesCounter;
+                                    same = true;
+                                    currentNodeNetDevicesCounter=currentNodeNetDevices;
+                                    gatewayNodeNetDevicesCounter=gatewayNodeNetDevices;
                                 }
+                                gatewayNodeNetDevicesCounter++;
                             }
+                            currentNodeNetDevicesCounter++;
                         }
                             
                         //if not same, sets gateway as next node's IP
                         if(!same){
                             route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
                         }
-                    }
+                    // }
 
                     route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal());
 
@@ -695,6 +713,7 @@ void PSO::addRoutesOfPath(int startVertex, int destinationVertex, int path[], in
             //checks if destination is on the same network as the source
             //if true, no need for a gateway (0.0.0.0)
             if(currentNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal().CombineMask(mask) == destNetwork) {
+                // NS_LOG_INFO(currentNode->GetObject<Ipv4>()->GetAddress(k, 0).GetLocal() << " : " << destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal());
                 route.SetGateway(Ipv4Address("0.0.0.0"));
             } else{
                 bool same = false;
@@ -707,7 +726,12 @@ void PSO::addRoutesOfPath(int startVertex, int destinationVertex, int path[], in
 
                         //sets the gateway to the same network
                         if(currentNetwork == nextNetwork){
-                            route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal());
+                            if(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal() == gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal()){
+                                route.SetGateway(Ipv4Address("0.0.0.0"));
+                            } else{
+                                route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(j, 0).GetLocal());
+                            }
+                            
                             interface = i;
                             same = true;
                         }
@@ -719,7 +743,6 @@ void PSO::addRoutesOfPath(int startVertex, int destinationVertex, int path[], in
                     route.SetGateway(gatewayNode->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal());
                 }
             }
-
             route.SetDestination(destinationNode->GetObject<Ipv4>()->GetAddress(ip,0).GetLocal());
 
             // NS_LOG_INFO("Adding route");
@@ -741,15 +764,13 @@ void PSO::printAllPathsUtil(int u, int d, bool visited[], int path[], int& path_
     path[path_index] = u;
     path_index++;
  
-    // If current vertex is same as destination, then print
-    // current path[]
+    // If current vertex is same as destination, then print current path[]
     if (u == d) {
         addRoutesOfPath(u, d, path, path_index);
     }
     else // If current vertex is not destination
     {
-        // Recur for all the vertices adjacent to current
-        // vertex
+        // Recur for all the vertices adjacent to current vertex
         for(int i=0; i<NodeList::GetNNodes(); i++){
             if(adjacencyMatrix[u][i] != 0){
                 if(!visited[i]){
@@ -759,8 +780,7 @@ void PSO::printAllPathsUtil(int u, int d, bool visited[], int path[], int& path_
         }
     }
  
-    // Remove current vertex from path[] and mark it as
-    // unvisited
+    // Remove current vertex from path[] and mark it as unvisited
     path_index--;
     visited[u] = false;
 }

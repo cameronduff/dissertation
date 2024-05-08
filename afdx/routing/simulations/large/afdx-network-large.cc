@@ -31,7 +31,7 @@ using namespace std;
 
 bool verbose = false;
 bool use_drop = false;
-int endTime = 60;
+int endTime = 30;
 
 // ns3::Time timeout = ns3::Seconds(30);
 
@@ -393,8 +393,8 @@ int main(int argc, char *argv[]){
       int randomNode2;
 
       while(sameNode){
-        randomNode1 = randomInt(0, container1.GetN()-1);
-        randomNode2 = randomInt(0, container2.GetN()-1);
+        randomNode1 = randomInt(0, container1.GetN()-2);
+        randomNode2 = randomInt(0, container2.GetN()-2);
 
         if(randomNode1 != randomNode2){
           sameNode = false;
@@ -408,8 +408,18 @@ int main(int argc, char *argv[]){
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
 
-
-    createUdpApplication(network1.Get(0), network4.Get(0), 0.0, 10.0, 1500);
+    //                     receiver           sender
+    // createUdpApplication(network1.Get(10), network6.Get(1), 0.1, endTime, 1500);
+    // createUdpApplication(network3.Get(2), network4.Get(0), 0.2, endTime, 1500);
+    // createUdpApplication(network5.Get(0), network1.Get(3), 0.3, endTime, 1500);
+    // createUdpApplication(network4.Get(4), network1.Get(6), 0.4, endTime, 1500);
+    // createUdpApplication(network3.Get(6), network2.Get(10), 0.5, endTime, 1500);
+    // createUdpApplication(network1.Get(7), network3.Get(11), 0.6, endTime, 1500);
+    // createUdpApplication(network5.Get(9), network3.Get(11), 0.7, endTime, 1500);
+    // createUdpApplication(network6.Get(11), network4.Get(9), 0.8, endTime, 1500);
+    // createUdpApplication(network6.Get(11), network5.Get(7), 0.9, endTime, 1500);
+    // createUdpApplication(network2.Get(0), network1.Get(8), 0.05, endTime, 1500);
+    // createUdpApplication(network1.Get(3), network4.Get(0), 0.15, endTime, 1500);
 
     NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
@@ -431,121 +441,121 @@ int main(int argc, char *argv[]){
     // csma5.EnableAsciiAll(ascii.CreateFileStream("afdx-network5-large.tr"));
     // csma6.EnableAsciiAll(ascii.CreateFileStream("afdx-network6-large.tr"));
 
-    // NS_LOG_INFO("Enabling animation");
-    // std::string animFile = "afdx-anim-large.xml";
-    // //create the animation object and configure for specified output
-    // AnimationInterface anim(animFile);
+    NS_LOG_INFO("Enabling animation");
+    std::string animFile = "afdx-anim-large.xml";
+    //create the animation object and configure for specified output
+    AnimationInterface anim(animFile);
 
-    // anim.EnablePacketMetadata();
-    // anim.SetMaxPktsPerTraceFile(500000);
-    // // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
-    // anim.EnableIpv4RouteTracking("afdx-routing-large", Seconds(0), Seconds(endTime), Seconds(1));
+    anim.EnablePacketMetadata();
+    anim.SetMaxPktsPerTraceFile(500000);
+    // anim.EnableIpv4L3ProtocolCounters(Seconds(0), Seconds(endTime));
+    anim.EnableIpv4RouteTracking("afdx-routing-large", Seconds(0), Seconds(endTime), Seconds(1));
 
-    // anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);
-    // populateCoordinates(50, 175, network1, anim);
+    anim.SetConstantPosition(switch_nodes.Get(0), 50,175,0);
+    populateCoordinates(50, 175, network1, anim);
 
-    // anim.SetConstantPosition(switch_nodes.Get(1), 50,125,0);
-    // populateCoordinates(50, 125, network2, anim);
+    anim.SetConstantPosition(switch_nodes.Get(1), 50,125,0);
+    populateCoordinates(50, 125, network2, anim);
 
-    // anim.SetConstantPosition(switch_nodes.Get(2), 150,125,0);
-    // populateCoordinates(150, 125, network3, anim);
+    anim.SetConstantPosition(switch_nodes.Get(2), 150,125,0);
+    populateCoordinates(150, 125, network3, anim);
 
-    // anim.SetConstantPosition(switch_nodes.Get(3), 150,75,0);
-    // populateCoordinates(150, 75, network4, anim);
+    anim.SetConstantPosition(switch_nodes.Get(3), 150,75,0);
+    populateCoordinates(150, 75, network4, anim);
 
-    // anim.SetConstantPosition(switch_nodes.Get(4), 100,75,0);
-    // populateCoordinates(100, 75, network5, anim);
+    anim.SetConstantPosition(switch_nodes.Get(4), 100,75,0);
+    populateCoordinates(100, 75, network5, anim);
 
-    // anim.SetConstantPosition(switch_nodes.Get(5), 100,175,0);
-    // populateCoordinates(100, 175, network6, anim);
+    anim.SetConstantPosition(switch_nodes.Get(5), 100,175,0);
+    populateCoordinates(100, 175, network6, anim);
 
-    // anim.SetConstantPosition(switch_nodes.Get(6), 100,125,0);
+    anim.SetConstantPosition(switch_nodes.Get(6), 100,125,0);
 
-    // anim.UpdateNodeDescription(switch_nodes.Get(0), "SW1");
-    // anim.UpdateNodeDescription(switch_nodes.Get(1), "SW2");
-    // anim.UpdateNodeDescription(switch_nodes.Get(2), "SW3");
-    // anim.UpdateNodeDescription(switch_nodes.Get(3), "SW4");
-    // anim.UpdateNodeDescription(switch_nodes.Get(4), "SW5");
-    // anim.UpdateNodeDescription(switch_nodes.Get(5), "SW6");
-    // anim.UpdateNodeDescription(switch_nodes.Get(6), "SW7");
+    anim.UpdateNodeDescription(switch_nodes.Get(0), "SW1");
+    anim.UpdateNodeDescription(switch_nodes.Get(1), "SW2");
+    anim.UpdateNodeDescription(switch_nodes.Get(2), "SW3");
+    anim.UpdateNodeDescription(switch_nodes.Get(3), "SW4");
+    anim.UpdateNodeDescription(switch_nodes.Get(4), "SW5");
+    anim.UpdateNodeDescription(switch_nodes.Get(5), "SW6");
+    anim.UpdateNodeDescription(switch_nodes.Get(6), "SW7");
 
-    // anim.UpdateNodeDescription(network1.Get(0), "N1");
-    // anim.UpdateNodeDescription(network1.Get(1), "N2");
-    // anim.UpdateNodeDescription(network1.Get(2), "N3");
-    // anim.UpdateNodeDescription(network1.Get(3), "N4");
-    // anim.UpdateNodeDescription(network1.Get(4), "N5");
-    // anim.UpdateNodeDescription(network1.Get(5), "N6");
-    // anim.UpdateNodeDescription(network1.Get(6), "N7");
-    // anim.UpdateNodeDescription(network1.Get(7), "N8");
-    // anim.UpdateNodeDescription(network1.Get(8), "N9");
-    // anim.UpdateNodeDescription(network1.Get(9), "N10");
-    // anim.UpdateNodeDescription(network1.Get(10), "N11");
-    // anim.UpdateNodeDescription(network1.Get(11), "N12");
+    anim.UpdateNodeDescription(network1.Get(0), "N1");
+    anim.UpdateNodeDescription(network1.Get(1), "N2");
+    anim.UpdateNodeDescription(network1.Get(2), "N3");
+    anim.UpdateNodeDescription(network1.Get(3), "N4");
+    anim.UpdateNodeDescription(network1.Get(4), "N5");
+    anim.UpdateNodeDescription(network1.Get(5), "N6");
+    anim.UpdateNodeDescription(network1.Get(6), "N7");
+    anim.UpdateNodeDescription(network1.Get(7), "N8");
+    anim.UpdateNodeDescription(network1.Get(8), "N9");
+    anim.UpdateNodeDescription(network1.Get(9), "N10");
+    anim.UpdateNodeDescription(network1.Get(10), "N11");
+    anim.UpdateNodeDescription(network1.Get(11), "N12");
 
-    // anim.UpdateNodeDescription(network2.Get(0), "N13");
-    // anim.UpdateNodeDescription(network2.Get(1), "N14");
-    // anim.UpdateNodeDescription(network2.Get(2), "N15");
-    // anim.UpdateNodeDescription(network2.Get(3), "N16");
-    // anim.UpdateNodeDescription(network2.Get(4), "N17");
-    // anim.UpdateNodeDescription(network2.Get(5), "N18");
-    // anim.UpdateNodeDescription(network2.Get(6), "N19");
-    // anim.UpdateNodeDescription(network2.Get(7), "N20");
-    // anim.UpdateNodeDescription(network2.Get(8), "N21");
-    // anim.UpdateNodeDescription(network2.Get(9), "N22");
-    // anim.UpdateNodeDescription(network2.Get(10), "N23");
-    // anim.UpdateNodeDescription(network2.Get(11), "N24");
+    anim.UpdateNodeDescription(network2.Get(0), "N13");
+    anim.UpdateNodeDescription(network2.Get(1), "N14");
+    anim.UpdateNodeDescription(network2.Get(2), "N15");
+    anim.UpdateNodeDescription(network2.Get(3), "N16");
+    anim.UpdateNodeDescription(network2.Get(4), "N17");
+    anim.UpdateNodeDescription(network2.Get(5), "N18");
+    anim.UpdateNodeDescription(network2.Get(6), "N19");
+    anim.UpdateNodeDescription(network2.Get(7), "N20");
+    anim.UpdateNodeDescription(network2.Get(8), "N21");
+    anim.UpdateNodeDescription(network2.Get(9), "N22");
+    anim.UpdateNodeDescription(network2.Get(10), "N23");
+    anim.UpdateNodeDescription(network2.Get(11), "N24");
 
-    // anim.UpdateNodeDescription(network3.Get(0), "N25");
-    // anim.UpdateNodeDescription(network3.Get(1), "N26");
-    // anim.UpdateNodeDescription(network3.Get(2), "N27");
-    // anim.UpdateNodeDescription(network3.Get(3), "N28");
-    // anim.UpdateNodeDescription(network3.Get(4), "N29");
-    // anim.UpdateNodeDescription(network3.Get(5), "N30");
-    // anim.UpdateNodeDescription(network3.Get(6), "N31");
-    // anim.UpdateNodeDescription(network3.Get(7), "N32");
-    // anim.UpdateNodeDescription(network3.Get(8), "N33");
-    // anim.UpdateNodeDescription(network3.Get(9), "N34");
-    // anim.UpdateNodeDescription(network3.Get(10), "N35");
-    // anim.UpdateNodeDescription(network3.Get(11), "N36");
+    anim.UpdateNodeDescription(network3.Get(0), "N25");
+    anim.UpdateNodeDescription(network3.Get(1), "N26");
+    anim.UpdateNodeDescription(network3.Get(2), "N27");
+    anim.UpdateNodeDescription(network3.Get(3), "N28");
+    anim.UpdateNodeDescription(network3.Get(4), "N29");
+    anim.UpdateNodeDescription(network3.Get(5), "N30");
+    anim.UpdateNodeDescription(network3.Get(6), "N31");
+    anim.UpdateNodeDescription(network3.Get(7), "N32");
+    anim.UpdateNodeDescription(network3.Get(8), "N33");
+    anim.UpdateNodeDescription(network3.Get(9), "N34");
+    anim.UpdateNodeDescription(network3.Get(10), "N35");
+    anim.UpdateNodeDescription(network3.Get(11), "N36");
 
-    // anim.UpdateNodeDescription(network4.Get(0), "N37");
-    // anim.UpdateNodeDescription(network4.Get(1), "N38");
-    // anim.UpdateNodeDescription(network4.Get(2), "N39");
-    // anim.UpdateNodeDescription(network4.Get(3), "N40");
-    // anim.UpdateNodeDescription(network4.Get(4), "N41");
-    // anim.UpdateNodeDescription(network4.Get(5), "N42");
-    // anim.UpdateNodeDescription(network4.Get(6), "N43");
-    // anim.UpdateNodeDescription(network4.Get(7), "N44");
-    // anim.UpdateNodeDescription(network4.Get(8), "N45");
-    // anim.UpdateNodeDescription(network4.Get(9), "N46");
-    // anim.UpdateNodeDescription(network4.Get(10), "N47");
-    // anim.UpdateNodeDescription(network4.Get(11), "N48");
+    anim.UpdateNodeDescription(network4.Get(0), "N37");
+    anim.UpdateNodeDescription(network4.Get(1), "N38");
+    anim.UpdateNodeDescription(network4.Get(2), "N39");
+    anim.UpdateNodeDescription(network4.Get(3), "N40");
+    anim.UpdateNodeDescription(network4.Get(4), "N41");
+    anim.UpdateNodeDescription(network4.Get(5), "N42");
+    anim.UpdateNodeDescription(network4.Get(6), "N43");
+    anim.UpdateNodeDescription(network4.Get(7), "N44");
+    anim.UpdateNodeDescription(network4.Get(8), "N45");
+    anim.UpdateNodeDescription(network4.Get(9), "N46");
+    anim.UpdateNodeDescription(network4.Get(10), "N47");
+    anim.UpdateNodeDescription(network4.Get(11), "N48");
 
-    // anim.UpdateNodeDescription(network5.Get(0), "N49");
-    // anim.UpdateNodeDescription(network5.Get(1), "N50");
-    // anim.UpdateNodeDescription(network5.Get(2), "N51");
-    // anim.UpdateNodeDescription(network5.Get(3), "N52");
-    // anim.UpdateNodeDescription(network5.Get(4), "N53");
-    // anim.UpdateNodeDescription(network5.Get(5), "N54");
-    // anim.UpdateNodeDescription(network5.Get(6), "N55");
-    // anim.UpdateNodeDescription(network5.Get(7), "N56");
-    // anim.UpdateNodeDescription(network5.Get(8), "N57");
-    // anim.UpdateNodeDescription(network5.Get(9), "N58");
-    // anim.UpdateNodeDescription(network5.Get(10), "N59");
-    // anim.UpdateNodeDescription(network5.Get(11), "N60");
+    anim.UpdateNodeDescription(network5.Get(0), "N49");
+    anim.UpdateNodeDescription(network5.Get(1), "N50");
+    anim.UpdateNodeDescription(network5.Get(2), "N51");
+    anim.UpdateNodeDescription(network5.Get(3), "N52");
+    anim.UpdateNodeDescription(network5.Get(4), "N53");
+    anim.UpdateNodeDescription(network5.Get(5), "N54");
+    anim.UpdateNodeDescription(network5.Get(6), "N55");
+    anim.UpdateNodeDescription(network5.Get(7), "N56");
+    anim.UpdateNodeDescription(network5.Get(8), "N57");
+    anim.UpdateNodeDescription(network5.Get(9), "N58");
+    anim.UpdateNodeDescription(network5.Get(10), "N59");
+    anim.UpdateNodeDescription(network5.Get(11), "N60");
 
-    // anim.UpdateNodeDescription(network6.Get(0), "N61");
-    // anim.UpdateNodeDescription(network6.Get(1), "N62");
-    // anim.UpdateNodeDescription(network6.Get(2), "N63");
-    // anim.UpdateNodeDescription(network6.Get(3), "N64");
-    // anim.UpdateNodeDescription(network6.Get(4), "N65");
-    // anim.UpdateNodeDescription(network6.Get(5), "N66");
-    // anim.UpdateNodeDescription(network6.Get(6), "N67");
-    // anim.UpdateNodeDescription(network6.Get(7), "N68");
-    // anim.UpdateNodeDescription(network6.Get(8), "N69");
-    // anim.UpdateNodeDescription(network6.Get(9), "N70");
-    // anim.UpdateNodeDescription(network6.Get(10), "N71");
-    // anim.UpdateNodeDescription(network6.Get(11), "N72");
+    anim.UpdateNodeDescription(network6.Get(0), "N61");
+    anim.UpdateNodeDescription(network6.Get(1), "N62");
+    anim.UpdateNodeDescription(network6.Get(2), "N63");
+    anim.UpdateNodeDescription(network6.Get(3), "N64");
+    anim.UpdateNodeDescription(network6.Get(4), "N65");
+    anim.UpdateNodeDescription(network6.Get(5), "N66");
+    anim.UpdateNodeDescription(network6.Get(6), "N67");
+    anim.UpdateNodeDescription(network6.Get(7), "N68");
+    anim.UpdateNodeDescription(network6.Get(8), "N69");
+    anim.UpdateNodeDescription(network6.Get(9), "N70");
+    anim.UpdateNodeDescription(network6.Get(10), "N71");
+    anim.UpdateNodeDescription(network6.Get(11), "N72");
     
     Simulator::Stop(Seconds(endTime));
     NS_LOG_INFO("Run Simulation");
