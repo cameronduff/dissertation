@@ -137,13 +137,6 @@ int main(int argc, char *argv[]){
     network5.Add(switch_nodes.Get(4));
     network6.Add(switch_nodes.Get(5));
 
-    //defining medium for Lan1
-    // CsmaHelper csma1;
-    // csma1.SetChannelAttribute("DataRate", StringValue(dataRate));
-    // csma1.SetChannelAttribute("Delay", TimeValue(NanoSeconds(delay)));
-    // NetDeviceContainer network1Devices;
-    // network1Devices = csma1.Install(network1);
-
     vector<NetDeviceContainer> lan1Connections;
     vector<NetDeviceContainer> lan2Connections;
     vector<NetDeviceContainer> lan3Connections;
@@ -162,7 +155,7 @@ int main(int argc, char *argv[]){
     }
 
     for(int i=0;i<network2.GetN(); i++){
-      //p2p connection for SW1
+      //p2p connection for SW2
       PointToPointHelper p2p;
       p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
       p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
@@ -172,7 +165,7 @@ int main(int argc, char *argv[]){
     }
 
     for(int i=0;i<network3.GetN(); i++){
-      //p2p connection for SW1
+      //p2p connection for SW3
       PointToPointHelper p2p;
       p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
       p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
@@ -182,7 +175,7 @@ int main(int argc, char *argv[]){
     }
 
     for(int i=0;i<network4.GetN(); i++){
-      //p2p connection for SW1
+      //p2p connection for SW4
       PointToPointHelper p2p;
       p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
       p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
@@ -192,7 +185,7 @@ int main(int argc, char *argv[]){
     }
 
     for(int i=0;i<network5.GetN(); i++){
-      //p2p connection for SW1
+      //p2p connection for SW5
       PointToPointHelper p2p;
       p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
       p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
@@ -202,7 +195,7 @@ int main(int argc, char *argv[]){
     }
 
     for(int i=0;i<network6.GetN(); i++){
-      //p2p connection for SW1
+      //p2p connection for SW6
       PointToPointHelper p2p;
       p2p.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
       p2p.SetChannelAttribute("Delay", TimeValue(NanoSeconds(100000)));
