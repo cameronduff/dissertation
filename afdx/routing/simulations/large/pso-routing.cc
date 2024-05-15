@@ -163,7 +163,7 @@ Ptr<Ipv4Route> PSO::LookupRoute(Ptr<const Packet> p, const Ipv4Header& header, P
                 sizeCounter++;
             }
 
-            NS_LOG_INFO("Select Index: " << selectIndex);
+            // NS_LOG_INFO("Select Index: " << selectIndex);
 
         } else if(pathType == PathType::Local){
             selectIndex = randomInt(0, allRoutes.size() - 1);
@@ -887,7 +887,7 @@ void PSO::RecvPso(Ptr<Socket> socket){
     Address sourceAddress;
     receivedPacket = socket->RecvFrom(sourceAddress);
 
-    // NS_LOG_INFO("Packet " << receivedPacket->GetUid() << " received");
+    NS_LOG_INFO("Packet " << receivedPacket->GetUid() << " received");
     // NS_LOG_INFO("hostRoutes: " << hostRoutes.size());
     // NS_LOG_INFO("routesTaken: " << routesTaken.size());
     // NS_LOG_INFO("virtualLinks: " << virtualLinks.size());

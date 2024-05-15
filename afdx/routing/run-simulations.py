@@ -123,7 +123,7 @@ class Simulation(object):
 def runSimulations(numOfSimulations):
 
     for i in range(numOfSimulations):
-        os.system('clear')
+        # os.system('clear')
         print(f"Running simulation {i+1}/{numOfSimulations}")
         #run small
         print("Small")
@@ -132,16 +132,16 @@ def runSimulations(numOfSimulations):
         os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/small/afdx-network-small.cc -- --flowmonName="afdx-metrics-small-{i+1}.xml"')
 
         #run medium
-        print("Medium")
-        os.system('cd')
-        os.system('cd ns-allinone-3.40/ns-3.40')
-        os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/medium/afdx-network-medium.cc -- --flowmonName="afdx-metrics-medium-{i+1}.xml"')
+        # print("Medium")
+        # os.system('cd')
+        # os.system('cd ns-allinone-3.40/ns-3.40')
+        # os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/medium/afdx-network-medium.cc -- --flowmonName="afdx-metrics-medium-{i+1}.xml"')
 
         #run large
-        print("Large")
-        os.system('cd')
-        os.system('cd ns-allinone-3.40/ns-3.40')
-        os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/large/afdx-network-large.cc -- --flowmonName="afdx-metrics-large-{i+1}.xml"')
+        # print("Large")
+        # os.system('cd')
+        # os.system('cd ns-allinone-3.40/ns-3.40')
+        # os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/large/afdx-network-large.cc -- --flowmonName="afdx-metrics-large-{i+1}.xml"')
 
 def parseXmlFile(simulationId, xmlFilename, rows):
     with open(xmlFilename, encoding="utf-8") as file_obj:
@@ -209,14 +209,14 @@ def parseAllXmlFiles(numOfSimulations):
     dfSmall = pd.DataFrame(small, columns=cols) 
     dfSmall.to_csv('metrics-small.csv')
 
-    dfMedium = pd.DataFrame(medium, columns=cols) 
-    dfMedium.to_csv('metrics-medium.csv') 
+    # dfMedium = pd.DataFrame(medium, columns=cols) 
+    # dfMedium.to_csv('metrics-medium.csv') 
 
-    dfLarge = pd.DataFrame(large, columns=cols) 
-    dfLarge.to_csv('metrics-large.csv') 
+    # dfLarge = pd.DataFrame(large, columns=cols) 
+    # dfLarge.to_csv('metrics-large.csv') 
 
 if __name__ == '__main__':
     #takes roughly 9s to run 1 of each simulation
-    numOfSimulations = 50
+    numOfSimulations = 1000
     runSimulations(numOfSimulations)
     parseAllXmlFiles(numOfSimulations)
