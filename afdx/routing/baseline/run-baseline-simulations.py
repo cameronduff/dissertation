@@ -122,26 +122,26 @@ class Simulation(object):
 
 def runSimulations(numOfSimulations):
 
-    for i in range(33, numOfSimulations):
+    for i in range(20, numOfSimulations):
         # os.system('clear')
         print(f"Running simulation {i+1}/{numOfSimulations}")
         #run small
-        # print("Small")
-        # os.system('cd')
-        # os.system('cd ns-allinone-3.40/ns-3.40')
-        # os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/small/afdx-network-small.cc -- --flowmonName="afdx-metrics-small-{i+1}.xml"')
-
-        #run medium
-        # print("Medium")
-        # os.system('cd')
-        # os.system('cd ns-allinone-3.40/ns-3.40')
-        # os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/medium/afdx-network-medium.cc -- --flowmonName="afdx-metrics-medium-{i+1}.xml"')
-
-        #run large
-        print("Large")
+        print("Small")
         os.system('cd')
         os.system('cd ns-allinone-3.40/ns-3.40')
-        os.system(f'./ns3 run scratch/dissertation/afdx/routing/simulations/large/afdx-network-large.cc -- --flowmonName="afdx-metrics-large-{i+1}.xml"')
+        os.system(f'./ns3 run scratch/dissertation/afdx/routing/baseline/small/afdx-network-small-baseline.cc -- --flowmonName="afdx-metrics-baseline-small-{i+1}.xml"')
+
+        # run medium
+        print("Medium")
+        os.system('cd')
+        os.system('cd ns-allinone-3.40/ns-3.40')
+        os.system(f'./ns3 run scratch/dissertation/afdx/routing/baseline/medium/afdx-network-medium-baseline.cc -- --flowmonName="afdx-metrics-baseline-medium-{i+1}.xml"')
+
+        #run large
+        # print("Large")
+        # os.system('cd')
+        # os.system('cd ns-allinone-3.40/ns-3.40')
+        # os.system(f'./ns3 run scratch/dissertation/afdx/routing/baseline/large/afdx-network-large-baseline.cc -- --flowmonName="afdx-metrics-baseline-large-{i+1}.xml"')
 
 def parseXmlFile(simulationId, xmlFilename, rows):
     with open(xmlFilename, encoding="utf-8") as file_obj:
@@ -202,21 +202,20 @@ def parseAllXmlFiles(numOfSimulations):
     large = []
 
     for i in range(numOfSimulations):
-        # parseXmlFile(i+1, f"afdx-metrics-small-{i+1}.xml", small)
-        # parseXmlFile(i+1, f"afdx-metrics-medium-{i+1}.xml", medium)
-        parseXmlFile(i+1, f"afdx-metrics-large-{i+1}.xml", large)
+        parseXmlFile(i+1, f"afdx-metrics-small-baseline-{i+1}.xml", small)
+        parseXmlFile(i+1, f"afdx-metrics-medium-baseline-{i+1}.xml", medium)
+        # parseXmlFile(i+1, f"afdx-metrics-large-baseline-{i+1}.xml", large)
     
-    # dfSmall = pd.DataFrame(small, columns=cols) 
-    # dfSmall.to_csv('metrics-small.csv')
+    dfSmall = pd.DataFrame(small, columns=cols) 
+    dfSmall.to_csv('metrics-small.csv')
 
-    # dfMedium = pd.DataFrame(medium, columns=cols) 
-    # dfMedium.to_csv('metrics-medium.csv') 
+    dfMedium = pd.DataFrame(medium, columns=cols) 
+    dfMedium.to_csv('metrics-medium.csv') 
 
-    dfLarge = pd.DataFrame(large, columns=cols) 
-    dfLarge.to_csv('metrics-large.csv') 
+    # dfLarge = pd.DataFrame(large, columns=cols) 
+    # dfLarge.to_csv('metrics-large.csv') 
 
 if __name__ == '__main__':
-    #takes roughly 9s to run 1 of each simulation
-    numOfSimulations = 100
+    numOfSimulations = 1000
     runSimulations(numOfSimulations)
     parseAllXmlFiles(numOfSimulations)

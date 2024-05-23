@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <random>
 #include <cassert>
 #include <cmath>
 
@@ -11,7 +12,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/flow-monitor.h"
 #include "ns3/flow-monitor-helper.h"
-#include "ns3/log.h"
+// #include "ns3/log.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/csma-module.h"
 #include "ns3/ipv4.h"
@@ -19,10 +20,10 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
-#include "pso-routing.h"
-#include "pso-routing-helper.h"
-#include "../../../routing/PSO/pso-routing-protocol.cc"
-#include "../../../routing/PSO/pso-routing-helper.cc"
+// #include "pso-routing.h"
+// #include "pso-routing-helper.h"
+// #include "../../../routing/PSO/pso-routing-protocol.cc"
+// #include "../../../routing/PSO/pso-routing-helper.cc"
 
 using namespace ns3;
 using namespace std;
@@ -83,7 +84,7 @@ void populateCoordinates(double x, double y, NodeContainer &nodes, AnimationInte
   double radius = 15.0;
   double angleIncrement = 2*M_PI/(nodes.GetN()-1);
 
-  NS_LOG_INFO("Nodes: " << nodes.GetN() -1);
+  // NS_LOG_INFO("Nodes: " << nodes.GetN() -1);
   
   for(int i=0; i<nodes.GetN() -1; i++){
     double angle = i*angleIncrement;
@@ -105,13 +106,13 @@ int main(int argc, char *argv[]){
 
     if(verbose)
     {
-        LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
+        // LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
         // LogComponentEnable("OpenFlowInterface", LOG_LEVEL_INFO);
         // LogComponentEnable("OpenFlowSwitchNetDevice", LOG_LEVEL_INFO);
         // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_INFO);
     }
 
-    NS_LOG_INFO("Create nodes.");
+    // NS_LOG_INFO("Create nodes.");
     //Node containers
     NodeContainer network1;
     NodeContainer network2;
@@ -275,16 +276,16 @@ int main(int argc, char *argv[]){
     // PSORoutingProtocol pso;
     // PSORoutingHelper psoHelper;
     // Ipv4StaticRoutingHelper ipv4RoutingStaticHelper;
-    // Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
-    PSOHelper psoHelperTest;
+    Ipv4GlobalRoutingHelper ipv4GlobalRoutingHelper;
+    // PSOHelper psoHelperTest;
 
 
     Ipv4ListRoutingHelper list;
     // list.Add(olsr, 0);
-    list.Add(psoHelperTest, 100);
-    // list.Add(ipv4GlobalRoutingHelper, 100);
+    // list.Add(psoHelperTest, 100);
+    list.Add(ipv4GlobalRoutingHelper, 100);
 
-    NS_LOG_INFO("Install internet");
+    // NS_LOG_INFO("Install internet");
     InternetStackHelper stack;
     stack.SetRoutingHelper(list);
 
@@ -296,7 +297,7 @@ int main(int argc, char *argv[]){
     stack.Install(network6);
     stack.Install(switch_nodes);
 
-    NS_LOG_INFO("Assign IP addresses");
+    // NS_LOG_INFO("Assign IP addresses");
     Ipv4AddressHelper address;
     address.SetBase("10.1.0.0", "255.255.255.0");
 
@@ -344,9 +345,10 @@ int main(int argc, char *argv[]){
       address.Assign(switchDeviceContainers[i]);
     }    
 
-    psoHelperTest.PopulateRoutingTables();
-    psoHelperTest.InstallSinkOnNodes();
-    // ipv4GlobalRoutingHelper.PopulateRoutingTables();
+    // psoHelperTest.PopulateRoutingTables();
+    // psoHelperTest.InstallSinkOnNodes();
+    installSinksOnNodes();
+    ipv4GlobalRoutingHelper.PopulateRoutingTables();
 
     vector<NodeContainer> endSystems;
     endSystems.push_back(network1);
@@ -358,7 +360,7 @@ int main(int argc, char *argv[]){
 
     int numOfApplications = randomInt(NodeList::GetNNodes(), NodeList::GetNNodes() * 2);
 
-    NS_LOG_INFO("Number of applications: " << numOfApplications);
+    // NS_LOG_INFO("Number of applications: " << numOfApplications);
 
     for(int i=0; i<numOfApplications; i++){
       int randomIndex1;
@@ -368,7 +370,7 @@ int main(int argc, char *argv[]){
       double appEndTime;
       bool sameNetwork = true;
 
-      NS_LOG_INFO("Start time: " << startTime);
+      // NS_LOG_INFO("Start time: " << startTime);
 
       while(sameNetwork){
         randomIndex1 = randomInt(0, endSystems.size()-1);
@@ -380,12 +382,12 @@ int main(int argc, char *argv[]){
         }
       }
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
+      // NS_LOG_INFO("Sender: " << randomIndex1 << " Receiver: " << randomIndex2 << " Size: " << packetSize << " Start time: " << startTime << " End time: " << appEndTime);
 
       NodeContainer container1 = endSystems[randomIndex1];
       NodeContainer container2 = endSystems[randomIndex2];
 
-      NS_LOG_INFO("Num of nodes: " << container1.GetN());
+      // NS_LOG_INFO("Num of nodes: " << container1.GetN());
 
       bool sameNode = true;
 
@@ -404,7 +406,7 @@ int main(int argc, char *argv[]){
       Ptr<Node> sender = container1.Get(randomNode1);
       Ptr<Node> receiver = container2.Get(randomNode2);
 
-      NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
+      // NS_LOG_INFO("Sender: " << randomIndex1 << ":" << randomNode1 << " Receiver: " << randomIndex2 << ":" << randomNode2);
       createUdpApplication(sender, receiver, startTime, endTime, packetSize);
     }
 
@@ -421,7 +423,7 @@ int main(int argc, char *argv[]){
     // createUdpApplication(network2.Get(0), network1.Get(8), 0.05, endTime, 1500);
     // createUdpApplication(network1.Get(3), network4.Get(0), 0.15, endTime, 1500);
 
-    NS_LOG_INFO("Installing Flow Monitor");
+    // NS_LOG_INFO("Installing Flow Monitor");
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
     flowMonitor = flowHelper.InstallAll();
@@ -558,7 +560,7 @@ int main(int argc, char *argv[]){
     // anim.UpdateNodeDescription(network6.Get(11), "N72");
     
     Simulator::Stop(Seconds(endTime));
-    NS_LOG_INFO("Run Simulation");
+    // NS_LOG_INFO("Run Simulation");
     Simulator::Run();
 
     flowMonitor->SerializeToXmlFile(flowmonName, true, true);
